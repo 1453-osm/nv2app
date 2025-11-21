@@ -50,6 +50,7 @@ dependencies:
   timezone: ^0.9.4
   firebase_core: ^4.0.0
   cloud_firestore: ^6.0.0
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -106,6 +107,7 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
   assets:
+    - assets/env
     - assets/locations/
     - assets/images/
     - assets/notifications/

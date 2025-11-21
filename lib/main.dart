@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'viewmodels/onboarding_viewmodel.dart';
 import 'viewmodels/location_viewmodel.dart';
@@ -26,6 +27,7 @@ import 'viewmodels/daily_content_viewmodel.dart';
 Future<void> main() async {
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load(fileName: "assets/env");
 
     // Giriş örnekleme (touch resampling) ve resim önbelleği optimizasyonu
     GestureBinding.instance.resamplingEnabled = true;
