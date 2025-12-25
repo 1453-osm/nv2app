@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class LocalizedQuote {
   final String text;
   final String source;
@@ -17,14 +20,15 @@ class LocalizedQuote {
       };
 }
 
+@immutable
 class DailyContent {
-  final int id;
+  final String id;
   final Map<String, LocalizedQuote> locales; // e.g. "tr", "ar", "en"
 
   const DailyContent({required this.id, required this.locales});
 
   factory DailyContent.fromFirestore(Map<String, dynamic> data) {
-    final Map<String, LocalizedQuote> locs = {};
+    final locs = <String, LocalizedQuote>{};
     for (final key in ['tr', 'ar', 'en']) {
       final raw = data[key];
       if (raw is Map<String, dynamic>) {
@@ -32,8 +36,8 @@ class DailyContent {
       }
     }
     return DailyContent(
-      id: (data['id'] ?? 0) is int ? data['id'] as int : int.tryParse('${data['id']}') ?? 0,
-      locales: locs,
+      id: (data['id'] ?? '').toString(),
+      locales: Map.unmodifiable(locs),
     );
   }
 
@@ -42,5 +46,3 @@ class DailyContent {
         for (final entry in locales.entries) entry.key: entry.value.toMap(),
       };
 }
-
-

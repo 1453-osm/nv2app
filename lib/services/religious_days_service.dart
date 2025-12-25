@@ -280,6 +280,22 @@ class ReligiousDaysService {
     if (day == null || month == null || year == null) return null;
     return DateTime(year, month, day);
   }
+
+  /// Belirli bir yıl için dini günleri getirir
+  /// Bu metod PrayerTimesResponse'u parametre olarak alır ve detectFrom çağırır
+  /// languageCode parametresi şu an için kullanılmıyor, gelecekte çeviriler için kullanılabilir
+  Future<List<DetectedReligiousDay>> fetchReligiousDays(
+    int year, {
+    String? languageCode,
+    PrayerTimesResponse? response,
+  }) async {
+    // Eğer response verilmişse detectFrom kullan, yoksa boş liste döndür
+    if (response != null) {
+      return detectFrom(response);
+    }
+    // Response yoksa boş liste döndür (cache'den okunacak)
+    return [];
+  }
 }
 
 

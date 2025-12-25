@@ -31,12 +31,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.2
-  provider: ^6.1.2  
+  flutter_secure_storage: ^9.2.2 # Güvenli veri depolama için
+  provider: ^6.1.2
   geolocator: ^13.0.1
   permission_handler: ^11.3.1
   http: ^1.2.2
@@ -64,12 +68,17 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_launcher_icons: "^0.13.1"
 
+  # Test utilities
+  mocktail: ^1.0.4 # Mock library for testing
+  fake_async: ^1.3.1 # Async test utilities
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  generate: true
+  
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -111,6 +120,11 @@ flutter:
     - assets/locations/
     - assets/images/
     - assets/notifications/
+
+  fonts:
+    - family: Nestaliq
+      fonts:
+        - asset: assets/fonts/nestaliq.ttf
 
 flutter_icons:
   android: true

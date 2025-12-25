@@ -1,18 +1,29 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/daily_content.dart';
+import '../utils/app_logger.dart';
 
 class DailyContentRepository {
   static const String collectionName = 'daily_contents';
-  
+  Future<SharedPreferences>? _prefsFuture;
+  Future<SharedPreferences> _prefs() =>
+      _prefsFuture ??= SharedPreferences.getInstance();
+
   // Adlandırılmış Firestore veritabanı: 'daily'
-  FirebaseFirestore get _db => FirebaseFirestore.instanceFor(
-        app: Firebase.app(),
-        databaseId: 'daily',
-      );
+  FirebaseFirestore get _db {
+    // Web platformunda instanceFor ile databaseId çalışmıyor, default instance kullan
+    if (kIsWeb) {
+      return FirebaseFirestore.instance;
+    }
+    // Mobil platformlarda named database kullan
+    return FirebaseFirestore.instanceFor(
+      app: Firebase.app(),
+      databaseId: 'daily',
+    );
+  }
 
   Future<String> _todayKey() async {
     final now = DateTime.now();
@@ -20,14 +31,20 @@ class DailyContentRepository {
     return dateOnly.toIso8601String().substring(0, 10); // yyyy-MM-dd
   }
 
-  int _dayOfYear(DateTime date) {
-    final startOfYear = DateTime(date.year, 1, 1);
-    return date.difference(startOfYear).inDays + 1; // 1..366
+  String _dayMonthKey(DateTime date) {
+    return '${date.day}_${date.month}';
   }
+
+  String _todayDocId() {
+    final now = DateTime.now();
+    return _dayMonthKey(now);
+  }
+
 
   Future<DailyContent> getTodayContent() async {
     final key = await _todayKey();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
+    final docId = _todayDocId();
     final cached = prefs.getString('daily_content_$key');
     if (cached != null && cached.isNotEmpty) {
       final map = jsonDecode(cached) as Map<String, dynamic>;
@@ -37,7 +54,7 @@ class DailyContentRepository {
     // Firestore'dan çek
     final doc = await _db
         .collection(collectionName)
-        .doc(key)
+        .doc(docId)
         .get();
 
     if (!doc.exists) {
@@ -52,13 +69,13 @@ class DailyContentRepository {
     return content;
   }
 
-  /// Günü ayet + hadis olarak birlikte döndürmek için esnek okuma
-  /// Öncelik: daily_contents/{yyyy-MM-dd} dokümanı içinde
-  /// { ayet: {...}, hadis: {...} } alanları varsa onu kullanır.
-  /// Aksi halde fallback: daily/ayetler/{dayOfYear} ve daily/hadisler/{dayOfYear}
+  /// Günü ayet + hadis olarak birlikte döndürmek için direkt okuma
+  /// database: daily, collections: ayetler, hadisler, document: {gün_ay}
   Future<(DailyContent?, DailyContent?)> getTodayPair() async {
     final todayKey = await _todayKey();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
+    final todayDocId = _todayDocId();
+
     // Cache kontrol
     DailyContent? cachedAyet;
     DailyContent? cachedHadis;
@@ -74,74 +91,58 @@ class DailyContentRepository {
       return (cachedAyet, cachedHadis);
     }
 
-    // 1) Tek doküman yaklaşımı
-    try {
-      final doc = await _db
-          .collection(collectionName)
-          .doc(todayKey)
-          .get();
-      if (doc.exists) {
-        final map = doc.data() as Map<String, dynamic>;
-        DailyContent? ayet;
-        DailyContent? hadis;
-        if (map['ayet'] is Map<String, dynamic>) {
-          ayet = DailyContent.fromFirestore((map['ayet'] as Map<String, dynamic>));
-          await prefs.setString('daily_content_ayet_$todayKey', jsonEncode(ayet.toMap()));
-        }
-        if (map['hadis'] is Map<String, dynamic>) {
-          hadis = DailyContent.fromFirestore((map['hadis'] as Map<String, dynamic>));
-          await prefs.setString('daily_content_hadis_$todayKey', jsonEncode(hadis.toMap()));
-        }
-        if (ayet != null || hadis != null) {
-          return (ayet, hadis);
-        }
-      }
-    } catch (_) {
-      // yok say, fallback'e geç
-    }
+    // Firestore'dan direkt okuma: database 'daily', collections 'ayetler' ve 'hadisler'
+    DailyContent? ayet;
+    DailyContent? hadis;
 
-    // 2) Fallback: daily/ayetler/{day}, daily/hadisler/{day}
     try {
-      final today = DateTime.now();
-      final day = _dayOfYear(today).toString();
-      final ayetDoc = await _db
-          .collection('daily')
-          .doc('ayetler')
-          .collection('ayetler')
-          .doc(day)
-          .get();
-      final hadisDoc = await _db
-          .collection('daily')
-          .doc('hadisler')
-          .collection('hadisler')
-          .doc(day)
-          .get();
-
-      DailyContent? ayet;
-      DailyContent? hadis;
+      final ayetDoc = await _db.collection('ayetler').doc(todayDocId).get();
       if (ayetDoc.exists) {
-        ayet = DailyContent.fromFirestore(ayetDoc.data() as Map<String, dynamic>);
+        final data = ayetDoc.data() as Map<String, dynamic>;
+        // Doküman ID'sini data'ya ekle
+        data['id'] = todayDocId;
+        ayet = DailyContent.fromFirestore(data);
         await prefs.setString('daily_content_ayet_$todayKey', jsonEncode(ayet.toMap()));
+        AppLogger.success('Ayet başarıyla yüklendi: $todayDocId', tag: 'DailyContent');
+      } else {
+        AppLogger.warning('Ayet dokümanı bulunamadı: $todayDocId', tag: 'DailyContent');
       }
-      if (hadisDoc.exists) {
-        hadis = DailyContent.fromFirestore(hadisDoc.data() as Map<String, dynamic>);
-        await prefs.setString('daily_content_hadis_$todayKey', jsonEncode(hadis.toMap()));
+    } catch (e, stackTrace) {
+      if (e is FirebaseException) {
+        AppLogger.error('Ayet yüklenirken Firebase hatası', tag: 'DailyContent', error: '${e.code} - ${e.message}');
+      } else {
+        AppLogger.error('Ayet yüklenirken hata', tag: 'DailyContent', error: e, stackTrace: stackTrace);
       }
-      if (ayet != null || hadis != null) {
-        return (ayet, hadis);
-      }
-    } catch (_) {
-      // yoksay
     }
 
-    return (null, null);
+    try {
+      final hadisDoc = await _db.collection('hadisler').doc(todayDocId).get();
+      if (hadisDoc.exists) {
+        final data = hadisDoc.data() as Map<String, dynamic>;
+        // Doküman ID'sini data'ya ekle
+        data['id'] = todayDocId;
+        hadis = DailyContent.fromFirestore(data);
+        await prefs.setString('daily_content_hadis_$todayKey', jsonEncode(hadis.toMap()));
+        AppLogger.success('Hadis başarıyla yüklendi: $todayDocId', tag: 'DailyContent');
+      } else {
+        AppLogger.warning('Hadis dokümanı bulunamadı: $todayDocId', tag: 'DailyContent');
+      }
+    } catch (e, stackTrace) {
+      if (e is FirebaseException) {
+        AppLogger.error('Hadis yüklenirken Firebase hatası', tag: 'DailyContent', error: '${e.code} - ${e.message}');
+      } else {
+        AppLogger.error('Hadis yüklenirken hata', tag: 'DailyContent', error: e, stackTrace: stackTrace);
+      }
+    }
+
+    return (ayet, hadis);
   }
 
   /// Günlük rastgele seçim: Gün içinde aynı içerik kalır, yeni günde yeniden rastgele çekilir.
   /// İnternet yoksa en son başarılı cache (latest_*) gösterilir.
   Future<(DailyContent?, DailyContent?)> getRandomPairDailyCached() async {
     final todayKey = await _todayKey();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
 
     // 1) Günlük cache varsa direkt dön
     final cAyet = prefs.getString('daily_content_ayet_$todayKey');
@@ -158,67 +159,22 @@ class DailyContentRepository {
       return (ayet, hadis);
     }
 
-    // 2) Rastgele ayet/hadis çek
+    // 2) Günlük dokümanları kullanarak oku
     try {
-      final rng = Random();
-
-      // Olası koleksiyon yollarını sırayla dene (root ve 'daily/...' altında)
-      final List<CollectionReference<Map<String, dynamic>>> ayetCollections = [
-        _db.collection('ayetler'),
-        _db.collection('daily').doc('ayetler').collection('ayetler'),
-      ];
-      final List<CollectionReference<Map<String, dynamic>>> hadisCollections = [
-        _db.collection('hadisler'),
-        _db.collection('daily').doc('hadisler').collection('hadisler'),
-      ];
-
-      Future<DailyContent?> pickRandomById(List<CollectionReference<Map<String, dynamic>>> candidates) async {
-        for (final coll in candidates) {
-          // Maksimum id'yi bul
-          final maxSnap = await coll.orderBy('id', descending: true).limit(1).get();
-          if (maxSnap.docs.isEmpty) continue;
-          final int maxId = (maxSnap.docs.first.data()['id'] ?? 0) as int;
-          if (maxId <= 0) continue;
-
-          for (int i = 0; i < 5; i++) {
-            final int candidate = rng.nextInt(maxId) + 1; // 1..maxId
-            // 1) Doğrudan eşit id
-            final eq = await coll.where('id', isEqualTo: candidate).limit(1).get();
-            if (eq.docs.isNotEmpty) {
-              return DailyContent.fromFirestore(eq.docs.first.data());
-            }
-            // 2) Sonraki mevcut id
-            final gt = await coll.where('id', isGreaterThan: candidate).orderBy('id').limit(1).get();
-            if (gt.docs.isNotEmpty) {
-              return DailyContent.fromFirestore(gt.docs.first.data());
-            }
-            // 3) Baştan sar
-            final first = await coll.orderBy('id').limit(1).get();
-            if (first.docs.isNotEmpty) {
-              return DailyContent.fromFirestore(first.docs.first.data());
-            }
-          }
-        }
-        return null;
-      }
-
-      ayet = await pickRandomById(ayetCollections);
-      hadis = await pickRandomById(hadisCollections);
-
-      // Birini bulamazsak da kalanla devam
+      final pair = await getTodayPair();
+      ayet = pair.$1;
+      hadis = pair.$2;
       if (ayet != null) {
-        await prefs.setString('daily_content_ayet_$todayKey', jsonEncode(ayet.toMap()));
         await prefs.setString('latest_daily_content_ayet', jsonEncode(ayet.toMap()));
       }
       if (hadis != null) {
-        await prefs.setString('daily_content_hadis_$todayKey', jsonEncode(hadis.toMap()));
         await prefs.setString('latest_daily_content_hadis', jsonEncode(hadis.toMap()));
       }
       if (ayet != null || hadis != null) {
         return (ayet, hadis);
       }
     } catch (_) {
-      // yok say, latest'a düş
+      // yok say, sonraki adıma geç
     }
 
     // 3) Offline: en son başarılı cache'i kullan
@@ -234,7 +190,7 @@ class DailyContentRepository {
   }
 
   Future<void> clearOldCaches() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _prefs();
     final keys = prefs.getKeys();
     final today = await _todayKey();
     for (final k in keys) {

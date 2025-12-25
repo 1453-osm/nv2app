@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/location_model.dart';
 import '../services/location_service.dart';
+import '../utils/error_messages.dart';
 
 class LocationViewModel extends ChangeNotifier {
   final LocationService _locationService = LocationService();
@@ -9,6 +10,8 @@ class LocationViewModel extends ChangeNotifier {
   // State variables
   bool _isLoading = false;
   String _errorMessage = '';
+  ErrorCode? _errorCode;
+  Object? _errorObject;
   
   // Location data
   List<Country> _countries = [];
@@ -28,6 +31,7 @@ class LocationViewModel extends ChangeNotifier {
   // Getters
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
+  ErrorCode? get errorCode => _errorCode;
   List<Country> get countries => _countries;
   List<StateProvince> get states => _states;
   List<City> get cities => _cities;
@@ -38,7 +42,15 @@ class LocationViewModel extends ChangeNotifier {
   String get stateSearchQuery => _stateSearchQuery;
   String get citySearchQuery => _citySearchQuery;
 
-  /// Seçili konumun tam adını döndürür
+  /// UI katmanında hata mesajını oluşturur
+  String getErrorMessage(BuildContext context) {
+    if (_errorCode != null) {
+      return ErrorMessages.fromErrorCode(context, _errorCode!);
+    }
+    return _errorMessage;
+  }
+
+  /// Seçili konumun tam adını döndürür (varsayılan dil için)
   String get selectedLocationText {
     if (_selectedCity != null && _selectedState != null && _selectedCountry != null) {
       return '${_selectedCity!.name}, ${_selectedState!.name}, ${_selectedCountry!.name}';
@@ -47,7 +59,25 @@ class LocationViewModel extends ChangeNotifier {
     } else if (_selectedCountry != null) {
       return _selectedCountry!.name;
     }
-    return 'Konum seçilmedi';
+    // Bu metin artık AppLocalizations ile sağlanacak
+    // Context gerektiği için burada sabit bırakıyoruz
+    // Kullanıcı arayüzünde AppLocalizations kullanılmalı
+    return 'Konum seçilmedi'; // TODO: AppLocalizations ile değiştirilecek
+  }
+
+  /// Locale'e göre seçili konumun tam adını döndürür
+  String getSelectedLocationText(Locale locale) {
+    if (_selectedCity != null && _selectedState != null && _selectedCountry != null) {
+      return '${_selectedCity!.getDisplayName(locale)}, ${_selectedState!.getDisplayName(locale)}, ${_selectedCountry!.getDisplayName(locale)}';
+    } else if (_selectedState != null && _selectedCountry != null) {
+      return '${_selectedState!.getDisplayName(locale)}, ${_selectedCountry!.getDisplayName(locale)}';
+    } else if (_selectedCountry != null) {
+      return _selectedCountry!.getDisplayName(locale);
+    }
+    // Bu metin artık AppLocalizations ile sağlanacak
+    // Context gerektiği için burada sabit bırakıyoruz
+    // Kullanıcı arayüzünde AppLocalizations kullanılmalı
+    return 'Konum seçilmedi'; // TODO: AppLocalizations ile değiştirilecek
   }
 
   /// Konum seçimi tamamlandı mı?
@@ -67,12 +97,13 @@ class LocationViewModel extends ChangeNotifier {
 
   /// Ülke listesini yükler
   Future<void> loadCountries() async {
+    if (_isLoading) return;
     _setLoading(true);
     try {
       _countries = await _locationService.getCountries();
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Ülke listesi yüklenirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.countryListLoadError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -80,12 +111,13 @@ class LocationViewModel extends ChangeNotifier {
 
   /// Eyalet listesini yükler
   Future<void> loadStates(int countryId) async {
+    if (_isLoading) return;
     _setLoading(true);
     try {
       _states = await _locationService.getStatesByCountry(countryId);
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Eyalet listesi yüklenirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.stateListLoadError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -93,12 +125,13 @@ class LocationViewModel extends ChangeNotifier {
 
   /// Şehir listesini yükler
   Future<void> loadCities(int stateId) async {
+    if (_isLoading) return;
     _setLoading(true);
     try {
       _cities = await _locationService.getCitiesByState(stateId);
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Şehir listesi yüklenirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.cityListLoadError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -178,7 +211,7 @@ class LocationViewModel extends ChangeNotifier {
         await _locationService.saveSelectedLocation(selectedLocation!);
       }
     } catch (e) {
-      _errorMessage = 'Konum kaydedilirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.locationSaveError(e.toString());
       notifyListeners();
     }
   }
@@ -202,13 +235,14 @@ class LocationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _errorMessage = 'Kaydedilen konum yüklenirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.savedLocationLoadError(e.toString());
       notifyListeners();
     }
   }
 
   /// Uygulama başlatıldığında çağrılır
   Future<void> initialize() async {
+    if (_isLoading) return;
     _setLoading(true);
     try {
       // Önce kaydedilen konumu kontrol et
@@ -223,7 +257,7 @@ class LocationViewModel extends ChangeNotifier {
       
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Konum başlatılırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.locationInitError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -236,7 +270,7 @@ class LocationViewModel extends ChangeNotifier {
       _countries = await _locationService.searchCountries(query);
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Ülke arama yapılırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.countrySearchError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -249,7 +283,7 @@ class LocationViewModel extends ChangeNotifier {
       _states = await _locationService.searchStates(query, countryId);
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Eyalet arama yapılırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.stateSearchError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -262,7 +296,7 @@ class LocationViewModel extends ChangeNotifier {
       _cities = await _locationService.searchCities(query, stateId);
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Şehir arama yapılırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.citySearchError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -271,13 +305,21 @@ class LocationViewModel extends ChangeNotifier {
   /// Tüm şehirler içinde arama yapar (ana ekrandaki gibi)
   Future<void> searchAllCities(String query) async {
     try {
+      _citySearchQuery = query;
       _cities = await _locationService.searchAllCities(query);
       _errorMessage = '';
       notifyListeners();
     } catch (e) {
-      _errorMessage = 'Şehir arama yapılırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.citySearchError(e.toString());
       notifyListeners();
     }
+  }
+
+  /// Şehir arama sonuçlarını temizler
+  void clearCitySearchResults() {
+    _cities = [];
+    _citySearchQuery = '';
+    notifyListeners();
   }
 
   /// Şehir ID'sine göre tam konum bilgilerini alır ve seçer
@@ -295,7 +337,7 @@ class LocationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _errorMessage = 'Konum seçilirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.locationSelectError(e.toString());
       notifyListeners();
     }
   }
@@ -314,7 +356,7 @@ class LocationViewModel extends ChangeNotifier {
       
       _errorMessage = '';
     } catch (e) {
-      _errorMessage = 'Varsayılan konum yüklenirken hata oluştu: $e';
+      _errorMessage = ErrorMessages.defaultLocationLoadError(e.toString());
     } finally {
       _setLoading(false);
     }
@@ -335,14 +377,7 @@ class LocationViewModel extends ChangeNotifier {
 
   /// Seçili konumu döndürür
   SelectedLocation? getSelectedLocation() {
-    if (_selectedCity != null && _selectedState != null && _selectedCountry != null) {
-      return SelectedLocation(
-        country: _selectedCountry!,
-        state: _selectedState!,
-        city: _selectedCity!,
-      );
-    }
-    return null;
+    return selectedLocation;
   }
 
   /// GPS ile mevcut konumu alır ve seçer
@@ -352,7 +387,7 @@ class LocationViewModel extends ChangeNotifier {
       // GPS konumunu al
       Position? position = await _locationService.getCurrentLocation();
       if (position == null) {
-        _errorMessage = 'GPS konumu alınamadı';
+        _errorMessage = ErrorMessages.gpsLocationNotAvailable(null);
         return;
       }
 
@@ -368,10 +403,10 @@ class LocationViewModel extends ChangeNotifier {
         
         _errorMessage = '';
       } else {
-        _errorMessage = 'Konumunuz için şehir bulunamadı';
+        _errorMessage = ErrorMessages.cityNotFoundForLocation(null);
       }
     } catch (e) {
-      _errorMessage = 'GPS konumu alınırken hata oluştu: $e';
+      _errorMessage = ErrorMessages.gpsLocationFetchError(e.toString());
     } finally {
       _setLoading(false);
     }

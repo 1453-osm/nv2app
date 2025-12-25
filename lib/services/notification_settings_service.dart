@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
+import '../utils/app_keys.dart';
+import '../utils/app_logger.dart';
 
+/// Tek bir bildirim ayarını temsil eder.
 class NotificationSetting {
   final String id;
   final String title;
@@ -22,6 +25,7 @@ class NotificationSetting {
   });
 
   NotificationSetting copyWith({
+    String? title,
     bool? enabled,
     int? minutes,
     bool? pickerVisible,
@@ -30,7 +34,7 @@ class NotificationSetting {
   }) {
     return NotificationSetting(
       id: id,
-      title: title,
+      title: title ?? this.title,
       enabled: enabled ?? this.enabled,
       minutes: minutes ?? this.minutes,
       pickerVisible: pickerVisible ?? this.pickerVisible,
@@ -38,7 +42,7 @@ class NotificationSetting {
       soundPickerVisible: soundPickerVisible ?? this.soundPickerVisible,
     );
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -50,14 +54,23 @@ class NotificationSetting {
         other.sound == sound &&
         other.soundPickerVisible == soundPickerVisible;
   }
-  
+
   @override
   int get hashCode {
     return Object.hash(id, enabled, minutes, pickerVisible, sound, soundPickerVisible);
   }
+
+  @override
+  String toString() => 'NotificationSetting(id: $id, enabled: $enabled, minutes: $minutes)';
 }
 
-/// Bildirim ayarlarını yöneten singleton service
+/// Bildirim ayarlarını yöneten singleton servis.
+///
+/// Bu servis şunları yönetir:
+/// - Namaz vakti bildirimleri (İmsak, Güneş, Öğle, İkindi, Akşam, Yatsı)
+/// - Cuma bildirimi
+/// - Dua bildirimi
+/// - Her bildirim için dakika ve ses ayarları
 class NotificationSettingsService extends ChangeNotifier {
   static final NotificationSettingsService _instance = NotificationSettingsService._internal();
   factory NotificationSettingsService() => _instance;
@@ -65,79 +78,50 @@ class NotificationSettingsService extends ChangeNotifier {
 
   List<NotificationSetting> _settings = [];
   bool _isLoaded = false;
+  SharedPreferences? _prefsCache;
 
   List<NotificationSetting> get settings => List.unmodifiable(_settings);
   bool get isLoaded => _isLoaded;
 
-  /// Ayarları yükle (sadece bir kez)
+  /// Varsayılan bildirim ayarları
+  static const List<NotificationSetting> _defaultSettings = [
+    NotificationSetting(id: AppKeys.notifIdImsak, title: 'İmsak', minutes: 5),
+    NotificationSetting(id: AppKeys.notifIdGunes, title: 'Güneş', minutes: 0),
+    NotificationSetting(id: AppKeys.notifIdOgle, title: 'Öğle', minutes: 5),
+    NotificationSetting(id: AppKeys.notifIdIkindi, title: 'İkindi', minutes: 5),
+    NotificationSetting(id: AppKeys.notifIdAksam, title: 'Akşam', minutes: 5),
+    NotificationSetting(id: AppKeys.notifIdYatsi, title: 'Yatsı', minutes: 5),
+    NotificationSetting(id: AppKeys.notifIdCuma, title: 'Cuma', minutes: 30),
+    NotificationSetting(id: AppKeys.notifIdDua, title: 'Dua Bildirimi', minutes: 0),
+  ];
+
+  /// Ayarları yükler (sadece bir kez).
   Future<void> loadSettings() async {
     if (_isLoaded) {
-      if (kDebugMode) {
-        print('NotificationSettingsService: Settings already loaded');
-      }
+      AppLogger.debug('Settings already loaded', tag: 'NotificationSettings');
       return;
     }
 
-    if (kDebugMode) {
-      print('NotificationSettingsService: Loading settings...');
-    }
+    final stopwatch = AppLogger.startTimer('NotificationSettings.loadSettings');
 
-    // Varsayılan ayarları oluştur
-    _settings = [
-      const NotificationSetting(id: 'imsak', title: 'İmsak', minutes: 5),
-      const NotificationSetting(id: 'gunes', title: 'Güneş', minutes: 0),
-      const NotificationSetting(id: 'ogle', title: 'Öğle', minutes: 5),
-      const NotificationSetting(id: 'ikindi', title: 'İkindi', minutes: 5),
-      const NotificationSetting(id: 'aksam', title: 'Akşam', minutes: 5),
-      const NotificationSetting(id: 'yatsi', title: 'Yatsı', minutes: 5),
-      const NotificationSetting(id: 'cuma', title: 'Cuma', minutes: 30),
-      const NotificationSetting(id: 'dua', title: 'Dua Bildirimi', minutes: 0),
-    ];
+    // Varsayılan ayarları başlat
+    _settings = List.from(_defaultSettings);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Kaydedilmiş ayarları yükle
+      _prefsCache ??= await SharedPreferences.getInstance();
+      final prefs = _prefsCache!;
+
       final Set<String> availableSoundIds =
           SettingsConstants.soundOptions.map((e) => e.id).toSet();
 
       final List<NotificationSetting> loadedSettings = [];
 
       for (final setting in _settings) {
-        final String base = 'nv_notif_${setting.id}_';
-        final bool storedEnabled = prefs.getBool('${base}enabled') ?? setting.enabled;
-        final int storedMinutes = prefs.getInt('${base}minutes') ?? setting.minutes;
-        final String storedSound = prefs.getString('${base}sound') ?? setting.sound;
-
-        if (kDebugMode) {
-          print('NotificationSettingsService: Loading ${setting.id} - enabled: $storedEnabled, minutes: $storedMinutes, sound: $storedSound');
-        }
-
-        String sound = storedSound;
-        if (!availableSoundIds.contains(sound)) {
-          sound = 'default';
-        }
-
-        final NotificationSetting candidate = setting.copyWith(
-          enabled: storedEnabled,
-          minutes: storedMinutes,
-          sound: sound,
-        );
-
-        final NotificationSetting sanitized = _sanitizeSetting(candidate);
-        loadedSettings.add(sanitized);
-
-        if (sanitized.enabled != storedEnabled ||
-            sanitized.minutes != storedMinutes ||
-            sanitized.sound != storedSound) {
-          if (kDebugMode) {
-            print('NotificationSettingsService: Adjusted ${setting.id} -> enabled: ${sanitized.enabled}, minutes: ${sanitized.minutes}, sound: ${sanitized.sound}');
-          }
-          await _persistSetting(sanitized);
-        }
+        final loadedSetting = _loadSettingFromPrefs(prefs, setting, availableSoundIds);
+        loadedSettings.add(loadedSetting);
       }
 
-      // Ek (çoklu) bildirimleri SharedPreferences anahtarlarından keşfet ve ekle
+      // Ek (çoklu) bildirimleri keşfet ve ekle
       final List<NotificationSetting> extraSettings =
           _loadAdditionalSettingsFromPrefs(prefs, loadedSettings, availableSoundIds);
 
@@ -148,34 +132,57 @@ class NotificationSettingsService extends ChangeNotifier {
 
       _isLoaded = true;
       notifyListeners();
-      
-      if (kDebugMode) {
-        print('NotificationSettingsService: Settings loaded successfully');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('NotificationSettingsService: Error loading settings: $e');
-      }
+
+      AppLogger.stopTimer(stopwatch, 'NotificationSettings.loadSettings');
+      AppLogger.success('Loaded ${_settings.length} notification settings', tag: 'NotificationSettings');
+    } catch (e, stackTrace) {
+      AppLogger.error('Error loading settings', tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
+      _isLoaded = true; // Hata olsa bile varsayılanlarla devam et
     }
   }
 
-  /// Ayarı güncelle ve kaydet
+  /// Tek bir ayarı SharedPreferences'tan yükler.
+  NotificationSetting _loadSettingFromPrefs(
+    SharedPreferences prefs,
+    NotificationSetting setting,
+    Set<String> availableSoundIds,
+  ) {
+    final String base = '${AppKeys.notificationPrefix}${setting.id}_';
+    final bool storedEnabled = prefs.getBool('${base}enabled') ?? setting.enabled;
+    final int storedMinutes = prefs.getInt('${base}minutes') ?? setting.minutes;
+    final String storedSound = prefs.getString('${base}sound') ?? setting.sound;
+
+    String sound = storedSound;
+    if (!availableSoundIds.contains(sound)) {
+      sound = 'default';
+    }
+
+    final NotificationSetting candidate = setting.copyWith(
+      enabled: storedEnabled,
+      minutes: storedMinutes,
+      sound: sound,
+    );
+
+    return _sanitizeSetting(candidate);
+  }
+
+  /// Ayarı günceller ve kaydeder.
   Future<void> updateSetting(String id, NotificationSetting newSetting) async {
     final sanitized = _sanitizeSetting(newSetting);
     final index = _settings.indexWhere((setting) => setting.id == id);
+
     if (index != -1) {
       _settings[index] = sanitized;
     } else {
-      // Daha önce olmayan (ör. imsak_1) yeni bir bildirim ekleniyorsa listeye ekle
+      // Yeni bildirim ekleniyor
       _settings.add(sanitized);
     }
-    notifyListeners();
 
-    // Servis henüz yüklenmemiş olsa bile kalıcılığı garanti et
+    notifyListeners();
     await _persistSetting(sanitized);
   }
 
-  /// Picker görünürlüğünü güncelle (kaydetme)
+  /// Picker görünürlüğünü günceller (kaydetmez).
   void updatePickerVisibility(String id, {bool? pickerVisible, bool? soundPickerVisible}) {
     final index = _settings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
@@ -187,7 +194,7 @@ class NotificationSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Tüm picker'ları kapat
+  /// Tüm picker'ları kapatır.
   void closeAllPickers() {
     for (int i = 0; i < _settings.length; i++) {
       _settings[i] = _settings[i].copyWith(
@@ -198,7 +205,7 @@ class NotificationSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ID'ye göre ayar getir
+  /// ID'ye göre ayar getirir.
   NotificationSetting? getSetting(String id) {
     try {
       return _settings.firstWhere((setting) => setting.id == id);
@@ -207,44 +214,36 @@ class NotificationSettingsService extends ChangeNotifier {
     }
   }
 
-  /// Ayarı SharedPreferences'a kaydet
+  /// Ayarı SharedPreferences'a kaydeder.
   Future<void> _persistSetting(NotificationSetting setting) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String base = 'nv_notif_${setting.id}_';
-      
-      if (kDebugMode) {
-        print('NotificationSettingsService: Saving ${setting.id} - enabled: ${setting.enabled}, minutes: ${setting.minutes}, sound: ${setting.sound}');
-      }
-      
-      await prefs.setBool('${base}enabled', setting.enabled);
-      await prefs.setInt('${base}minutes', setting.minutes);
-      await prefs.setString('${base}sound', setting.sound);
-      
-      // Kaydetme işleminin tamamlandığından emin olmak için reload et
+      _prefsCache ??= await SharedPreferences.getInstance();
+      final prefs = _prefsCache!;
+      final String base = '${AppKeys.notificationPrefix}${setting.id}_';
+
+      await Future.wait([
+        prefs.setBool('${base}enabled', setting.enabled),
+        prefs.setInt('${base}minutes', setting.minutes),
+        prefs.setString('${base}sound', setting.sound),
+      ]);
+
       await prefs.reload();
-      
-      if (kDebugMode) {
-        print('NotificationSettingsService: Successfully saved ${setting.id}');
-        // Doğrulama: Kaydedilen değeri oku ve kontrol et
-        final savedMinutes = prefs.getInt('${base}minutes');
-        print('NotificationSettingsService: Verification - saved minutes value: $savedMinutes');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('NotificationSettingsService: Error saving ${setting.id}: $e');
-      }
+
+      AppLogger.debug('Saved ${setting.id}: enabled=${setting.enabled}, minutes=${setting.minutes}', tag: 'NotificationSettings');
+    } catch (e, stackTrace) {
+      AppLogger.error('Error saving ${setting.id}', tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
     }
   }
 
+  /// Ayarı geçerli değerlerle düzenler.
   NotificationSetting _sanitizeSetting(NotificationSetting setting) {
-    // Cuma için minimum dakikayı baz alan liste, diğerleri için ortak liste
-    List<int> minutesList = setting.id == 'cuma'
+    // Cuma için minimum dakikayı 15, diğerleri için normal liste
+    List<int> minutesList = setting.id == AppKeys.notifIdCuma
         ? SettingsConstants.notificationMinutes.where((m) => m >= 15).toList()
         : List<int>.from(SettingsConstants.notificationMinutes);
 
     if (minutesList.isEmpty) {
-      minutesList = <int>[setting.id == 'cuma' ? 15 : setting.minutes];
+      minutesList = <int>[setting.id == AppKeys.notifIdCuma ? 15 : setting.minutes];
     } else {
       minutesList.sort();
     }
@@ -254,7 +253,7 @@ class NotificationSettingsService extends ChangeNotifier {
       minutes = _nearestSupportedMinute(minutes, minutesList);
     }
 
-    if (setting.id == 'cuma' && minutes < 15) {
+    if (setting.id == AppKeys.notifIdCuma && minutes < 15) {
       minutes = 15;
     }
 
@@ -264,8 +263,7 @@ class NotificationSettingsService extends ChangeNotifier {
     return setting;
   }
 
-  /// SharedPreferences içindeki nv_notif_* anahtarlarından, varsayılan listede olmayan
-  /// ek bildirimleri (ör. imsak_1, imsak_2) keşfeder.
+  /// SharedPreferences'tan ek bildirimleri (imsak_1, imsak_2, vb.) keşfeder.
   List<NotificationSetting> _loadAdditionalSettingsFromPrefs(
     SharedPreferences prefs,
     List<NotificationSetting> baseSettings,
@@ -283,7 +281,7 @@ class NotificationSettingsService extends ChangeNotifier {
       final String baseId = baseEntry.key;
       final NotificationSetting baseSetting = baseEntry.value;
       final RegExp pattern =
-          RegExp('^nv_notif_${RegExp.escape(baseId)}_(\\d+)_enabled\$');
+          RegExp('^${RegExp.escape(AppKeys.notificationPrefix)}${RegExp.escape(baseId)}_(\\d+)_enabled\$');
 
       for (final key in keys) {
         final match = pattern.firstMatch(key);
@@ -296,13 +294,10 @@ class NotificationSettingsService extends ChangeNotifier {
         if (processedIds.contains(extraId)) continue;
         processedIds.add(extraId);
 
-        final String prefBase = 'nv_notif_${extraId}_';
-        final bool storedEnabled =
-            prefs.getBool('${prefBase}enabled') ?? baseSetting.enabled;
-        final int storedMinutes =
-            prefs.getInt('${prefBase}minutes') ?? baseSetting.minutes;
-        final String storedSound =
-            prefs.getString('${prefBase}sound') ?? baseSetting.sound;
+        final String prefBase = '${AppKeys.notificationPrefix}${extraId}_';
+        final bool storedEnabled = prefs.getBool('${prefBase}enabled') ?? baseSetting.enabled;
+        final int storedMinutes = prefs.getInt('${prefBase}minutes') ?? baseSetting.minutes;
+        final String storedSound = prefs.getString('${prefBase}sound') ?? baseSetting.sound;
 
         String sound = storedSound;
         if (!availableSoundIds.contains(sound)) {
@@ -319,21 +314,18 @@ class NotificationSettingsService extends ChangeNotifier {
           soundPickerVisible: false,
         );
 
-        final NotificationSetting sanitized = _sanitizeSetting(candidate);
-        extras.add(sanitized);
+        extras.add(_sanitizeSetting(candidate));
       }
     }
 
-    if (kDebugMode && extras.isNotEmpty) {
-      print(
-        'NotificationSettingsService: Loaded additional settings from prefs: '
-        '${extras.map((e) => e.id).toList()}',
-      );
+    if (extras.isNotEmpty) {
+      AppLogger.debug('Loaded ${extras.length} additional settings: ${extras.map((e) => e.id).toList()}', tag: 'NotificationSettings');
     }
 
     return extras;
   }
 
+  /// Desteklenen değere en yakın dakikayı bulur.
   int _nearestSupportedMinute(int value, List<int> list) {
     if (list.isEmpty) return value;
     int best = list.first;

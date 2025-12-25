@@ -4,6 +4,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart' as intl;
+import 'l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
@@ -17,6 +20,7 @@ import 'viewmodels/location_bar_viewmodel.dart';
 import 'viewmodels/settings_viewmodel.dart';
 import 'viewmodels/qibla_viewmodel.dart';
 import 'services/theme_service.dart';
+import 'services/locale_service.dart';
 import 'views/onboarding_view.dart';
 import 'views/home_view.dart';
 import 'utils/constants.dart';
@@ -25,9 +29,22 @@ import 'services/notification_settings_service.dart';
 import 'viewmodels/daily_content_viewmodel.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(() async {
+  runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await dotenv.load(fileName: "assets/env");
+    await _ensureDateFormattingInitialized();
+    
+    // dotenv yükleme - web için opsiyonel
+    try {
+      await dotenv.load(fileName: "assets/env");
+    } catch (e) {
+      // Web'de dotenv yüklenemezse devam et (opsiyonel)
+      if (kIsWeb && kDebugMode) {
+        debugPrint('dotenv loading skipped for web: $e');
+      } else if (!kIsWeb) {
+        // Mobil platformlarda dotenv zorunlu
+        rethrow;
+      }
+    }
 
     // Giriş örnekleme (touch resampling) ve resim önbelleği optimizasyonu
     GestureBinding.instance.resamplingEnabled = true;
@@ -42,27 +59,46 @@ Future<void> main() async {
       return true;
     };
 
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    // Firebase initialization - web için opsiyonel
+    if (!kIsWeb) {
+      try {
+        await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      } catch (e) {
+        // Mobil platformlarda Firebase zorunlu
+        if (kDebugMode) {
+          debugPrint('Firebase initialization failed: $e');
+        }
+        rethrow;
+      }
+    } else {
+      // Web'de Firebase yapılandırılmamışsa atla
+      if (kDebugMode) {
+        debugPrint('Firebase initialization skipped for web');
+      }
+    }
 
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // SystemChrome ayarları sadece mobil platformlarda geçerlidir
+    if (!kIsWeb) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
 
-    // Status bar tamamen şeffaf, içerik kenarlara uzansın
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // Status bar tamamen şeffaf, içerik kenarlara uzansın
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
-        systemStatusBarContrastEnforced: false,
-        systemNavigationBarContrastEnforced: false,
-      ),
-    );
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemStatusBarContrastEnforced: false,
+          systemNavigationBarContrastEnforced: false,
+        ),
+      );
+    }
 
     runApp(const MyApp());
   }, (error, stack) {
@@ -82,13 +118,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final ThemeService _themeService;
+  late final LocaleService _localeService;
+  late final NotificationSettingsService _notificationSettingsService;
+  late final NotificationSchedulerService _notificationSchedulerService;
   Timer? _dynamicColorTimer;
 
   @override
   void initState() {
     super.initState();
     _themeService = ThemeService();
-    _initializeTheme();
+    _localeService = LocaleService();
+    _notificationSettingsService = NotificationSettingsService();
+    _notificationSchedulerService = NotificationSchedulerService.instance;
+    _initializeServices();
     _startDynamicColorTimer();
   }
 
@@ -102,18 +144,30 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  Future<void> _initializeTheme() async {
-    await _themeService.loadSettings();
-    // Bildirim ayarlarını yükle
-    await NotificationSettingsService().loadSettings();
+  Future<void> _initializeServices() async {
+    await Future.wait([
+      _themeService.loadSettings(),
+      _localeService.loadSavedLocale(),
+      _notificationSettingsService.loadSettings(),
+    ]);
+    // Locale yüklendikten sonra MaterialApp'i rebuild et
+    if (mounted) {
+      setState(() {});
+    }
     // Bildirim planlayıcıyı başlat (izinler onboarding butonlarıyla istenecek)
-    await NotificationSchedulerService.instance.initialize();
+    // Web'de bildirim servisleri desteklenmiyor
+    if (!kIsWeb) {
+      await _notificationSchedulerService.initialize();
     // Uygulama açıldığında (reboot sonrası dahil) bugünün bildirimlerini yeniden planla
-    await NotificationSchedulerService.instance.rescheduleTodayNotifications();
+      await _notificationSchedulerService.rescheduleTodayNotifications();
+    }
   }
 
   // Dinamik renk güncellemesi için optimize edilmiş timer
   void _startDynamicColorTimer() {
+    if (AnimationConstants.themeUpdateInterval <= Duration.zero) {
+      return;
+    }
     // Timer'ı sadece gerektiğinde başlat
     _dynamicColorTimer?.cancel();
     _dynamicColorTimer = Timer.periodic(
@@ -137,6 +191,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider.value(
           value: _themeService,
         ),
+        ChangeNotifierProvider.value(
+          value: _localeService,
+        ),
         ChangeNotifierProvider(
           create: (_) => OnboardingViewModel(),
         ),
@@ -152,9 +209,19 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         // Lazy loaded services - created only when needed
-        ChangeNotifierProvider(
-          create: (_) => PrayerTimesViewModel(),
+        ChangeNotifierProxyProvider<LocaleService, PrayerTimesViewModel>(
           lazy: true,
+          create: (context) {
+            final localeService = context.read<LocaleService>();
+            final vm = PrayerTimesViewModel();
+            vm.updateLocale(localeService.currentLocale);
+            return vm;
+          },
+          update: (context, localeService, vm) {
+            final targetVm = vm ?? PrayerTimesViewModel();
+            targetVm.updateLocale(localeService.currentLocale);
+            return targetVm;
+          },
         ),
         ChangeNotifierProvider(
           create: (_) => LocationBarViewModel(),
@@ -164,13 +231,29 @@ class _MyAppState extends State<MyApp> {
           create: (_) => QiblaViewModel(),
           lazy: true,
         ),
-        ChangeNotifierProvider(
-          create: (_) => DailyContentViewModel()..initialize(),
+        ChangeNotifierProxyProvider<LocaleService, DailyContentViewModel>(
           lazy: true,
+          create: (context) {
+            final localeService = context.read<LocaleService>();
+            final vm = DailyContentViewModel();
+            vm.attachLocaleService(localeService);
+            vm.initialize(preferredLang: localeService.currentLocale.languageCode);
+            return vm;
+          },
+          update: (context, localeService, vm) {
+            if (vm == null) {
+              final newVm = DailyContentViewModel();
+              newVm.attachLocaleService(localeService);
+              newVm.initialize(preferredLang: localeService.currentLocale.languageCode);
+              return newVm;
+            }
+            vm.attachLocaleService(localeService);
+            return vm;
+          },
         ),
       ],
-      child: Consumer2<SettingsViewModel, ThemeService>(
-        builder: (context, settingsVm, themeService, child) {
+      child: Consumer3<SettingsViewModel, ThemeService, LocaleService>(
+        builder: (context, settingsVm, themeService, localeService, child) {
           return DynamicColorBuilder(
             builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
               // Sistem dinamik şemaları servise aktar (yalnızca değiştiğinde etkili olur)
@@ -182,12 +265,27 @@ class _MyAppState extends State<MyApp> {
                 title: AppConstants.appTitle,
                 debugShowCheckedModeBanner: false,
                 scrollBehavior: const _AppScrollBehavior(),
+                locale: localeService.currentLocale,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('tr', ''), // Türkçe
+                  Locale('en', ''), // İngilizce
+                  Locale('ar', ''), // Arapça
+                ],
                 theme: themeService.buildTheme(brightness: Brightness.light),
                 darkTheme: themeService.buildTheme(brightness: Brightness.dark),
                 themeMode: _convertThemeMode(settingsVm.themeMode),
                 builder: (context, child) {
-                  // MediaQuery optimizasyonu - sadece gerekli değerleri kopyala
-                  return MediaQuery(
+                  // RTL desteği için Directionality ekle
+                  final textDirection = localeService.textDirection;
+                  return Directionality(
+                    textDirection: textDirection,
+                    child: MediaQuery(
                     data: MediaQuery.of(context).copyWith(
                       textScaler: const TextScaler.linear(1.0),
                     ),
@@ -207,7 +305,8 @@ class _MyAppState extends State<MyApp> {
                       ),
                       child: child!,
                     ),
-                  );
+                  ),
+                 );
                 },
                 home: const AppInitializer(),
                 routes: {
@@ -267,16 +366,18 @@ class _AppInitializerState extends State<AppInitializer> {
   }
 
   Future<void> _initializeApp() async {
+    final onboardingVm = context.read<OnboardingViewModel>();
+    final locationVm = context.read<LocationViewModel>();
     try {
       // Paralel olarak core servisleri initialize et
       await Future.wait([
-        context.read<OnboardingViewModel>().initialize(),
-        context.read<LocationViewModel>().initialize(),
+        onboardingVm.initialize(),
+        locationVm.initialize(),
       ]);
       
       // Prayer times'ı sadece location varsa ve async olarak yükle
       if (mounted) {
-        final savedLocation = context.read<LocationViewModel>().selectedLocation;
+        final savedLocation = locationVm.selectedLocation;
         if (savedLocation != null) {
           // Prayer times'ı background'da yükle, UI'yi bloke etme
           unawaited(
@@ -302,9 +403,13 @@ class _AppInitializerState extends State<AppInitializer> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: SizedBox.shrink(),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.primary,
+            ),
+          ),
         ),
       );
     }
@@ -314,9 +419,13 @@ class _AppInitializerState extends State<AppInitializer> {
       builder: (context, onboardingVm, locationVm, child) {
         // Eğer hala başlatılmadıysa, yükleme göster
         if (!onboardingVm.isInitialized) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
-              child: SizedBox.shrink(),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
           );
         }
@@ -330,4 +439,18 @@ class _AppInitializerState extends State<AppInitializer> {
       },
     );
   }
+}
+
+Future<void> _ensureDateFormattingInitialized() async {
+  final localeCodes = LocaleService.supportedLocales
+      .map(_localeCodeForIntl)
+      .toSet();
+  await Future.wait(localeCodes.map((code) => intl.initializeDateFormatting(code)));
+}
+
+String _localeCodeForIntl(Locale locale) {
+  if (locale.countryCode != null && locale.countryCode!.isNotEmpty) {
+    return '${locale.languageCode}_${locale.countryCode}';
+  }
+  return locale.languageCode;
 }

@@ -1,1 +1,1674 @@
-[{"id":1,"code":"NORTH CYPRUS","name":"KUZEY KIBRIS","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":2,"code":"TÜRKİYE","name":"TÜRKİYE","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":3,"code":"MONACO","name":"MONAKO","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":4,"code":"NETHERLANDS","name":"HOLLANDA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":5,"code":"AZERBAIJAN","name":"AZERBAYCAN","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":6,"code":"ESTONYA","name":"ESTONYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":7,"code":"HUNGARY","name":"MACARISTAN","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":8,"code":"ITALY","name":"ITALYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":9,"code":"BOSNIA-HERZEGOVINA","name":"BOSNA HERSEK","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":10,"code":"VATIKAN","name":"VATIKAN","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":11,"code":"BELGIUM","name":"BELCIKA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":12,"code":"SWEDEN","name":"ISVEC","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":13,"code":"GERMANY","name":"ALMANYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":14,"code":"SLOVAKIA","name":"SLOVAKYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":15,"code":"UNITED KINGDOM","name":"INGILTERE","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":16,"code":"CZECH REPUBLIC","name":"CEK CUMHURIYETI","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":17,"code":"ANDORRA","name":"ANDORRA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":18,"code":"KOSOVA","name":"KOSOVA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":19,"code":"SLOVENIA","name":"SLOVENYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":20,"code":"LATVIA","name":"LETONYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":21,"code":"FRANCE","name":"FRANSA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":22,"code":"GREECE","name":"YUNANISTAN","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":23,"code":"SPAIN","name":"ISPANYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":24,"code":"MALTA","name":"MALTA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":25,"code":"ALBANIA","name":"ARNAVUTLUK","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":26,"code":"DENMARK","name":"DANIMARKA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":27,"code":"SIRBISTAN","name":"SIRBISTAN","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":28,"code":"MACEDONIA","name":"MAKEDONYA","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":29,"code":"UKRAINE-KRYM","name":"UKRAYNA-KIRIM","created_at":"2025-05-11 03:42:55","updated_at":"2025-05-11 03:42:55"},{"id":30,"code":"CROATIA","name":"HIRVATISTAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":31,"code":"LUXEMBOURG","name":"LUKSEMBURG","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":32,"code":"IRELAND","name":"IRLANDA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":33,"code":"USA","name":"ABD","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":34,"code":"KARADAG","name":"KARADAG","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":35,"code":"AUSTRIA","name":"AVUSTURYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":36,"code":"NORWAY","name":"NORVEC","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":37,"code":"ROMANIA","name":"ROMANYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":38,"code":"LIECHTENSTEIN","name":"LIECHTENSTEIN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":39,"code":"POLAND","name":"POLONYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":40,"code":"UKRAINE","name":"UKRAYNA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":41,"code":"FINLAND","name":"FINLANDIYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":42,"code":"LEBANON","name":"LUBNAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":44,"code":"BULGARIA","name":"BULGARISTAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":45,"code":"PORTUGAL","name":"PORTEKIZ","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":46,"code":"MOLDAVYA","name":"MOLDAVYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":47,"code":"LITHUANIA","name":"LITVANYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":48,"code":"GRONLAND","name":"GRONLAND","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":49,"code":"SWITZERLAND","name":"ISVICRE","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":51,"code":"BERMUDA","name":"BERMUDA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":52,"code":"CANADA","name":"KANADA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":53,"code":"MEXICO","name":"MEKSIKA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":54,"code":"BAHAMAS","name":"BAHAMALAR","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":55,"code":"MALAVI","name":"MALAVI","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":56,"code":"VANUATU","name":"VANUATU","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":57,"code":"KOLOMBIYA","name":"KOLOMBIYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":58,"code":"GRENADA","name":"GRENADA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":59,"code":"AUSTRALIA","name":"AVUSTRALYA","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":60,"code":"MONGOLIA","name":"MOGOLISTAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":61,"code":"CHINA","name":"CIN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":62,"code":"GEORGIA","name":"GURCISTAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":63,"code":"EKVATOR GINESI","name":"EKVATOR GINESI","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":64,"code":"SAUDI ARABIA","name":"S. ARABISTAN","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":65,"code":"BURUNDI","name":"BURUNDI","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":66,"code":"HOLLANDA ANTILLERI","name":"HOLLANDA ANTILLERI","created_at":"2025-05-11 03:42:56","updated_at":"2025-05-11 03:42:56"},{"id":67,"code":"SOUTH AFRICA","name":"GUNEY AFRIKA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":68,"code":"PUERTO RICO","name":"PORTO RIKO","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":69,"code":"PERU","name":"PERU","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":70,"code":"HAITI","name":"HAITI","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":71,"code":"TOGO","name":"TOGO","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":72,"code":"DOMINIK CUMHURIYETI","name":"DOMINIK CUMHURIYETI","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":73,"code":"LIBERYA","name":"LIBERYA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":74,"code":"SRI LANKA","name":"SRI LANKA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":75,"code":"UGANDA","name":"UGANDA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":76,"code":"NEPAL","name":"NEPAL","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":77,"code":"PAKISTAN","name":"PAKISTAN","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":79,"code":"GABON","name":"GABON","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":80,"code":"ORTA AFRIKA CUMHURIYETI","name":"ORTA AFRIKA CUMHURIYETI","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":81,"code":"RUANDA","name":"RUANDA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":82,"code":"GUYANA","name":"GUYANA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":83,"code":"BOLIVYA","name":"BOLIVYA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":84,"code":"NIJER","name":"NIJER","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":85,"code":"MIKRONEZYA","name":"MIKRONEZYA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":86,"code":"ALGERIA","name":"CEZAYIR","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":87,"code":"MARTINIK","name":"MARTINIK","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":88,"code":"KOMORLAR","name":"KOMORLAR","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":89,"code":"PANAMA","name":"PANAMA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":90,"code":"ANTIGUA VE BARBUDA","name":"ANTIGUA VE BARBUDA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":91,"code":"BURKINA FASO","name":"BURKINA FASO","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":92,"code":"KAZAKHSTAN","name":"KAZAKISTAN","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":93,"code":"UNITED ARAB EMIRATES","name":"BIRLESIK ARAP EMIRLIGI","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":94,"code":"KATAR","name":"KATAR","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":95,"code":"ETHIOPIA","name":"ETYOPYA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":96,"code":"TRINIDAT VE TOBAGO","name":"TRINIDAT VE TOBAGO","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":97,"code":"BRUNEI","name":"BRUNEI","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":98,"code":"MADAGASKAR","name":"MADAGASKAR","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":99,"code":"GUATEMALA","name":"GUATEMALA","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":100,"code":"MAKAO","name":"MAKAO","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":101,"code":"TAJIKISTAN","name":"TACIKISTAN","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":102,"code":"SENEGAL","name":"SENEGAL","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":103,"code":"MALDIVLER","name":"MALDIVLER","created_at":"2025-05-11 03:42:57","updated_at":"2025-05-11 03:42:57"},{"id":104,"code":"ARMENIA","name":"ERMENISTAN","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":105,"code":"HONDURAS","name":"HONDURAS","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":106,"code":"MORITANYA","name":"MORITANYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":107,"code":"MALAYSIA","name":"MALEZYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":108,"code":"TAIWAN","name":"TAYVAN","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":109,"code":"GAMBIYA","name":"GAMBIYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":110,"code":"TANZANYA","name":"TANZANYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":111,"code":"GUINEA","name":"GINE","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":112,"code":"REUNION","name":"REUNION","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":113,"code":"HONG KONG","name":"HONG KONG","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":114,"code":"KENYA","name":"KENYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":115,"code":"YENI KALEDONYA","name":"YENI KALEDONYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":116,"code":"JAPAN","name":"JAPONYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":117,"code":"INDONESIA","name":"ENDONEZYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":118,"code":"TUNUSIA","name":"TUNUS","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":119,"code":"JAMAIKA","name":"JAMAIKA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":120,"code":"FILDISI SAHILI","name":"FILDISI SAHILI","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":122,"code":"IZLANDA","name":"IZLANDA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":123,"code":"DOMINIK","name":"DOMINIK","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":124,"code":"IRAQ","name":"IRAK","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":125,"code":"ANGUILLA","name":"ANGUILLA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":126,"code":"PHILIPPINES","name":"FILIPINLER","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":127,"code":"NIGERIA","name":"NIJERYA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":128,"code":"SOUTH KOREA","name":"GUNEY KORE","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":129,"code":"SUDAN","name":"SUDAN","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":130,"code":"TONGA","name":"TONGA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":131,"code":"UZBEKISTAN","name":"OZBEKISTAN","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":132,"code":"BAHRAIN","name":"BAHREYN","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":133,"code":"KUWAIT","name":"KUVEYT","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":134,"code":"LAOS","name":"LAOS","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":135,"code":"VIETNAM","name":"VIETNAM","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":136,"code":"ST. LUCIA","name":"ST. LUCIA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":137,"code":"THAILAND","name":"TAYLAND","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":138,"code":"SEYSEL ADALARI","name":"SEYSEL ADALARI","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":139,"code":"EKVATOR","name":"EKVATOR","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":140,"code":"ANGOLA","name":"ANGOLA","created_at":"2025-05-11 03:42:58","updated_at":"2025-05-11 03:42:58"},{"id":141,"code":"NIKARAGUA","name":"NIKARAGUA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":142,"code":"NORTH KOREA","name":"KUZEY KORE","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":143,"code":"GHANA","name":"GANA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":144,"code":"YESIL BURUN","name":"YESIL BURUN","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":145,"code":"MOROCCO","name":"FAS","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":146,"code":"BRAZIL","name":"BREZILYA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":147,"code":"MONTSERRAT (U.K.)","name":"MONTSERRAT (U.K.)","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":148,"code":"YEMEN","name":"YEMEN","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":149,"code":"PALAU","name":"PALAU","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":150,"code":"SOMALIA","name":"SOMALI","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":151,"code":"MOZAMBIK","name":"MOZAMBIK","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":152,"code":"MALI","name":"MALI","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":153,"code":"ARUBA","name":"ARUBA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":154,"code":"MYANMAR","name":"MYANMAR","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":155,"code":"BUTAN","name":"BUTAN","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":156,"code":"CAD","name":"CAD","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":157,"code":"MAYOTTE","name":"MAYOTTE","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":158,"code":"ZAMBIYA","name":"ZAMBIYA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":159,"code":"TURKMENISTAN","name":"TURKMENISTAN","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":160,"code":"CIBUTI","name":"CIBUTI","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":161,"code":"KAMBOCYA","name":"KAMBOCYA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":162,"code":"KOSTARIKA","name":"KOSTARIKA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":163,"code":"SVALBARD","name":"SVALBARD","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":164,"code":"MAURITIUS ADASI","name":"MAURITIUS ADASI","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":165,"code":"EL SALVADOR","name":"EL SALVADOR","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":166,"code":"AFGHANISTAN","name":"AFGANISTAN","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":167,"code":"BOTSWANA","name":"BOTSVANA","created_at":"2025-05-11 03:42:59","updated_at":"2025-05-11 03:42:59"},{"id":168,"code":"KIRGIZHSTAN","name":"KIRGIZISTAN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":169,"code":"GUAM ISLAND","name":"GUAM ADASI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":170,"code":"ESWATINI","name":"ESWATINI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":171,"code":"GUADELOPE","name":"GUADELOPE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":172,"code":"SURINAM","name":"SURINAM","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":173,"code":"UMMAN","name":"UMMAN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":174,"code":"LESOTO","name":"LESOTO","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":175,"code":"ERITRE","name":"ERITRE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":176,"code":"DOGU TIMOR","name":"DOGU TIMOR","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":177,"code":"BANGLADESH","name":"BANGLADES","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":178,"code":"NIUE","name":"NIUE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":179,"code":"SINGAPORE","name":"SINGAPUR","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":180,"code":"DEMOKRATIC REPUBLIC OF THE CONGO","name":"DEMOKRATIK KONGO CUMHURIYETI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":181,"code":"BENIN","name":"BENIN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":182,"code":"BELIZE","name":"BELIZE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":183,"code":"PITCAIRN ADASI","name":"PITCAIRN ADASI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":184,"code":"CAMEROON","name":"KAMERUN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":185,"code":"PAPUA YENI GINE","name":"PAPUA YENI GINE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":186,"code":"VENEZUELA","name":"VENEZUELA","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":187,"code":"INDIA","name":"HINDISTAN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":188,"code":"BARBADOS","name":"BARBADOS","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":189,"code":"EGYPT","name":"MISIR","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":191,"code":"SYRIA","name":"SURIYE","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":192,"code":"JORDAN","name":"URDUN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":193,"code":"NEW ZEALAND","name":"YENI ZELANDA","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":194,"code":"PARAGUAY","name":"PARAGUAY","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":196,"code":"NAMIBYA","name":"NAMIBYA","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":197,"code":"FIJI","name":"FIJI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":198,"code":"SAMOA","name":"SAMOA","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":199,"code":"ARGENTINA","name":"ARJANTIN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":200,"code":"CHILE","name":"SILI","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":201,"code":"URUGUAY","name":"URUGUAY","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":202,"code":"IRAN","name":"IRAN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":203,"code":"LIBYA","name":"LIBYA","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":204,"code":"FILISTIN","name":"FILISTIN","created_at":"2025-05-11 03:43:00","updated_at":"2025-05-11 03:43:00"},{"id":205,"code":"ISRAEL","name":"ISRAIL","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":206,"code":"KUDUS","name":"KUDUS","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":207,"code":"RUSSIA","name":"RUSYA","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":208,"code":"BELARUS","name":"BELARUS","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":209,"code":"CUBA","name":"KUBA","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":210,"code":"SIERRA LEONE","name":"SIERRA LEONE","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":212,"code":"MAN ISLAND","name":"MAN ADASI","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":213,"code":"ASCENSION","name":"ASCENSION","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":214,"code":"SOUTH SUDAN","name":"GUNEY SUDAN","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":216,"code":"ZIMBABVE","name":"ZIMBABVE","created_at":"2025-05-11 03:43:01","updated_at":"2025-05-11 03:43:01"},{"id":999,"code":"TEST","name":"Test Ülke","created_at":"2025-05-11 03:55:20","updated_at":"2025-05-11 03:55:20"}]
+[
+  {
+    "id": 1,
+    "code": "NORTH CYPRUS",
+    "name": "KUZEY KIBRIS",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "قبرص الشمالية"
+  },
+  {
+    "id": 2,
+    "code": "TÜRKİYE",
+    "name": "TÜRKİYE",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "تركيا"
+  },
+  {
+    "id": 3,
+    "code": "MONACO",
+    "name": "MONAKO",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "موناكو"
+  },
+  {
+    "id": 4,
+    "code": "NETHERLANDS",
+    "name": "HOLLANDA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "هولندا"
+  },
+  {
+    "id": 5,
+    "code": "AZERBAIJAN",
+    "name": "AZERBAYCAN",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "أذربيجان"
+  },
+  {
+    "id": 6,
+    "code": "ESTONYA",
+    "name": "ESTONYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "إستونيا"
+  },
+  {
+    "id": 7,
+    "code": "HUNGARY",
+    "name": "MACARISTAN",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "المجر"
+  },
+  {
+    "id": 8,
+    "code": "ITALY",
+    "name": "ITALYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "إيطاليا"
+  },
+  {
+    "id": 9,
+    "code": "BOSNIA-HERZEGOVINA",
+    "name": "BOSNA HERSEK",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "البوسنة والهرسك"
+  },
+  {
+    "id": 10,
+    "code": "VATIKAN",
+    "name": "VATIKAN",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "الفاتيكان"
+  },
+  {
+    "id": 11,
+    "code": "BELGIUM",
+    "name": "BELCIKA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "بلجيكا"
+  },
+  {
+    "id": 12,
+    "code": "SWEDEN",
+    "name": "ISVEC",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "السويد"
+  },
+  {
+    "id": 13,
+    "code": "GERMANY",
+    "name": "ALMANYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "ألمانيا"
+  },
+  {
+    "id": 14,
+    "code": "SLOVAKIA",
+    "name": "SLOVAKYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "سلوفاكيا"
+  },
+  {
+    "id": 15,
+    "code": "UNITED KINGDOM",
+    "name": "INGILTERE",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "بريطانيا"
+  },
+  {
+    "id": 16,
+    "code": "CZECH REPUBLIC",
+    "name": "CEK CUMHURIYETI",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "جمهورية التشيك"
+  },
+  {
+    "id": 17,
+    "code": "ANDORRA",
+    "name": "ANDORRA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "أندورا"
+  },
+  {
+    "id": 18,
+    "code": "KOSOVA",
+    "name": "KOSOVA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "كوسوفو"
+  },
+  {
+    "id": 19,
+    "code": "SLOVENIA",
+    "name": "SLOVENYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "سلوفينيا"
+  },
+  {
+    "id": 20,
+    "code": "LATVIA",
+    "name": "LETONYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "لاتفيا"
+  },
+  {
+    "id": 21,
+    "code": "FRANCE",
+    "name": "FRANSA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "فرنسا"
+  },
+  {
+    "id": 22,
+    "code": "GREECE",
+    "name": "YUNANISTAN",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "اليونان"
+  },
+  {
+    "id": 23,
+    "code": "SPAIN",
+    "name": "ISPANYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "إسبانيا"
+  },
+  {
+    "id": 24,
+    "code": "MALTA",
+    "name": "MALTA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "مالطا"
+  },
+  {
+    "id": 25,
+    "code": "ALBANIA",
+    "name": "ARNAVUTLUK",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "ألبانيا"
+  },
+  {
+    "id": 26,
+    "code": "DENMARK",
+    "name": "DANIMARKA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "الدنمارك"
+  },
+  {
+    "id": 27,
+    "code": "SIRBISTAN",
+    "name": "SIRBISTAN",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "صربيا"
+  },
+  {
+    "id": 28,
+    "code": "MACEDONIA",
+    "name": "MAKEDONYA",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "مقدونيا"
+  },
+  {
+    "id": 29,
+    "code": "UKRAINE-KRYM",
+    "name": "UKRAYNA-KIRIM",
+    "created_at": "2025-05-11 03:42:55",
+    "updated_at": "2025-05-11 03:42:55",
+    "name_ar": "أوكرانيا-القرم"
+  },
+  {
+    "id": 30,
+    "code": "CROATIA",
+    "name": "HIRVATISTAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "كرواتيا"
+  },
+  {
+    "id": 31,
+    "code": "LUXEMBOURG",
+    "name": "LUKSEMBURG",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "لوكسمبورغ"
+  },
+  {
+    "id": 32,
+    "code": "IRELAND",
+    "name": "IRLANDA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "أيرلندا"
+  },
+  {
+    "id": 33,
+    "code": "USA",
+    "name": "ABD",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "الولايات المتحدة"
+  },
+  {
+    "id": 34,
+    "code": "KARADAG",
+    "name": "KARADAG",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "الجبل الأسود"
+  },
+  {
+    "id": 35,
+    "code": "AUSTRIA",
+    "name": "AVUSTURYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "النمسا"
+  },
+  {
+    "id": 36,
+    "code": "NORWAY",
+    "name": "NORVEC",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "النرويج"
+  },
+  {
+    "id": 37,
+    "code": "ROMANIA",
+    "name": "ROMANYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "رومانيا"
+  },
+  {
+    "id": 38,
+    "code": "LIECHTENSTEIN",
+    "name": "LIECHTENSTEIN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "ليختنشتاين"
+  },
+  {
+    "id": 39,
+    "code": "POLAND",
+    "name": "POLONYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "بولندا"
+  },
+  {
+    "id": 40,
+    "code": "UKRAINE",
+    "name": "UKRAYNA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "أوكرانيا"
+  },
+  {
+    "id": 41,
+    "code": "FINLAND",
+    "name": "FINLANDIYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "فنلندا"
+  },
+  {
+    "id": 42,
+    "code": "LEBANON",
+    "name": "LUBNAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "لبنان"
+  },
+  {
+    "id": 44,
+    "code": "BULGARIA",
+    "name": "BULGARISTAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "بلغاريا"
+  },
+  {
+    "id": 45,
+    "code": "PORTUGAL",
+    "name": "PORTEKIZ",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "البرتغال"
+  },
+  {
+    "id": 46,
+    "code": "MOLDAVYA",
+    "name": "MOLDAVYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "مولدوفا"
+  },
+  {
+    "id": 47,
+    "code": "LITHUANIA",
+    "name": "LITVANYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "ليتوانيا"
+  },
+  {
+    "id": 48,
+    "code": "GRONLAND",
+    "name": "GRONLAND",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "جرينلاند"
+  },
+  {
+    "id": 49,
+    "code": "SWITZERLAND",
+    "name": "ISVICRE",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "سويسرا"
+  },
+  {
+    "id": 51,
+    "code": "BERMUDA",
+    "name": "BERMUDA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "برمودا"
+  },
+  {
+    "id": 52,
+    "code": "CANADA",
+    "name": "KANADA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "كندا"
+  },
+  {
+    "id": 53,
+    "code": "MEXICO",
+    "name": "MEKSIKA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "المكسيك"
+  },
+  {
+    "id": 54,
+    "code": "BAHAMAS",
+    "name": "BAHAMALAR",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "البهاما"
+  },
+  {
+    "id": 55,
+    "code": "MALAVI",
+    "name": "MALAVI",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "مالاوي"
+  },
+  {
+    "id": 56,
+    "code": "VANUATU",
+    "name": "VANUATU",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "فانواتو"
+  },
+  {
+    "id": 57,
+    "code": "KOLOMBIYA",
+    "name": "KOLOMBIYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "كولومبيا"
+  },
+  {
+    "id": 58,
+    "code": "GRENADA",
+    "name": "GRENADA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "غرينادا"
+  },
+  {
+    "id": 59,
+    "code": "AUSTRALIA",
+    "name": "AVUSTRALYA",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "أستراليا"
+  },
+  {
+    "id": 60,
+    "code": "MONGOLIA",
+    "name": "MOGOLISTAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "منغوليا"
+  },
+  {
+    "id": 61,
+    "code": "CHINA",
+    "name": "CIN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "الصين"
+  },
+  {
+    "id": 62,
+    "code": "GEORGIA",
+    "name": "GURCISTAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "جورجيا"
+  },
+  {
+    "id": 63,
+    "code": "EKVATOR GINESI",
+    "name": "EKVATOR GINESI",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "غينيا الاستوائية"
+  },
+  {
+    "id": 64,
+    "code": "SAUDI ARABIA",
+    "name": "S. ARABISTAN",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "السعودية"
+  },
+  {
+    "id": 65,
+    "code": "BURUNDI",
+    "name": "BURUNDI",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "بوروندي"
+  },
+  {
+    "id": 66,
+    "code": "HOLLANDA ANTILLERI",
+    "name": "HOLLANDA ANTILLERI",
+    "created_at": "2025-05-11 03:42:56",
+    "updated_at": "2025-05-11 03:42:56",
+    "name_ar": "جزر الأنتيل الهولندية"
+  },
+  {
+    "id": 67,
+    "code": "SOUTH AFRICA",
+    "name": "GUNEY AFRIKA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "جنوب أفريقيا"
+  },
+  {
+    "id": 68,
+    "code": "PUERTO RICO",
+    "name": "PORTO RIKO",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بورتوريكو"
+  },
+  {
+    "id": 69,
+    "code": "PERU",
+    "name": "PERU",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بيرو"
+  },
+  {
+    "id": 70,
+    "code": "HAITI",
+    "name": "HAITI",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "هايتي"
+  },
+  {
+    "id": 71,
+    "code": "TOGO",
+    "name": "TOGO",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "توغو"
+  },
+  {
+    "id": 72,
+    "code": "DOMINIK CUMHURIYETI",
+    "name": "DOMINIK CUMHURIYETI",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "جمهورية الدومينيكان"
+  },
+  {
+    "id": 73,
+    "code": "LIBERYA",
+    "name": "LIBERYA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "ليبيريا"
+  },
+  {
+    "id": 74,
+    "code": "SRI LANKA",
+    "name": "SRI LANKA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "سريلانكا"
+  },
+  {
+    "id": 75,
+    "code": "UGANDA",
+    "name": "UGANDA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "أوغندا"
+  },
+  {
+    "id": 76,
+    "code": "NEPAL",
+    "name": "NEPAL",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "نيبال"
+  },
+  {
+    "id": 77,
+    "code": "PAKISTAN",
+    "name": "PAKISTAN",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "باكستان"
+  },
+  {
+    "id": 79,
+    "code": "GABON",
+    "name": "GABON",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "الغابون"
+  },
+  {
+    "id": 80,
+    "code": "ORTA AFRIKA CUMHURIYETI",
+    "name": "ORTA AFRIKA CUMHURIYETI",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "جمهورية أفريقيا الوسطى"
+  },
+  {
+    "id": 81,
+    "code": "RUANDA",
+    "name": "RUANDA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "رواندا"
+  },
+  {
+    "id": 82,
+    "code": "GUYANA",
+    "name": "GUYANA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "غيانا"
+  },
+  {
+    "id": 83,
+    "code": "BOLIVYA",
+    "name": "BOLIVYA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بوليفيا"
+  },
+  {
+    "id": 84,
+    "code": "NIJER",
+    "name": "NIJER",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "النيجر"
+  },
+  {
+    "id": 85,
+    "code": "MIKRONEZYA",
+    "name": "MIKRONEZYA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "ميكرونيزيا"
+  },
+  {
+    "id": 86,
+    "code": "ALGERIA",
+    "name": "CEZAYIR",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "الجزائر"
+  },
+  {
+    "id": 87,
+    "code": "MARTINIK",
+    "name": "MARTINIK",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "مارتينيك"
+  },
+  {
+    "id": 88,
+    "code": "KOMORLAR",
+    "name": "KOMORLAR",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "جزر القمر"
+  },
+  {
+    "id": 89,
+    "code": "PANAMA",
+    "name": "PANAMA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بنما"
+  },
+  {
+    "id": 90,
+    "code": "ANTIGUA VE BARBUDA",
+    "name": "ANTIGUA VE BARBUDA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "أنتيغوا وباربودا"
+  },
+  {
+    "id": 91,
+    "code": "BURKINA FASO",
+    "name": "BURKINA FASO",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بوركينا فاسو"
+  },
+  {
+    "id": 92,
+    "code": "KAZAKHSTAN",
+    "name": "KAZAKISTAN",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "كازاخستان"
+  },
+  {
+    "id": 93,
+    "code": "UNITED ARAB EMIRATES",
+    "name": "BIRLESIK ARAP EMIRLIGI",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "الإمارات العربية المتحدة"
+  },
+  {
+    "id": 94,
+    "code": "KATAR",
+    "name": "KATAR",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "قطر"
+  },
+  {
+    "id": 95,
+    "code": "ETHIOPIA",
+    "name": "ETYOPYA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "إثيوبيا"
+  },
+  {
+    "id": 96,
+    "code": "TRINIDAT VE TOBAGO",
+    "name": "TRINIDAT VE TOBAGO",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "ترينيداد وتوباغو"
+  },
+  {
+    "id": 97,
+    "code": "BRUNEI",
+    "name": "BRUNEI",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "بروناي"
+  },
+  {
+    "id": 98,
+    "code": "MADAGASKAR",
+    "name": "MADAGASKAR",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "مدغشقر"
+  },
+  {
+    "id": 99,
+    "code": "GUATEMALA",
+    "name": "GUATEMALA",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "غواتيمالا"
+  },
+  {
+    "id": 100,
+    "code": "MAKAO",
+    "name": "MAKAO",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "ماكاو"
+  },
+  {
+    "id": 101,
+    "code": "TAJIKISTAN",
+    "name": "TACIKISTAN",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "طاجيكستان"
+  },
+  {
+    "id": 102,
+    "code": "SENEGAL",
+    "name": "SENEGAL",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "السنغال"
+  },
+  {
+    "id": 103,
+    "code": "MALDIVLER",
+    "name": "MALDIVLER",
+    "created_at": "2025-05-11 03:42:57",
+    "updated_at": "2025-05-11 03:42:57",
+    "name_ar": "جزر المالديف"
+  },
+  {
+    "id": 104,
+    "code": "ARMENIA",
+    "name": "ERMENISTAN",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "أرمينيا"
+  },
+  {
+    "id": 105,
+    "code": "HONDURAS",
+    "name": "HONDURAS",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "هندوراس"
+  },
+  {
+    "id": 106,
+    "code": "MORITANYA",
+    "name": "MORITANYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "موريتانيا"
+  },
+  {
+    "id": 107,
+    "code": "MALAYSIA",
+    "name": "MALEZYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "ماليزيا"
+  },
+  {
+    "id": 108,
+    "code": "TAIWAN",
+    "name": "TAYVAN",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "تايوان"
+  },
+  {
+    "id": 109,
+    "code": "GAMBIYA",
+    "name": "GAMBIYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "غامبيا"
+  },
+  {
+    "id": 110,
+    "code": "TANZANYA",
+    "name": "TANZANYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "تنزانيا"
+  },
+  {
+    "id": 111,
+    "code": "GUINEA",
+    "name": "GINE",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "غينيا"
+  },
+  {
+    "id": 112,
+    "code": "REUNION",
+    "name": "REUNION",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "ريونيون"
+  },
+  {
+    "id": 113,
+    "code": "HONG KONG",
+    "name": "HONG KONG",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "هونغ كونغ"
+  },
+  {
+    "id": 114,
+    "code": "KENYA",
+    "name": "KENYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "كينيا"
+  },
+  {
+    "id": 115,
+    "code": "YENI KALEDONYA",
+    "name": "YENI KALEDONYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "كاليدونيا الجديدة"
+  },
+  {
+    "id": 116,
+    "code": "JAPAN",
+    "name": "JAPONYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "اليابان"
+  },
+  {
+    "id": 117,
+    "code": "INDONESIA",
+    "name": "ENDONEZYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "إندونيسيا"
+  },
+  {
+    "id": 118,
+    "code": "TUNUSIA",
+    "name": "TUNUS",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "تونس"
+  },
+  {
+    "id": 119,
+    "code": "JAMAIKA",
+    "name": "JAMAIKA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "جامايكا"
+  },
+  {
+    "id": 120,
+    "code": "FILDISI SAHILI",
+    "name": "FILDISI SAHILI",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "ساحل العاج"
+  },
+  {
+    "id": 122,
+    "code": "IZLANDA",
+    "name": "IZLANDA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "آيسلندا"
+  },
+  {
+    "id": 123,
+    "code": "DOMINIK",
+    "name": "DOMINIK",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "دومينيكا"
+  },
+  {
+    "id": 124,
+    "code": "IRAQ",
+    "name": "IRAK",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "العراق"
+  },
+  {
+    "id": 125,
+    "code": "ANGUILLA",
+    "name": "ANGUILLA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "أنغويلا"
+  },
+  {
+    "id": 126,
+    "code": "PHILIPPINES",
+    "name": "FILIPINLER",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "الفلبين"
+  },
+  {
+    "id": 127,
+    "code": "NIGERIA",
+    "name": "NIJERYA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "نيجيريا"
+  },
+  {
+    "id": 128,
+    "code": "SOUTH KOREA",
+    "name": "GUNEY KORE",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "كوريا الجنوبية"
+  },
+  {
+    "id": 129,
+    "code": "SUDAN",
+    "name": "SUDAN",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "السودان"
+  },
+  {
+    "id": 130,
+    "code": "TONGA",
+    "name": "TONGA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "تونغا"
+  },
+  {
+    "id": 131,
+    "code": "UZBEKISTAN",
+    "name": "OZBEKISTAN",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "أوزبكستان"
+  },
+  {
+    "id": 132,
+    "code": "BAHRAIN",
+    "name": "BAHREYN",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "البحرين"
+  },
+  {
+    "id": 133,
+    "code": "KUWAIT",
+    "name": "KUVEYT",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "الكويت"
+  },
+  {
+    "id": 134,
+    "code": "LAOS",
+    "name": "LAOS",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "لاوس"
+  },
+  {
+    "id": 135,
+    "code": "VIETNAM",
+    "name": "VIETNAM",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "فيتنام"
+  },
+  {
+    "id": 136,
+    "code": "ST. LUCIA",
+    "name": "ST. LUCIA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "سانت لوسيا"
+  },
+  {
+    "id": 137,
+    "code": "THAILAND",
+    "name": "TAYLAND",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "تايلاند"
+  },
+  {
+    "id": 138,
+    "code": "SEYSEL ADALARI",
+    "name": "SEYSEL ADALARI",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "سيشل"
+  },
+  {
+    "id": 139,
+    "code": "EKVATOR",
+    "name": "EKVATOR",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "الإكوادور"
+  },
+  {
+    "id": 140,
+    "code": "ANGOLA",
+    "name": "ANGOLA",
+    "created_at": "2025-05-11 03:42:58",
+    "updated_at": "2025-05-11 03:42:58",
+    "name_ar": "أنغولا"
+  },
+  {
+    "id": 141,
+    "code": "NIKARAGUA",
+    "name": "NIKARAGUA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "نيكاراغوا"
+  },
+  {
+    "id": 142,
+    "code": "NORTH KOREA",
+    "name": "KUZEY KORE",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "كوريا الشمالية"
+  },
+  {
+    "id": 143,
+    "code": "GHANA",
+    "name": "GANA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "غانا"
+  },
+  {
+    "id": 144,
+    "code": "YESIL BURUN",
+    "name": "YESIL BURUN",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "الرأس الأخضر"
+  },
+  {
+    "id": 145,
+    "code": "MOROCCO",
+    "name": "FAS",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "المغرب"
+  },
+  {
+    "id": 146,
+    "code": "BRAZIL",
+    "name": "BREZILYA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "البرازيل"
+  },
+  {
+    "id": 147,
+    "code": "MONTSERRAT (U.K.)",
+    "name": "MONTSERRAT (U.K.)",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "مونتسيرات"
+  },
+  {
+    "id": 148,
+    "code": "YEMEN",
+    "name": "YEMEN",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "اليمن"
+  },
+  {
+    "id": 149,
+    "code": "PALAU",
+    "name": "PALAU",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "بالاو"
+  },
+  {
+    "id": 150,
+    "code": "SOMALIA",
+    "name": "SOMALI",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "الصومال"
+  },
+  {
+    "id": 151,
+    "code": "MOZAMBIK",
+    "name": "MOZAMBIK",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "موزمبيق"
+  },
+  {
+    "id": 152,
+    "code": "MALI",
+    "name": "MALI",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "مالي"
+  },
+  {
+    "id": 153,
+    "code": "ARUBA",
+    "name": "ARUBA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "أروبا"
+  },
+  {
+    "id": 154,
+    "code": "MYANMAR",
+    "name": "MYANMAR",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "ميانمار"
+  },
+  {
+    "id": 155,
+    "code": "BUTAN",
+    "name": "BUTAN",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "بوتان"
+  },
+  {
+    "id": 156,
+    "code": "CAD",
+    "name": "CAD",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "تشاد"
+  },
+  {
+    "id": 157,
+    "code": "MAYOTTE",
+    "name": "MAYOTTE",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "مايوت"
+  },
+  {
+    "id": 158,
+    "code": "ZAMBIYA",
+    "name": "ZAMBIYA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "زامبيا"
+  },
+  {
+    "id": 159,
+    "code": "TURKMENISTAN",
+    "name": "TURKMENISTAN",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "تركمانستان"
+  },
+  {
+    "id": 160,
+    "code": "CIBUTI",
+    "name": "CIBUTI",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "جيبوتي"
+  },
+  {
+    "id": 161,
+    "code": "KAMBOCYA",
+    "name": "KAMBOCYA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "كمبوديا"
+  },
+  {
+    "id": 162,
+    "code": "KOSTARIKA",
+    "name": "KOSTARIKA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "كوستاريكا"
+  },
+  {
+    "id": 163,
+    "code": "SVALBARD",
+    "name": "SVALBARD",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "سفالبارد"
+  },
+  {
+    "id": 164,
+    "code": "MAURITIUS ADASI",
+    "name": "MAURITIUS ADASI",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "موريشيوس"
+  },
+  {
+    "id": 165,
+    "code": "EL SALVADOR",
+    "name": "EL SALVADOR",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "السلفادور"
+  },
+  {
+    "id": 166,
+    "code": "AFGHANISTAN",
+    "name": "AFGANISTAN",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "أفغانستان"
+  },
+  {
+    "id": 167,
+    "code": "BOTSWANA",
+    "name": "BOTSVANA",
+    "created_at": "2025-05-11 03:42:59",
+    "updated_at": "2025-05-11 03:42:59",
+    "name_ar": "بوتسوانا"
+  },
+  {
+    "id": 168,
+    "code": "KIRGIZHSTAN",
+    "name": "KIRGIZISTAN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "قيرغيزستان"
+  },
+  {
+    "id": 169,
+    "code": "GUAM ISLAND",
+    "name": "GUAM ADASI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "غوام"
+  },
+  {
+    "id": 170,
+    "code": "ESWATINI",
+    "name": "ESWATINI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "إسواتيني"
+  },
+  {
+    "id": 171,
+    "code": "GUADELOPE",
+    "name": "GUADELOPE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "غوادلوب"
+  },
+  {
+    "id": 172,
+    "code": "SURINAM",
+    "name": "SURINAM",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "سورينام"
+  },
+  {
+    "id": 173,
+    "code": "UMMAN",
+    "name": "UMMAN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "عُمان"
+  },
+  {
+    "id": 174,
+    "code": "LESOTO",
+    "name": "LESOTO",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "ليسوتو"
+  },
+  {
+    "id": 175,
+    "code": "ERITRE",
+    "name": "ERITRE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "إريتريا"
+  },
+  {
+    "id": 176,
+    "code": "DOGU TIMOR",
+    "name": "DOGU TIMOR",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "تيمور الشرقية"
+  },
+  {
+    "id": 177,
+    "code": "BANGLADESH",
+    "name": "BANGLADES",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "بنغلاديش"
+  },
+  {
+    "id": 178,
+    "code": "NIUE",
+    "name": "NIUE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "نيوي"
+  },
+  {
+    "id": 179,
+    "code": "SINGAPORE",
+    "name": "SINGAPUR",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "سنغافورة"
+  },
+  {
+    "id": 180,
+    "code": "DEMOKRATIC REPUBLIC OF THE CONGO",
+    "name": "DEMOKRATIK KONGO CUMHURIYETI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "جمهورية الكونغو الديمقراطية"
+  },
+  {
+    "id": 181,
+    "code": "BENIN",
+    "name": "BENIN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "بنين"
+  },
+  {
+    "id": 182,
+    "code": "BELIZE",
+    "name": "BELIZE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "بليز"
+  },
+  {
+    "id": 183,
+    "code": "PITCAIRN ADASI",
+    "name": "PITCAIRN ADASI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "جزر بيتكيرن"
+  },
+  {
+    "id": 184,
+    "code": "CAMEROON",
+    "name": "KAMERUN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "الكاميرون"
+  },
+  {
+    "id": 185,
+    "code": "PAPUA YENI GINE",
+    "name": "PAPUA YENI GINE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "بابوا غينيا الجديدة"
+  },
+  {
+    "id": 186,
+    "code": "VENEZUELA",
+    "name": "VENEZUELA",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "فنزويلا"
+  },
+  {
+    "id": 187,
+    "code": "INDIA",
+    "name": "HINDISTAN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "الهند"
+  },
+  {
+    "id": 188,
+    "code": "BARBADOS",
+    "name": "BARBADOS",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "بربادوس"
+  },
+  {
+    "id": 189,
+    "code": "EGYPT",
+    "name": "MISIR",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "مصر"
+  },
+  {
+    "id": 191,
+    "code": "SYRIA",
+    "name": "SURIYE",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "سوريا"
+  },
+  {
+    "id": 192,
+    "code": "JORDAN",
+    "name": "URDUN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "الأردن"
+  },
+  {
+    "id": 193,
+    "code": "NEW ZEALAND",
+    "name": "YENI ZELANDA",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "نيوزيلندا"
+  },
+  {
+    "id": 194,
+    "code": "PARAGUAY",
+    "name": "PARAGUAY",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "باراغواي"
+  },
+  {
+    "id": 196,
+    "code": "NAMIBYA",
+    "name": "NAMIBYA",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "ناميبيا"
+  },
+  {
+    "id": 197,
+    "code": "FIJI",
+    "name": "FIJI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "فيجي"
+  },
+  {
+    "id": 198,
+    "code": "SAMOA",
+    "name": "SAMOA",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "ساموا"
+  },
+  {
+    "id": 199,
+    "code": "ARGENTINA",
+    "name": "ARJANTIN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "الأرجنتين"
+  },
+  {
+    "id": 200,
+    "code": "CHILE",
+    "name": "SILI",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "تشيلي"
+  },
+  {
+    "id": 201,
+    "code": "URUGUAY",
+    "name": "URUGUAY",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "أوروغواي"
+  },
+  {
+    "id": 202,
+    "code": "IRAN",
+    "name": "IRAN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "إيران"
+  },
+  {
+    "id": 203,
+    "code": "LIBYA",
+    "name": "LIBYA",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "ليبيا"
+  },
+  {
+    "id": 204,
+    "code": "FILISTIN",
+    "name": "FILISTIN",
+    "created_at": "2025-05-11 03:43:00",
+    "updated_at": "2025-05-11 03:43:00",
+    "name_ar": "فلسطين"
+  },
+  {
+    "id": 205,
+    "code": "ISRAEL",
+    "name": "ISRAIL",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "إسرائيل"
+  },
+  {
+    "id": 206,
+    "code": "KUDUS",
+    "name": "KUDUS",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "القدس"
+  },
+  {
+    "id": 207,
+    "code": "RUSSIA",
+    "name": "RUSYA",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "روسيا"
+  },
+  {
+    "id": 208,
+    "code": "BELARUS",
+    "name": "BELARUS",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "بيلاروس"
+  },
+  {
+    "id": 209,
+    "code": "CUBA",
+    "name": "KUBA",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "كوبا"
+  },
+  {
+    "id": 210,
+    "code": "SIERRA LEONE",
+    "name": "SIERRA LEONE",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "سيراليون"
+  },
+  {
+    "id": 212,
+    "code": "MAN ISLAND",
+    "name": "MAN ADASI",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "جزيرة مان"
+  },
+  {
+    "id": 213,
+    "code": "ASCENSION",
+    "name": "ASCENSION",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "أسينشين"
+  },
+  {
+    "id": 214,
+    "code": "SOUTH SUDAN",
+    "name": "GUNEY SUDAN",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "جنوب السودان"
+  },
+  {
+    "id": 216,
+    "code": "ZIMBABVE",
+    "name": "ZIMBABVE",
+    "created_at": "2025-05-11 03:43:01",
+    "updated_at": "2025-05-11 03:43:01",
+    "name_ar": "زيمبابوي"
+  },
+  {
+    "id": 999,
+    "code": "TEST",
+    "name": "Test Ülke",
+    "created_at": "2025-05-11 03:55:20",
+    "updated_at": "2025-05-11 03:55:20",
+    "name_ar": "دولة تجريبية"
+  }
+]

@@ -54,6 +54,9 @@ class SettingsViewModel extends ChangeNotifier {
   bool _dailyReminders = false;
   bool _weeklyReminders = false;
   
+  // Otomatik karanlık mod
+  bool _autoDarkMode = false;
+  
   // Getters
   SettingsPage get currentPage => _currentPage;
   bool get isExpanded => _isExpanded;
@@ -71,6 +74,7 @@ class SettingsViewModel extends ChangeNotifier {
   bool get prayerTimeNotifications => _prayerTimeNotifications;
   bool get dailyReminders => _dailyReminders;
   bool get weeklyReminders => _weeklyReminders;
+  bool get autoDarkMode => _autoDarkMode;
 
   // Xiaomi uyumluluk getter'ları
   bool get isXiaomiDevice => _isXiaomiDevice;
@@ -206,6 +210,35 @@ class SettingsViewModel extends ChangeNotifier {
   void toggleWeeklyReminders() {
     _weeklyReminders = !_weeklyReminders;
     notifyListeners();
+  }
+  
+  void setAutoDarkMode(bool value) {
+    if (_autoDarkMode == value) return;
+    _autoDarkMode = value;
+    _saveAutoDarkMode(value);
+    notifyListeners();
+  }
+  
+  Future<void> _saveAutoDarkMode(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('auto_dark_mode', value);
+    } catch (e) {
+      debugPrint('Auto dark mode kaydetme hatası: $e');
+    }
+  }
+  
+  Future<void> loadAutoDarkMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getBool('auto_dark_mode');
+      if (saved != null) {
+        _autoDarkMode = saved;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Auto dark mode yükleme hatası: $e');
+    }
   }
   
   void collapse() {

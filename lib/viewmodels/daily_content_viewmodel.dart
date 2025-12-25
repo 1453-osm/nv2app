@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/daily_content.dart';
 import '../services/daily_content_repository.dart';
+import '../services/locale_service.dart';
 
 class DailyContentViewModel extends ChangeNotifier {
   final DailyContentRepository _repo = DailyContentRepository();
+  LocaleService? _localeService;
 
   DailyContent? _ayet;
   DailyContent? _hadis;
@@ -20,10 +22,20 @@ class DailyContentViewModel extends ChangeNotifier {
   String get currentLang => _lang;
 
   set currentLang(String lang) {
-    if (_lang != lang) {
-      _lang = lang;
+    final normalized = lang.toLowerCase();
+    if (_lang != normalized) {
+      _lang = normalized;
       notifyListeners();
     }
+  }
+
+  void attachLocaleService(LocaleService localeService) {
+    if (!identical(_localeService, localeService)) {
+      _localeService?.removeListener(_onLocaleChanged);
+      _localeService = localeService;
+      _localeService?.addListener(_onLocaleChanged);
+    }
+    currentLang = localeService.currentLocale.languageCode;
   }
 
   Future<void> initialize({String? preferredLang}) async {
@@ -33,6 +45,7 @@ class DailyContentViewModel extends ChangeNotifier {
   }
 
   Future<void> loadToday() async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -49,8 +62,8 @@ class DailyContentViewModel extends ChangeNotifier {
     }
   }
 
-  void retry() {
-    loadToday();
+  Future<void> retry() {
+    return loadToday();
   }
 
   void _scheduleMidnightRefresh() {
@@ -74,8 +87,16 @@ class DailyContentViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _localeService?.removeListener(_onLocaleChanged);
     _midnightTimer?.cancel();
     super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    final langCode = _localeService?.currentLocale.languageCode;
+    if (langCode != null && langCode.isNotEmpty) {
+      currentLang = langCode;
+    }
   }
 }
 

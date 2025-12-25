@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
+import '../utils/app_keys.dart';
+import '../utils/app_logger.dart';
 
-/// Dua modeli
+/// Dua modeli.
 class Dua {
   final int id;
   final DuaText tr;
@@ -26,25 +26,41 @@ class Dua {
       en: DuaText.fromJson(json['en'] as Map<String, dynamic>),
     );
   }
+
+  /// Dil koduna göre dua metnini döndürür.
+  String getText(String languageCode) {
+    switch (languageCode.toLowerCase()) {
+      case AppKeys.langTurkish:
+        return tr.text;
+      case AppKeys.langArabic:
+        return ar.text;
+      case AppKeys.langEnglish:
+        return en.text;
+      default:
+        return tr.text;
+    }
+  }
+
+  @override
+  String toString() => 'Dua(id: $id)';
 }
 
-/// Dua metni modeli
+/// Dua metni modeli.
 class DuaText {
   final String text;
 
-  const DuaText({
-    required this.text,
-  });
+  const DuaText({required this.text});
 
   factory DuaText.fromJson(Map<String, dynamic> json) {
     return DuaText(
-      text: json['text'] as String,
+      text: json['text'] as String? ?? '',
     );
   }
 }
 
-/// dualar.json dosyasından duaları okur ve rastgele dua seçimi yapar
-/// MVVM mimarisine uygun singleton service
+/// Duaları yöneten singleton servis.
+///
+/// JSON dosyasından duaları yükler ve rastgele dua seçimi sağlar.
 class DuaService {
   static final DuaService _instance = DuaService._internal();
   factory DuaService() => _instance;
@@ -57,73 +73,64 @@ class DuaService {
   List<Dua>? get dualar => _dualar;
   bool get isLoaded => _isLoaded;
 
-  /// dualar.json dosyasını yükle (sadece bir kez)
+  /// dualar.json dosyasını yükler (sadece bir kez).
   Future<void> loadDualar() async {
     if (_isLoaded) {
-      if (kDebugMode) {
-        print('DuaService: Dualar already loaded');
-      }
+      AppLogger.debug('Dualar already loaded', tag: 'DuaService');
       return;
     }
 
-    if (kDebugMode) {
-      print('DuaService: Loading dualar...');
-    }
+    final stopwatch = AppLogger.startTimer('DuaService.loadDualar');
 
     try {
-      // assets/notifications/dualar.json dosyasını oku
-      final String jsonString = await rootBundle.loadString('assets/notifications/dualar.json');
-      
-      // JSON satırlarını ayrı ayrı parse et
-      final List<String> lines = jsonString.split('\n').where((line) => line.trim().isNotEmpty).toList();
-      
+      final String jsonString = await rootBundle.loadString(AppKeys.assetsDualarPath);
+      final List<String> lines = jsonString
+          .split('\n')
+          .where((line) => line.trim().isNotEmpty)
+          .toList();
+
       _dualar = <Dua>[];
+      int successCount = 0;
+      int failCount = 0;
+
       for (final line in lines) {
         try {
           final Map<String, dynamic> duaJson = json.decode(line.trim());
           final dua = Dua.fromJson(duaJson);
           _dualar!.add(dua);
+          successCount++;
         } catch (e) {
-          if (kDebugMode) {
-            print('DuaService: Error parsing line: $line, error: $e');
-          }
+          failCount++;
+          AppLogger.warning('Failed to parse dua line', tag: 'DuaService');
         }
       }
 
       _isLoaded = true;
-      
-      if (kDebugMode) {
-        print('DuaService: Successfully loaded ${_dualar!.length} dualar');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('DuaService: Error loading dualar: $e');
-      }
+
+      AppLogger.stopTimer(stopwatch, 'DuaService.loadDualar');
+      AppLogger.success('Loaded $successCount dualar (${failCount > 0 ? "$failCount failed" : "all success"})', tag: 'DuaService');
+    } catch (e, stackTrace) {
+      AppLogger.error('Error loading dualar', tag: 'DuaService', error: e, stackTrace: stackTrace);
       _dualar = [];
       _isLoaded = true;
     }
   }
 
-  /// Rastgele bir dua seç
+  /// Rastgele bir dua seçer.
   Dua? getRandomDua() {
     if (!_isLoaded || _dualar == null || _dualar!.isEmpty) {
-      if (kDebugMode) {
-        print('DuaService: No dualar available for random selection');
-      }
+      AppLogger.warning('No dualar available for random selection', tag: 'DuaService');
       return null;
     }
 
     final int randomIndex = _random.nextInt(_dualar!.length);
     final selectedDua = _dualar![randomIndex];
-    
-    if (kDebugMode) {
-      print('DuaService: Selected random dua with id: ${selectedDua.id}');
-    }
-    
+
+    AppLogger.debug('Selected random dua with id: ${selectedDua.id}', tag: 'DuaService');
     return selectedDua;
   }
 
-  /// ID'ye göre dua getir
+  /// ID'ye göre dua getirir.
   Dua? getDuaById(int id) {
     if (!_isLoaded || _dualar == null || _dualar!.isEmpty) {
       return null;
@@ -132,38 +139,21 @@ class DuaService {
     try {
       return _dualar!.firstWhere((dua) => dua.id == id);
     } catch (e) {
-      if (kDebugMode) {
-        print('DuaService: Dua with id $id not found');
-      }
+      AppLogger.warning('Dua with id $id not found', tag: 'DuaService');
       return null;
     }
   }
 
-  /// Belirli bir dil için dua metnini al
-  String getDuaText(Dua dua, {String language = 'tr'}) {
-    switch (language.toLowerCase()) {
-      case 'tr':
-        return dua.tr.text;
-      case 'ar':
-        return dua.ar.text;
-      case 'en':
-        return dua.en.text;
-      default:
-        return dua.tr.text; // varsayılan Türkçe
-    }
-  }
-
-  /// Rastgele dua metnini belirli dilde al
-  String? getRandomDuaText({String language = 'tr'}) {
+  /// Rastgele dua metnini belirli dilde döndürür.
+  String? getRandomDuaText({String language = AppKeys.langTurkish}) {
     final dua = getRandomDua();
-    if (dua == null) return null;
-    
-    return getDuaText(dua, language: language);
+    return dua?.getText(language);
   }
 
-  /// Servisi sıfırla (test amaçlı)
+  /// Servisi sıfırlar (test amaçlı).
   void reset() {
     _dualar = null;
     _isLoaded = false;
+    AppLogger.debug('Service reset', tag: 'DuaService');
   }
 }

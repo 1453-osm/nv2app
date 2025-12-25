@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:ui';
 import 'dart:math' as math;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/constants.dart';
 import '../services/theme_service.dart';
+import '../services/locale_service.dart';
 import 'dart:async';
-import '../services/widget_bridge.dart';
 import '../services/notification_scheduler_service.dart';
 import '../services/notification_settings_service.dart' as notifsvc;
 import '../services/notification_sound_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/gestures.dart';
+import '../viewmodels/settings_viewmodel.dart';
+
+// Ses seçim listesindeki zorlamalarda ana scroll'u germemek için hafifletilmiş davranış
+class _GentleOverscrollBehavior extends ScrollBehavior {
+  const _GentleOverscrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    // Glow/stretch yerine sakin bir deneyim
+    return child;
+  }
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) => const ClampingScrollPhysics();
+}
 
 // ThemeColorMode artık ThemeService'ten import ediliyor
 
@@ -744,7 +759,7 @@ class SettingsBar extends StatefulWidget {
     required this.onThemeChanged,
     this.onExpandedChanged,
     this.onDrawerDragLockChanged,
-    this.isDrawerMode = false,
+    this.isDrawerMode = true,
   }) : super(key: key);
 
   @override
@@ -753,24 +768,15 @@ class SettingsBar extends StatefulWidget {
 
 class SettingsBarState extends State<SettingsBar> 
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  
-  static const double _expandedHeight = 350.0;
-  // Yüzdelik artışlar: genişlik %14, yükseklik %10
-  static const double _subpageExtraWidthFraction = 0.14;
-  static const double _subpageExtraHeightFraction = 0.10;
-
-  double get _maxSubpageExtraWidth => GlassBarConstants.expandedWidth * _subpageExtraWidthFraction;
-  double get _maxSubpageExtraHeight => _expandedHeight * _subpageExtraHeightFraction;
-
-  bool _isExpanded = false;
   bool _isColorPickerVisible = false;
   bool _isNotificationsVisible = false;
-  bool _isWidgetSettingsVisible = false;
-  bool _isSmallWidgetExpanded = false;
+  bool _isLanguageSelectorVisible = false;
   bool _lastDrawerLockState = false;
 
   bool get _isDrawerSubpageActive =>
-      _isColorPickerVisible || _isNotificationsVisible || _isWidgetSettingsVisible;
+      _isColorPickerVisible || _isNotificationsVisible || _isLanguageSelectorVisible;
+
+  late final ScrollController _soundPickerController;
 
   void _notifyDrawerGestureLock({bool force = false}) {
     if (!widget.isDrawerMode || widget.onDrawerDragLockChanged == null) return;
@@ -780,42 +786,13 @@ class SettingsBarState extends State<SettingsBar>
       widget.onDrawerDragLockChanged!(isLocked);
     }
   }
-  double _widgetOpacity = 1.0;
-  bool _gradientEnabled = true;
-  bool _isWidgetAdded = false;
-  int _bgColorMode = 0; // 0: Sistem, 1: Açık, 2: Koyu
-  int _textColorMode = 0; // 0: Sistem, 1: Koyu, 2: Açık (Android beklentisi)
-  int _textOnlyColorMode = 0;
-  int _textOnlyScalePct = 100;
-  bool _isTextWidgetAdded = false;
-  bool _isTextWidgetExpanded = false;
-  bool _isCalendarWidgetAdded = false;
-  bool _isCalendarWidgetExpanded = false;
-  double _calendarWidgetOpacity = 1.0;
-  bool _calendarGradientEnabled = true;
-  int _calendarWidgetRadius = 75;
-  int _calendarBgColorMode = 0;
-  int _calendarTextColorMode = 0;
-  int _calendarDisplayMode = 0; // 0: Her ikisi, 1: Sadece Hicri, 2: Sadece Miladi
-  int _calendarHijriFontStyle = 0; // 0: Light, 1: Bold
-  int _calendarGregorianFontStyle = 1; // 0: Light, 1: Bold
 
 
   // Bildirim ayarları (NotificationSettingsService üzerinden yüklenir)
-  late List<notifsvc.NotificationSetting> _notificationSettings;
-  int _widgetRadius = 75;
+  List<notifsvc.NotificationSetting> _notificationSettings = [];
 
-  late final AnimationController _animationController;
-  late final AnimationController _titleOpacityController;
   late final AnimationController _toggleAnimationController;
-  late final AnimationController _subpageSizeController;
-
-  late final Animation<double> _widthAnimation;
-  late final Animation<double> _heightAnimation;
-  late final Animation<double> _titleOpacityAnimation;
   late final Animation<double> _toggleSlideAnimation;
-  late final Animation<double> _subpageWidthAnimation;
-  late final Animation<double> _subpageHeightAnimation;
 
   // Theme color mode cylinder selector state handled by dedicated widget
 
@@ -823,25 +800,9 @@ class SettingsBarState extends State<SettingsBar>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    Future.delayed(const Duration(seconds: 1), () {
-      _checkWidgetStatus();
-    });
+    _soundPickerController = ScrollController();
     _initializeNotificationSettings();
-    _initializeAnimations();
-    _loadWidgetAppearance();
-
-    // Drawer modunda otomatik olarak genişlemiş başla
-    if (widget.isDrawerMode) {
-      _isExpanded = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _animationController.forward();
-          _titleOpacityController.forward();
-        }
-      });
-    }
-
-    // Mode selector internal controller is self-contained in cylinder widget
+    _initializeToggleAnimation();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -850,26 +811,7 @@ class SettingsBarState extends State<SettingsBar>
     });
   }
 
-  Future<void> _checkWidgetStatus() async {
-    // Only check if widget settings page is currently visible
-    if (!_isWidgetSettingsVisible) return;
 
-    try {
-      final bool result = await WidgetBridgeService.isSmallWidgetPinned();
-      final bool textResult = await WidgetBridgeService.isTextWidgetPinned();
-      final bool calendarResult = await WidgetBridgeService.isCalendarWidgetPinned();
-      debugPrint('Widget added state: $result');
-      setState(() {
-        _isWidgetAdded = result;
-        _isTextWidgetAdded = textResult;
-        _isCalendarWidgetAdded = calendarResult;
-      });
-    } catch (e) {
-      debugPrint('Error checking widget status: $e');
-    }
-  }
-  
-  // Periyodik kontrol kaldırıldı; yalnızca sayfaya girildiğinde ve ekleme sonrası kontrol edilir
   
   void _initializeNotificationSettings() async {
     try {
@@ -878,92 +820,122 @@ class SettingsBarState extends State<SettingsBar>
         await svc.loadSettings();
       }
       
+      // Service'ten ayarları al
+      final settings = svc.settings;
+      
+      // Eğer ayarlar boşsa, varsayılan ayarları kullan
+      if (settings.isEmpty) {
+        if (mounted) {
+          final localizations = AppLocalizations.of(context)!;
+          setState(() {
+            _notificationSettings = [
+              notifsvc.NotificationSetting(id: 'imsak', title: localizations.imsak, enabled: false, minutes: 0, sound: 'bird'),
+              notifsvc.NotificationSetting(id: 'gunes', title: localizations.gunes, enabled: false, minutes: 0, sound: 'bird'),
+              notifsvc.NotificationSetting(id: 'ogle', title: localizations.ogle, enabled: true, minutes: 10, sound: 'default'),
+              notifsvc.NotificationSetting(id: 'ikindi', title: localizations.ikindi, enabled: true, minutes: 10, sound: 'default'),
+              notifsvc.NotificationSetting(id: 'aksam', title: localizations.aksam, enabled: true, minutes: 10, sound: 'default'),
+              notifsvc.NotificationSetting(id: 'yatsi', title: localizations.yatsi, enabled: true, minutes: 10, sound: 'default'),
+              notifsvc.NotificationSetting(id: 'cuma', title: localizations.cuma, enabled: true, minutes: 45, sound: 'alarm'),
+              notifsvc.NotificationSetting(id: 'dua', title: localizations.duaNotification, enabled: true, minutes: 0),
+            ];
+          });
+        }
+        return;
+      }
+      
       if (mounted) {
+        // Service'ten gelen title'ları çevir
+        final localizations = AppLocalizations.of(context)!;
         setState(() {
-          _notificationSettings = svc.settings.toList();
+          _notificationSettings = settings.map((setting) {
+            // ID'ye göre çevrilmiş title'ı al
+            String localizedTitle;
+            switch (setting.id) {
+              case 'imsak':
+                localizedTitle = localizations.imsak;
+                break;
+              case 'gunes':
+                localizedTitle = localizations.gunes;
+                break;
+              case 'ogle':
+                localizedTitle = localizations.ogle;
+                break;
+              case 'ikindi':
+                localizedTitle = localizations.ikindi;
+                break;
+              case 'aksam':
+                localizedTitle = localizations.aksam;
+                break;
+              case 'yatsi':
+                localizedTitle = localizations.yatsi;
+                break;
+              case 'cuma':
+                localizedTitle = localizations.cuma;
+                break;
+              case 'dua':
+                localizedTitle = localizations.duaNotification;
+                break;
+              default:
+                // Ek bildirimler için (imsak_1, imsak_2, vb.) base ID'yi al
+                final baseId = setting.id.split('_').first;
+                switch (baseId) {
+                  case 'imsak':
+                    localizedTitle = localizations.imsak;
+                    break;
+                  case 'gunes':
+                    localizedTitle = localizations.gunes;
+                    break;
+                  case 'ogle':
+                    localizedTitle = localizations.ogle;
+                    break;
+                  case 'ikindi':
+                    localizedTitle = localizations.ikindi;
+                    break;
+                  case 'aksam':
+                    localizedTitle = localizations.aksam;
+                    break;
+                  case 'yatsi':
+                    localizedTitle = localizations.yatsi;
+                    break;
+                  case 'cuma':
+                    localizedTitle = localizations.cuma;
+                    break;
+                  default:
+                    localizedTitle = setting.title; // Fallback
+                }
+            }
+            return setting.copyWith(title: localizedTitle);
+          }).toList();
         });
       }
     } catch (_) {
       // Hata durumunda varsayılan ayarları kullan
       if (mounted) {
+        // Varsayılan ayarları context ile çevirilmiş isimlerle oluştur
+        final localizations = AppLocalizations.of(context)!;
         setState(() {
           _notificationSettings = [
-            const notifsvc.NotificationSetting(id: 'imsak', title: 'İmsak', minutes: 5),
-            const notifsvc.NotificationSetting(id: 'gunes', title: 'Güneş', minutes: 0),
-            const notifsvc.NotificationSetting(id: 'ogle', title: 'Öğle', minutes: 5),
-            const notifsvc.NotificationSetting(id: 'ikindi', title: 'İkindi', minutes: 5),
-            const notifsvc.NotificationSetting(id: 'aksam', title: 'Akşam', minutes: 5),
-            const notifsvc.NotificationSetting(id: 'yatsi', title: 'Yatsı', minutes: 5),
-            const notifsvc.NotificationSetting(id: 'cuma', title: 'Cuma', minutes: 30),
-            const notifsvc.NotificationSetting(id: 'dua', title: 'Dua Bildirimi', minutes: 5),
+            notifsvc.NotificationSetting(id: 'imsak', title: localizations.imsak, enabled: false, minutes: 0, sound: 'bird'),
+            notifsvc.NotificationSetting(id: 'gunes', title: localizations.gunes, enabled: false, minutes: 0, sound: 'bird'),
+            notifsvc.NotificationSetting(id: 'ogle', title: localizations.ogle, enabled: true, minutes: 10, sound: 'default'),
+            notifsvc.NotificationSetting(id: 'ikindi', title: localizations.ikindi, enabled: true, minutes: 10, sound: 'default'),
+            notifsvc.NotificationSetting(id: 'aksam', title: localizations.aksam, enabled: true, minutes: 10, sound: 'default'),
+            notifsvc.NotificationSetting(id: 'yatsi', title: localizations.yatsi, enabled: true, minutes: 10, sound: 'default'),
+            notifsvc.NotificationSetting(id: 'cuma', title: localizations.cuma, enabled: true, minutes: 45, sound: 'alarm'),
+            notifsvc.NotificationSetting(id: 'dua', title: localizations.duaNotification, enabled: true, minutes: 0),
           ];
         });
       }
     }
   }
 
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: AnimationConstants.expansionTransition.duration,
-      vsync: this,
-    );
-    
-    _titleOpacityController = AnimationController(
-      duration: AnimationConstants.smoothTransition.duration,
-      vsync: this,
-    );
-    
+  void _initializeToggleAnimation() {
     _toggleAnimationController = AnimationController(
       duration: AnimationConstants.smoothTransition.duration,
       vsync: this,
+      value: _themeModeToToggleValue(widget.themeMode),
     );
-    
-    _subpageSizeController = AnimationController(
-      duration: AnimationConstants.smoothTransition.duration,
-      vsync: this,
-    );
-    
-    _widthAnimation = Tween<double>(
-      begin: 40.0,
-      end: GlassBarConstants.expandedWidth,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: AnimationConstants.expansionTransition.curve,
-    ));
-    
-    _heightAnimation = Tween<double>(
-      begin: 40.0,
-      end: _expandedHeight,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: AnimationConstants.expansionTransition.curve,
-    ));
-    
-    _subpageWidthAnimation = Tween<double>(
-      begin: 0.0,
-      end: _maxSubpageExtraWidth,
-    ).animate(CurvedAnimation(
-      parent: _subpageSizeController,
-      curve: AnimationConstants.smoothTransition.curve,
-    ));
-    
-    _subpageHeightAnimation = Tween<double>(
-      begin: 0.0,
-      end: _maxSubpageExtraHeight,
-    ).animate(CurvedAnimation(
-      parent: _subpageSizeController,
-      curve: AnimationConstants.smoothTransition.curve,
-    ));
-    
-    
-    _titleOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _titleOpacityController,
-      curve: AnimationConstants.expansionTransition.curve,
-    ));
-    
+
     _toggleSlideAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -971,189 +943,25 @@ class SettingsBarState extends State<SettingsBar>
       parent: _toggleAnimationController, 
       curve: AnimationConstants.smoothTransition.curve,
     ));
-    
-    // Toggle pozisyonunu başlat
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateTogglePosition();
-    });
   }
 
-  Widget _buildTriToggle({
-    required int value,
-    required List<String> labels,
-    required ValueChanged<int> onChanged,
-  }) {
-    assert(labels.length == 3);
-    final Color border = GlassBarConstants.getBorderColor(context);
-    final Color bg = GlassBarConstants.getBackgroundColor(context);
-    final Color text = GlassBarConstants.getTextColor(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border, width: 1),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        children: List.generate(3, (i) {
-          final bool selected = value == i;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                onChanged(i);
-              },
-              child: AnimatedContainer(
-                duration: AnimationConstants.quickTransition.duration,
-                curve: AnimationConstants.quickTransition.curve,
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                decoration: BoxDecoration(
-                  color: selected ? text.withOpacity(0.12) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  labels[i],
-                  style: TextStyle(
-                    color: text.withOpacity(selected ? 1.0 : 0.7),
-                    fontSize: 13,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
 
-  Widget _buildBiToggle({
-    required int value,
-    required List<String> labels,
-    required ValueChanged<int> onChanged,
-  }) {
-    assert(labels.length == 2);
-    final Color border = GlassBarConstants.getBorderColor(context);
-    final Color bg = GlassBarConstants.getBackgroundColor(context);
-    final Color text = GlassBarConstants.getTextColor(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border, width: 1),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        children: List.generate(2, (i) {
-          final bool selected = value == i;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                onChanged(i);
-              },
-              child: AnimatedContainer(
-                duration: AnimationConstants.quickTransition.duration,
-                curve: AnimationConstants.quickTransition.curve,
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                decoration: BoxDecoration(
-                  color: selected ? text.withOpacity(0.12) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  labels[i],
-                  style: TextStyle(
-                    color: text.withOpacity(selected ? 1.0 : 0.7),
-                    fontSize: 13,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  // --- Widget görünüm ayarlarını SharedPreferences'tan yükle ---
-  Future<void> _loadWidgetAppearance() async {
-    try {
-      final opacity = await WidgetBridgeService.getWidgetCardOpacity();
-      final gradient = await WidgetBridgeService.getWidgetGradientEnabled();
-      final radius = await WidgetBridgeService.getWidgetCardRadiusDp();
-      final bgMode = await WidgetBridgeService.getWidgetBackgroundColorMode();
-      final textMode = await WidgetBridgeService.getSmallWidgetTextColorMode();
-      final textOnlyMode = await WidgetBridgeService.getTextOnlyWidgetTextColorMode();
-      final textOnlyScale = await WidgetBridgeService.getTextOnlyWidgetTextScalePercent();
-      final isTextPinned = await WidgetBridgeService.isTextWidgetPinned();
-      final calendarOpacity = await WidgetBridgeService.getCalendarWidgetCardOpacity();
-      final calendarGradient = await WidgetBridgeService.getCalendarWidgetGradientEnabled();
-      final calendarRadius = await WidgetBridgeService.getCalendarWidgetCardRadiusDp();
-      final calendarBgMode = await WidgetBridgeService.getCalendarWidgetBackgroundColorMode();
-      final calendarTextMode = await WidgetBridgeService.getCalendarWidgetTextColorMode();
-      final calendarDisplayMode = await WidgetBridgeService.getCalendarWidgetDisplayMode();
-      final isCalendarPinned = await WidgetBridgeService.isCalendarWidgetPinned();
-      final calendarHijriFontStyle = await WidgetBridgeService.getCalendarWidgetHijriFontStyle();
-      final calendarGregorianFontStyle = await WidgetBridgeService.getCalendarWidgetGregorianFontStyle();
-      if (!mounted) return;
-      setState(() {
-        _widgetOpacity = opacity;
-        _gradientEnabled = gradient;
-        _widgetRadius = radius;
-        _bgColorMode = bgMode;
-        _textColorMode = textMode;
-        _textOnlyColorMode = textOnlyMode;
-        _textOnlyScalePct = textOnlyScale;
-        _isTextWidgetAdded = isTextPinned;
-        _calendarWidgetOpacity = calendarOpacity;
-        _calendarGradientEnabled = calendarGradient;
-        _calendarWidgetRadius = calendarRadius;
-        _calendarBgColorMode = calendarBgMode;
-        _calendarTextColorMode = calendarTextMode;
-        _calendarDisplayMode = calendarDisplayMode;
-        _isCalendarWidgetAdded = isCalendarPinned;
-        _calendarHijriFontStyle = calendarHijriFontStyle;
-        _calendarGregorianFontStyle = calendarGregorianFontStyle;
-      });
-    } catch (e) {
-      // ignore
-    }
-  }
 
   void _updateSubpageSizeAnimation() {
-    final bool isSubpageVisible = _isNotificationsVisible || _isWidgetSettingsVisible;
-    if (_isExpanded && isSubpageVisible) {
-      _subpageSizeController.forward();
-    } else {
-      _subpageSizeController.reverse();
-    }
     _notifyDrawerGestureLock();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _animationController.dispose();
-    _titleOpacityController.dispose();
     _toggleAnimationController.dispose();
-    _subpageSizeController.dispose();
+    _soundPickerController.dispose();
     // Güvenlik: bar kapanırken varsa önizlemeyi durdur
     NotificationSoundService.stopPreview();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isWidgetSettingsVisible) {
-      _checkWidgetStatus();
-      _loadWidgetAppearance();
-    }
-  }
+
 
   @override
   void didUpdateWidget(SettingsBar oldWidget) {
@@ -1165,62 +973,27 @@ class SettingsBarState extends State<SettingsBar>
     }
   }
 
-  void _updateTogglePosition() {
-    final double targetPosition = switch (widget.themeMode) {
-      AppThemeMode.light => 0.0,
-      AppThemeMode.system => 0.5,
-      AppThemeMode.dark => 1.0,
-    };
-    _toggleAnimationController.animateTo(targetPosition);
+  double _themeModeToToggleValue(AppThemeMode mode) {
+    switch (mode) {
+      case AppThemeMode.light:
+        return 0.0;
+      case AppThemeMode.system:
+        return 0.5;
+      case AppThemeMode.dark:
+        return 1.0;
+    }
   }
 
-  void _toggleMenu() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _resetSubMenus();
-        _animationController.forward();
-        _titleOpacityController.forward();
-      } else {
-        _animationController.reverse();
-        _titleOpacityController.reverse().then((_) {
-          if (mounted && !_isExpanded) {
-            setState(_resetSubMenus);
-          }
-        });
-      }
-    });
-    _updateSubpageSizeAnimation();
-    
-    // Overlay callback'ini çağır
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && widget.onExpandedChanged != null) {
-        widget.onExpandedChanged!(_isExpanded);
-      }
-    });
+  void _updateTogglePosition() {
+    _toggleAnimationController.animateTo(
+      _themeModeToToggleValue(widget.themeMode),
+    );
   }
 
   // Dışarıdan ayarlar barını kapatmak için public metod
   void closeSettings() {
-    if (_isExpanded) {
-      setState(() {
-        _isExpanded = false;
-        _animationController.reverse();
-        _titleOpacityController.reverse().then((_) {
-          if (mounted && !_isExpanded) {
-            setState(_resetSubMenus);
-            _notifyDrawerGestureLock();
-          }
-        });
-      });
-      
-      // Overlay callback'ini çağır
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && widget.onExpandedChanged != null) {
-          widget.onExpandedChanged!(false);
-        }
-      });
-    }
+    setState(_resetSubMenus);
+    _notifyDrawerGestureLock(force: true);
   }
 
   void _resetSubMenus() {
@@ -1228,8 +1001,7 @@ class SettingsBarState extends State<SettingsBar>
     NotificationSoundService.stopPreview();
     _isColorPickerVisible = false;
     _isNotificationsVisible = false;
-    _isWidgetSettingsVisible = false;
-    _subpageSizeController.reverse();
+    _isLanguageSelectorVisible = false;
   }
 
   void _showSubMenu(VoidCallback setVisibility) {
@@ -1238,166 +1010,65 @@ class SettingsBarState extends State<SettingsBar>
       setVisibility();
     });
     _updateSubpageSizeAnimation();
-    // Alt sayfa açılınca başlık ve simge animasyonları güncellensin
-    if (_isExpanded) {
-      _titleOpacityController.forward();
+    
+    // Bildirimler sayfası açıldığında ayarları yüklemeyi garantile
+    if (_isNotificationsVisible && _notificationSettings.isEmpty) {
+      _initializeNotificationSettings();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Drawer modunda direkt olarak full-size render et
-    if (widget.isDrawerMode) {
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTapDown: (_) {
-          // Ekranın başka bir yerine dokunulduğunda önizlemeyi durdur
-          NotificationSoundService.stopPreview();
-        },
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-              bottom: MediaQuery.of(context).padding.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-              // Menü içeriği - Flexible ile scroll ve dinamik yükseklik
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: (_) {
+        // Ekranın başka bir yerine dokunulduğunda önizlemeyi durdur
+        NotificationSoundService.stopPreview();
+      },
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top,
+            bottom: MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               Flexible(
                 child: _buildMenuContent(),
               ),
             ],
           ),
-          ),
         ),
-      );
-    }
-
-    // Normal bar modu
-    return AnimatedBuilder(
-      animation: _subpageSizeController,
-      builder: (context, _) {
-        return AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                const double minSize = 40.0;
-                final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-                final double desiredWidth = _widthAnimation.value + _subpageWidthAnimation.value;
-                final double desiredHeight = _heightAnimation.value + _subpageHeightAnimation.value;
-                final double maxWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : double.infinity;
-                final double maxHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : double.infinity;
-                final double width = isLandscape ? desiredWidth.clamp(minSize, maxWidth) : desiredWidth;
-                final double height = isLandscape ? desiredHeight.clamp(minSize, maxHeight) : desiredHeight;
-
-                return GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTapDown: (_) {
-                    // Ekranın başka bir yerine dokunulduğunda önizlemeyi durdur
-                    NotificationSoundService.stopPreview();
-                  },
-                  child: Container(
-                    width: width,
-                    height: height,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: GlassBarConstants.blurSigma,
-                          sigmaY: GlassBarConstants.blurSigma
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: GlassBarConstants.getBackgroundColor(context),
-                            borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
-                            border: Border.all(
-                              color: GlassBarConstants.getBorderColor(context),
-                              width: GlassBarConstants.borderWidth,
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              _buildMenuContent(),
-                              _buildMenuIcon(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+      ),
     );
   }
 
   Widget _buildMenuContent() {
-    // Drawer modunda sadece fade animasyonu
-    if (widget.isDrawerMode) {
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        switchInCurve: Curves.easeInOut,
-        switchOutCurve: Curves.easeInOut,
-        layoutBuilder: (currentChild, previousChildren) {
-          return Stack(
-            alignment: Alignment.topCenter,
-            children: <Widget>[
-              ...previousChildren,
-              if (currentChild != null) currentChild,
-            ],
-          );
-        },
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-        child: _getCurrentPage(),
-      );
-    }
-    
-    // Normal bar modu - animasyonlu
-    return AnimatedBuilder(
-      animation: _titleOpacityAnimation,
-      builder: (context, child) {
-        return Opacity(
-          opacity: _titleOpacityAnimation.value,
-          child: Transform.scale(
-            scale: 0.8 + (0.2 * _titleOpacityAnimation.value),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              switchInCurve: Curves.easeInOut,
-              switchOutCurve: Curves.easeInOut,
-              layoutBuilder: (currentChild, previousChildren) {
-                return Stack(
-                  alignment: Alignment.topCenter,
-                  children: <Widget>[
-                    ...previousChildren,
-                    if (currentChild != null) currentChild,
-                  ],
-                );
-              },
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
-              child: _getCurrentPage(),
-            ),
-          ),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      layoutBuilder: (currentChild, previousChildren) {
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
         );
       },
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: _getCurrentPage(),
     );
   }
 
@@ -1412,10 +1083,10 @@ class SettingsBarState extends State<SettingsBar>
         key: const ValueKey('notifications'),
         child: _buildNotificationsPage(),
       );
-    } else if (_isWidgetSettingsVisible) {
+    } else if (_isLanguageSelectorVisible) {
       return Container(
-        key: const ValueKey('widgetSettings'),
-        child: _buildWidgetSettingsPage(),
+        key: const ValueKey('languageSelector'),
+        child: _buildLanguagePage(),
       );
     } else {
       return Container(
@@ -1425,133 +1096,169 @@ class SettingsBarState extends State<SettingsBar>
     }
   }
 
-  Widget _buildMenuIcon() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final isExpanded = _isExpanded;
-        final isMainMenu = !_isColorPickerVisible && !_isNotificationsVisible && !_isWidgetSettingsVisible;
 
-        return AnimatedPositioned(
-          duration: AnimationConstants.smoothTransition.duration,
-          curve: AnimationConstants.smoothTransition.curve,
-          top: isExpanded ? 29 : 6,
-          right: isExpanded ? 20 : 6,
-          child: AnimatedCrossFade(
-            duration: AnimationConstants.smoothTransition.duration,
-            firstCurve: AnimationConstants.smoothTransition.curve,
-            secondCurve: AnimationConstants.smoothTransition.curve,
-            sizeCurve: AnimationConstants.smoothTransition.curve,
-            crossFadeState: isMainMenu ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-            firstChild: GestureDetector(
-              key: const ValueKey(true),
-              onTap: _toggleMenu,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: _titleOpacityAnimation,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _titleOpacityAnimation.value,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Ayarlar',
-                              style: TextStyle(
-                                color: GlassBarConstants.getTextColor(context),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                height: 1.0,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(width: 7),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  Icon(
-                    Symbols.menu,
-                    color: GlassBarConstants.getTextColor(context),
-                    size: 25,
-                  ),
-                ],
+  Widget _buildMainMenu() {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 20, 20, 25),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildThemeToggle(),
+                const SizedBox(height: 16),
+                _buildMenuButton(
+                  icon: Symbols.palette_rounded,
+                  title: AppLocalizations.of(context)!.themeColor,
+                  onTap: () => _showSubMenu(() => _isColorPickerVisible = true),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuButton(
+                  icon: Symbols.notifications_rounded,
+                  title: AppLocalizations.of(context)!.notifications,
+                  onTap: () => _showSubMenu(() => _isNotificationsVisible = true),
+                ),
+                const SizedBox(height: 12),
+                _buildMenuButton(
+                  icon: Symbols.language_rounded,
+                  title: AppLocalizations.of(context)!.language,
+                  onTap: () => _showSubMenu(() => _isLanguageSelectorVisible = true),
+                ),
+              ],
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          top: 18,
+          end: 12,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              width: 45,
+              height: 33,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Symbols.menu_rounded,
+                color: GlassBarConstants.getTextColor(context),
+                size: 28,
               ),
             ),
-            secondChild: const SizedBox.shrink(),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  Widget _buildMainMenu() {
+  Widget _buildLanguagePage() {
+    final surfaceColor = GlassBarConstants.getBackgroundColor(context);
+    final borderColor = GlassBarConstants.getBorderColor(context);
+    
     // Drawer modunda dinamik boyut
     if (widget.isDrawerMode) {
-      return Stack(
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 34),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tema toggle'ı - kapatma butonu ile aynı hizada
-                  _buildThemeToggle(),
-                  const SizedBox(height: 16),
-                  // Menü butonları
-                  _buildMenuButton(
-                    icon: Symbols.palette,
-                    title: 'Tema Rengi',
-                    onTap: () => _showSubMenu(() => _isColorPickerVisible = true),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildMenuButton(
-                    icon: Symbols.notifications,
-                    title: 'Bildirimler',
-                    onTap: () => _showSubMenu(() => _isNotificationsVisible = true),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildMenuButton(
-                    icon: Symbols.widgets,
-                    title: 'Widget',
-                    onTap: () => _showSubMenu(() {
-                      _isWidgetSettingsVisible = true;
-                      _checkWidgetStatus();
-                    }),
-                  ),
-                ],
-              ),
+          // Üst alan - kapatma butonu ile aynı yükseklikte
+          const SizedBox(height: 18),
+          // Başlık - sabit (scroll edilmez)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 8, 0),
+            child: _buildPageHeader(
+              title: AppLocalizations.of(context)!.language,
+              onBack: () {
+                setState(() => _isLanguageSelectorVisible = false);
+                _updateSubpageSizeAnimation();
+                _notifyDrawerGestureLock();
+              },
             ),
           ),
-          // Kapatma butonu - üstte sağda
-          Positioned(
-            top: 18,
-            right: 12,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                width: 45,
-                height: 33,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  Symbols.menu_rounded,
-                  color: GlassBarConstants.getTextColor(context),
-                  size: 28,
+          const SizedBox(height: 16),
+          // Scroll edilebilir içerik
+          Flexible(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
+                child: Consumer<LocaleService>(
+                  builder: (context, localeService, child) {
+                    final currentLocale = localeService.currentLocale;
+                    
+                    return Column(
+                      children: LocaleService.supportedLocales.map((Locale locale) {
+                        final isSelected = locale == currentLocale;
+                        final languageName = LocaleService.getLanguageName(locale);
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              localeService.setLocale(locale);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: surfaceColor.withOpacity(isSelected ? 0.15 : 0.05),
+                                border: Border.all(
+                                  color: borderColor.withOpacity(isSelected ? 0.6 : 0.3),
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: surfaceColor.withOpacity(0.1),
+                                    ),
+                                    child: Icon(
+                                      Symbols.language_rounded,
+                                      color: GlassBarConstants.getTextColor(context).withOpacity(0.8),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      languageName,
+                                      style: TextStyle(
+                                        color: GlassBarConstants.getTextColor(context),
+                                        fontSize: 16,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                      ),
+                                      textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Icon(
+                                      Symbols.check_rounded,
+                                      color: GlassBarConstants.getTextColor(context),
+                                      size: 24,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1561,57 +1268,99 @@ class SettingsBarState extends State<SettingsBar>
     }
     
     // Normal bar modu
-    return Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 70),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      _buildMenuButton(
-                        icon: Symbols.palette,
-                        title: 'Tema Rengi',
-                        onTap: () => _showSubMenu(() => _isColorPickerVisible = true),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildMenuButton(
-                        icon: Symbols.notifications,
-                        title: 'Bildirimler',
-                        onTap: () => _showSubMenu(() => _isNotificationsVisible = true),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildMenuButton(
-                        icon: Symbols.widgets,
-                        title: 'Widget',
-                        onTap: () => _showSubMenu(() {
-                            _isWidgetSettingsVisible = true;
-                            _checkWidgetStatus();
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        // Sol üstte tema toggle'ı
-        Positioned(
-          top: 25,
-          left: 20,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 300),
-            opacity: _titleOpacityAnimation.value,
-            child: _buildThemeToggle(),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPageHeader(
+            title: AppLocalizations.of(context)!.language,
+            onBack: () {
+              setState(() => _isLanguageSelectorVisible = false);
+              _updateSubpageSizeAnimation();
+              _notifyDrawerGestureLock();
+            },
           ),
-        ),
-      ],
+          const SizedBox(height: 20),
+          Expanded(
+            child: Consumer<LocaleService>(
+              builder: (context, localeService, child) {
+                final currentLocale = localeService.currentLocale;
+                
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: LocaleService.supportedLocales.length,
+                  itemBuilder: (context, index) {
+                    final locale = LocaleService.supportedLocales[index];
+                    final isSelected = locale == currentLocale;
+                    final languageName = LocaleService.getLanguageName(locale);
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          localeService.setLocale(locale);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: surfaceColor.withOpacity(isSelected ? 0.15 : 0.05),
+                            border: Border.all(
+                              color: borderColor.withOpacity(isSelected ? 0.6 : 0.3),
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: surfaceColor.withOpacity(0.1),
+                                ),
+                                child: Icon(
+                                  Symbols.language_rounded,
+                                  color: GlassBarConstants.getTextColor(context).withOpacity(0.8),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  languageName,
+                                  style: TextStyle(
+                                    color: GlassBarConstants.getTextColor(context),
+                                    fontSize: 16,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                  ),
+                                  textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Symbols.check_rounded,
+                                  color: GlassBarConstants.getTextColor(context),
+                                  size: 24,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1636,6 +1385,9 @@ class SettingsBarState extends State<SettingsBar>
           border: Border.all(color: borderColor),
         ),
         child: Row(
+          textDirection: Directionality.of(context) == TextDirection.rtl 
+              ? TextDirection.rtl 
+              : TextDirection.ltr,
           children: [
             Container(
               width: 40,
@@ -1664,7 +1416,7 @@ class SettingsBarState extends State<SettingsBar>
               ),
             ),
             Icon(
-              Symbols.arrow_forward_ios,
+              Symbols.arrow_forward_ios_rounded,
               color: textColor.withOpacity(0.6),
               size: 16,
             ),
@@ -1679,8 +1431,8 @@ class SettingsBarState extends State<SettingsBar>
     final isDark = theme.brightness == Brightness.dark;
     final textColor = GlassBarConstants.getTextColor(context);
     
-    return Consumer<ThemeService>(
-      builder: (context, themeService, child) {
+    return Consumer2<ThemeService, SettingsViewModel>(
+      builder: (context, themeService, settingsVm, child) {
         // Drawer modunda dinamik boyut
         if (widget.isDrawerMode) {
           return Stack(
@@ -1693,9 +1445,9 @@ class SettingsBarState extends State<SettingsBar>
                   const SizedBox(height: 18),
                   // Başlık - sabit (scroll edilmez)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 8, 0),
                     child: _buildPageHeader(
-                      title: 'Tema Rengi',
+                      title: AppLocalizations.of(context)!.themeColor,
                       onBack: () {
                         setState(() => _isColorPickerVisible = false);
                         _updateSubpageSizeAnimation();
@@ -1709,36 +1461,23 @@ class SettingsBarState extends State<SettingsBar>
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 34),
+                    padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildColorModeCylinderSelector(textColor, isDark, theme, themeService),
                         const SizedBox(height: 10),
-                        
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 150),
-                          switchInCurve: Curves.easeInOut,
-                          switchOutCurve: Curves.easeInOut,
-                          transitionBuilder: (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                          child: themeService.themeColorMode == ThemeColorMode.static
-                              ? _buildStaticColorList(themeService)
-                              : themeService.themeColorMode == ThemeColorMode.dynamic
-                                  ? _buildDynamicColorInfo(textColor, isDark, theme, themeService)
-                                  : themeService.themeColorMode == ThemeColorMode.system
-                                      ? _buildSystemColorInfo(textColor, isDark, theme)
-                                      : _buildBlackColorInfo(textColor, isDark, theme),
-                        ),
+                        _buildColorModeContent(themeService, textColor, isDark, theme),
                       ],
                     ),
                   ),
                 ),
+              ),
+              // Oto karartma switch - scroll dışı, en altta
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 20),
+                child: _buildAutoDarkModeSwitch(textColor, isDark, theme, settingsVm),
               ),
             ],
           ),
@@ -1765,25 +1504,10 @@ class SettingsBarState extends State<SettingsBar>
               const SizedBox(height: 0),
               
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 150),
-                  switchInCurve: Curves.easeInOut,
-                  switchOutCurve: Curves.easeInOut,
-                  transitionBuilder: (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    );
-                  },
-                  child: themeService.themeColorMode == ThemeColorMode.static
-                      ? _buildStaticColorList(themeService)
-                      : themeService.themeColorMode == ThemeColorMode.dynamic
-                          ? _buildDynamicColorInfo(textColor, isDark, theme, themeService)
-                          : themeService.themeColorMode == ThemeColorMode.system
-                              ? _buildSystemColorInfo(textColor, isDark, theme)
-                              : _buildBlackColorInfo(textColor, isDark, theme),
-                ),
+                child: _buildColorModeContent(themeService, textColor, isDark, theme),
               ),
+              // Oto karartma switch - scroll dışı, en altta
+              _buildAutoDarkModeSwitch(textColor, isDark, theme, settingsVm),
             ],
           ),
         );
@@ -1808,12 +1532,6 @@ class SettingsBarState extends State<SettingsBar>
 
   // kaldırıldı: _modeByIndex kullanılmıyor
 
-  List<_ColorModeItem> get _colorModeItems => const [
-    _ColorModeItem(icon: Symbols.palette, label: 'Sabit', mode: ThemeColorMode.static),
-    _ColorModeItem(icon: Symbols.schedule, label: 'Dinamik', mode: ThemeColorMode.dynamic),
-    _ColorModeItem(icon: Symbols.routine, label: 'Sistem', mode: ThemeColorMode.system),
-    _ColorModeItem(icon: Symbols.dark_mode, label: 'Karanlık', mode: ThemeColorMode.black),
-  ];
 
   Widget _buildColorModeCylinderSelector(
     Color textColor,
@@ -1821,7 +1539,13 @@ class SettingsBarState extends State<SettingsBar>
     ThemeData theme,
     ThemeService themeService,
   ) {
-    final List<_ColorModeItem> items = _colorModeItems;
+    final localizations = AppLocalizations.of(context)!;
+    final List<_ColorModeItem> items = [
+      _ColorModeItem(icon: Symbols.palette_rounded, label: localizations.custom, mode: ThemeColorMode.static),
+      _ColorModeItem(icon: Symbols.schedule_rounded, label: localizations.dynamicMode, mode: ThemeColorMode.dynamic),
+      _ColorModeItem(icon: Symbols.routine_rounded, label: localizations.system, mode: ThemeColorMode.system),
+      _ColorModeItem(icon: Symbols.dark_mode_rounded, label: localizations.dark, mode: ThemeColorMode.black),
+    ];
     final int selectedIndex = _modeIndexOf(themeService.themeColorMode).clamp(0, items.length - 1);
 
     return _ModeCylinderWidget(
@@ -1834,12 +1558,67 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
+  Widget _buildColorModeContent(
+    ThemeService themeService,
+    Color textColor,
+    bool isDark,
+    ThemeData theme,
+  ) {
+    final Widget child = themeService.themeColorMode == ThemeColorMode.static
+        ? _buildStaticColorList(themeService)
+        : themeService.themeColorMode == ThemeColorMode.dynamic
+            ? _buildDynamicColorInfo(textColor, isDark, theme, themeService)
+            : themeService.themeColorMode == ThemeColorMode.system
+                ? _buildSystemColorInfo(textColor, isDark, theme)
+                : _buildBlackColorInfo(textColor, isDark, theme);
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 150),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        layoutBuilder: (currentChild, previousChildren) {
+          return Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: child,
+      ),
+    );
+  }
+
   // sınıf top-level'a taşındı
 
   Widget _buildNotificationsPage() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = GlassBarConstants.getTextColor(context);
+    
+    // Eğer liste boşsa ve service'te veri varsa, yüklemeyi dene
+    if (_notificationSettings.isEmpty) {
+      final svc = notifsvc.NotificationSettingsService();
+      if (svc.isLoaded && svc.settings.isNotEmpty) {
+        // Service yüklü ve veri var, ama local liste boş - hemen güncelle
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _initializeNotificationSettings();
+          }
+        });
+      }
+    }
     
     // Aynı vakte ait bildirimleri grupla (imsak, imsak_1, imsak_2 ... gibi)
     final Map<String, List<notifsvc.NotificationSetting>> grouped = {};
@@ -1860,9 +1639,9 @@ class SettingsBarState extends State<SettingsBar>
           const SizedBox(height: 18),
           // Başlık - sabit (scroll edilmez)
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 8, 0),
             child: _buildPageHeader(
-              title: 'Bildirimler',
+              title: AppLocalizations.of(context)!.notifications,
               onBack: () {
                 _closeAllPickers();
                 setState(() {
@@ -1879,7 +1658,7 @@ class SettingsBarState extends State<SettingsBar>
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 34),
+                padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
                 child: ListView.builder(
                   padding: const EdgeInsets.only(top: 0),
                   physics: const NeverScrollableScrollPhysics(),
@@ -1918,7 +1697,7 @@ class SettingsBarState extends State<SettingsBar>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildPageHeader(
-            title: 'Bildirimler',
+            title: AppLocalizations.of(context)!.notifications,
             onBack: () {
               _closeAllPickers();
               setState(() {
@@ -1998,43 +1777,30 @@ class SettingsBarState extends State<SettingsBar>
             color: GlassBarConstants.getBorderColor(context),
           ),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Symbols.palette,
-                  color: textColor.withOpacity(0.8),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Dinamik Tema Rengi',
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            Icon(
+              Symbols.palette,
+              color: textColor.withOpacity(0.8),
+              size: 20,
             ),
-            const SizedBox(height: 12),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 96),
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Text(
-                    'Tema rengi namaz vaktine göre dinamik olarak ayarlanacaktır. Her namaz vakti için farklı bir renk kullanılır.',
-                    style: TextStyle(
-                      color: textColor.withOpacity(0.8),
-                      fontSize: 14,
-                      height: 1.4,
+            const SizedBox(width: 10),
+            Expanded(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 96),
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Text(
+                      AppLocalizations.of(context)!.dynamicThemeDescription,
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.8),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      softWrap: true,
                     ),
-                    softWrap: true,
                   ),
                 ),
               ),
@@ -2059,16 +1825,12 @@ class SettingsBarState extends State<SettingsBar>
           ),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
-                border: Border.all(color: textColor.withOpacity(0.6)),
-              ),
+            Icon(
+              Symbols.palette,
+              color: textColor.withOpacity(0.8),
+              size: 20,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -2078,7 +1840,7 @@ class SettingsBarState extends State<SettingsBar>
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
                     child: Text(
-                      'Tam siyah renk kullanılır. Oled ekranlarda pil tasarrufu sağlar.',
+                      AppLocalizations.of(context)!.blackThemeDescription,
                       style: TextStyle(
                         color: textColor.withOpacity(0.85),
                         fontSize: 14,
@@ -2087,7 +1849,7 @@ class SettingsBarState extends State<SettingsBar>
                       softWrap: true,
                     ),
                   ),
-                )
+                ),
               ),
             ),
           ],
@@ -2125,7 +1887,7 @@ class SettingsBarState extends State<SettingsBar>
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
                     child: Text(
-                      'Android 12 ve üzeri cihazlarda renkler duvar kâğıdına göre otomatik olarak ayarlanır.',
+                      AppLocalizations.of(context)!.systemThemeDescription,
                       style: TextStyle(
                         color: textColor.withOpacity(0.85),
                         fontSize: 14,
@@ -2138,6 +1900,78 @@ class SettingsBarState extends State<SettingsBar>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAutoDarkModeSwitch(
+    Color textColor,
+    bool isDark,
+    ThemeData theme,
+    SettingsViewModel settingsVm,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          settingsVm.setAutoDarkMode(!settingsVm.autoDarkMode);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.1),
+            border: Border.all(
+              color: GlassBarConstants.getBorderColor(context).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Symbols.dark_mode,
+                color: textColor.withOpacity(0.8),
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.autoDarkMode,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      AppLocalizations.of(context)!.autoDarkModeDescription,
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.7),
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _buildCustomSwitch(
+                isEnabled: settingsVm.autoDarkMode,
+                onToggle: () {
+                  HapticFeedback.selectionClick();
+                  settingsVm.setAutoDarkMode(!settingsVm.autoDarkMode);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2225,7 +2059,7 @@ class SettingsBarState extends State<SettingsBar>
       if (setting.id == baseId) {
         // ana kayıt varsayılan olarak index 0 kabul edilir
         maxIndex = maxIndex > 0 ? maxIndex : 0;
-      } else if (setting.id.startsWith('$baseId\_')) {
+      } else if (setting.id.startsWith('${baseId}_')) {
         final String suffix = setting.id.substring(baseId.length + 1);
         final int idx = int.tryParse(suffix) ?? 0;
         if (idx > maxIndex) {
@@ -2234,7 +2068,7 @@ class SettingsBarState extends State<SettingsBar>
       }
     }
     final int nextIndex = maxIndex + 1;
-    return '$baseId\_$nextIndex';
+    return '${baseId}_$nextIndex';
   }
 
   Future<void> _addNotificationFor(notifsvc.NotificationSetting setting) async {
@@ -2288,7 +2122,6 @@ class SettingsBarState extends State<SettingsBar>
       await prefs.reload();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('SettingsBar: Error while removing notification prefs for $id: $e');
       }
     }
 
@@ -2296,7 +2129,6 @@ class SettingsBarState extends State<SettingsBar>
       await NotificationSchedulerService.instance.rescheduleTodayNotifications();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('SettingsBar: Error while rescheduling after remove: $e');
       }
     }
   }
@@ -2424,7 +2256,6 @@ class SettingsBarState extends State<SettingsBar>
       await NotificationSchedulerService.instance.rescheduleTodayNotifications();
     } catch (e) {
       if (kDebugMode) {
-        print('SettingsBar: Error in _persistAndReschedule: $e');
       }
     }
   }
@@ -2654,8 +2485,8 @@ class SettingsBarState extends State<SettingsBar>
                 Expanded(
                   child: Text(
                     setting.minutes == 0 
-                        ? 'Tam zamanında'
-                        : '${setting.minutes} dakika önce',
+                        ? AppLocalizations.of(context)!.onTime
+                        : AppLocalizations.of(context)!.minutesBefore(setting.minutes),
                     style: TextStyle(
                       color: textColor.withOpacity(0.95),
                       fontSize: 12,
@@ -2809,18 +2640,26 @@ class SettingsBarState extends State<SettingsBar>
         borderRadius: BorderRadius.circular(8),
         color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.15),
       ),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(8),
-        physics: const ClampingScrollPhysics(),
-        itemCount: SettingsConstants.soundOptions.length,
-        itemBuilder: (context, index) => _buildSoundOption(
-          sound: SettingsConstants.soundOptions[index],
-          currentSoundId: currentSoundId,
-          textColor: textColor,
-          theme: theme,
-          onTap: () {
-            _updateNotificationSound(id, SettingsConstants.soundOptions[index].id);
-          },
+      child: ScrollConfiguration(
+        behavior: const _GentleOverscrollBehavior(),
+        child: PrimaryScrollController.none(
+          child: ListView.builder(
+            controller: _soundPickerController,
+            primary: false,
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(8),
+            physics: const ClampingScrollPhysics(),
+            itemCount: SettingsConstants.soundOptions.length,
+            itemBuilder: (context, index) => _buildSoundOption(
+              sound: SettingsConstants.soundOptions[index],
+              currentSoundId: currentSoundId,
+              textColor: textColor,
+              theme: theme,
+              onTap: () {
+                _updateNotificationSound(id, SettingsConstants.soundOptions[index].id);
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -2966,7 +2805,7 @@ class SettingsBarState extends State<SettingsBar>
               width: 35,
               height: 35,
               child: Icon(
-                Symbols.arrow_back_ios,
+                Symbols.arrow_back_ios_rounded ,
                 color: textColor,
                 size: 20,
               ),
@@ -3024,21 +2863,22 @@ class SettingsBarState extends State<SettingsBar>
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
+            textDirection: TextDirection.ltr, // Toggle pozisyonu LTR için hesaplandığından her zaman LTR kullan
             children: [
               _buildThemeOption(
-                icon: Symbols.light_mode,
+                icon: Symbols.light_mode_rounded,
                 mode: AppThemeMode.light,
                 isSelected: widget.themeMode == AppThemeMode.light,
               ),
               const SizedBox(width: 2),
               _buildThemeOption(
-                icon: Symbols.routine,
+                icon: Symbols.routine_rounded,
                 mode: AppThemeMode.system,
                 isSelected: widget.themeMode == AppThemeMode.system,
               ),
               const SizedBox(width: 2),
               _buildThemeOption(
-                icon: Symbols.dark_mode,
+                icon: Symbols.dark_mode_rounded,
                 mode: AppThemeMode.dark,
                 isSelected: widget.themeMode == AppThemeMode.dark,
               ),
@@ -3055,7 +2895,7 @@ class SettingsBarState extends State<SettingsBar>
     required bool isSelected,
   }) {
     return GestureDetector(
-      onTap: _isExpanded ? () => widget.onThemeChanged(mode) : null,
+      onTap: () => widget.onThemeChanged(mode),
       child: Container(
         width: 29,
         height: 29,
@@ -3071,841 +2911,4 @@ class SettingsBarState extends State<SettingsBar>
       ),
     );
   }
-
-  Widget _buildWidgetSettingsPage() {
-    // Drawer modunda dinamik boyut
-    if (widget.isDrawerMode) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Üst alan - kapatma butonu ile aynı yükseklikte
-          const SizedBox(height: 18),
-          // Başlık - sabit (scroll edilmez)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
-            child: _buildPageHeader(
-              title: 'Widget Ayarları',
-              onBack: () {
-                setState(() {
-                  _isWidgetSettingsVisible = false;
-                });
-                _updateSubpageSizeAnimation();
-                _notifyDrawerGestureLock();
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Scroll edilebilir içerik
-          Flexible(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 34),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSmallWidgetCard(context),
-                    const SizedBox(height: 12),
-                    _buildTextOnlyWidgetCard(context),
-                    const SizedBox(height: 12),
-                    _buildCalendarWidgetCard(context),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-    
-    // Normal bar modu
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildPageHeader(
-            title: 'Widget Ayarları',
-            onBack: () {
-                setState(() {
-                   _isWidgetSettingsVisible = false;
-                });
-                _updateSubpageSizeAnimation();
-              _notifyDrawerGestureLock();
-            },
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSmallWidgetCard(context),
-                  const SizedBox(height: 12),
-                  _buildTextOnlyWidgetCard(context),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallWidgetCard(BuildContext context) {
-    final textColor = GlassBarConstants.getTextColor(context);
-    if (!_isWidgetAdded) {
-      return Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Küçük Widget',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(2),
-                backgroundColor: GlassBarConstants.getBackgroundColor(context).withOpacity(0.2),
-                minimumSize: const Size(34, 34),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () async {
-                try {
-                  await WidgetBridgeService.requestPinSmallWidget();
-                  // 2 saniye sonra kontrol et; bazı launcherdlar OS sheet gösterir
-                  await Future.delayed(const Duration(seconds: 2));
-                  final status = await WidgetBridgeService.isSmallWidgetPinned();
-                  if (mounted) {
-                    setState(() {
-                      _isWidgetAdded = status;
-                      _isSmallWidgetExpanded = status;
-                    });
-                  }
-                } catch (e) {
-                  debugPrint('Widget pin error: $e');
-                }
-              },
-              child: Icon(Symbols.add, size: 16, color: GlassBarConstants.getTextColor(context)),
-            ),
-          ],
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isSmallWidgetExpanded = !_isSmallWidgetExpanded;
-        });
-      },
-      child: AnimatedContainer(
-        duration: AnimationConstants.quickTransition.duration,
-        curve: AnimationConstants.quickTransition.curve,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row with title and arrow icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Küçük Widget',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                // Değişiklik: widget eklendiyse ok ikonu göster
-                AnimatedRotation(
-                  turns: _isSmallWidgetExpanded ? 0.75 : 0.25,
-                  duration: AnimationConstants.quickTransition.duration,
-                  child: Icon(
-                    Symbols.arrow_forward_ios_rounded,
-                    color: textColor,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-            // Animated expansion for card content using notifications card style
-            AnimatedContainer(
-              duration: AnimationConstants.quickTransition.duration,
-              curve: AnimationConstants.quickTransition.curve,
-              height: _isSmallWidgetExpanded ? 220.0 : 0.0,
-              child: ClipRect(
-                child: AnimatedOpacity(
-                  duration: AnimationConstants.quickTransition.duration,
-                  curve: AnimationConstants.quickTransition.curve,
-                  opacity: _isSmallWidgetExpanded ? 1.0 : 0.0,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        Text(
-                          'Arka Plan Opaklığı',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _DebouncedSlider(
-                          value: _widgetOpacity,
-                          min: 0.0,
-                          max: 1.0,
-                          divisions: 10,
-                          labelBuilder: (v) => v.toStringAsFixed(1),
-                          onChangedImmediate: (v) {
-                            setState(() { _widgetOpacity = v; });
-                          },
-                          onDebouncedChangeEnd: (v) async {
-                            try {
-                              await WidgetBridgeService.setWidgetCardOpacity(v);
-                              await WidgetBridgeService.forceUpdateSmallWidget();
-                            } catch (_) {}
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Widget Gradient',
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            _buildCustomSwitch(
-                              isEnabled: _gradientEnabled,
-                              onToggle: () async {
-                                setState(() {
-                                  _gradientEnabled = !_gradientEnabled;
-                                });
-                                try {
-                                  await WidgetBridgeService.setWidgetGradientEnabled(_gradientEnabled);
-                                  await WidgetBridgeService.forceUpdateSmallWidget();
-                                } catch (e) {
-                                  // Hata yönetimi
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Köşe Yarıçapı',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _DebouncedSlider(
-                          value: _widgetRadius.toDouble(),
-                          min: 0,
-                          max: 120,
-                          divisions: 120,
-                          labelBuilder: (v) => v.round().toString(),
-                          onChangedImmediate: (v) {
-                            setState(() { _widgetRadius = v.round(); });
-                          },
-                          onDebouncedChangeEnd: (v) async {
-                            try {
-                              await WidgetBridgeService.setWidgetCardRadiusDp(v.round());
-                              await WidgetBridgeService.forceUpdateSmallWidget();
-                            } catch (_) {}
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Arka Plan Rengi',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        _buildTriToggle(
-                          value: _bgColorMode,
-                          labels: const ['Sistem', 'Açık', 'Koyu'],
-                          onChanged: (mode) async {
-                            setState(() { _bgColorMode = mode; });
-                            await WidgetBridgeService.setWidgetBackgroundColorMode(mode);
-                            await WidgetBridgeService.forceUpdateSmallWidget();
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'İçerik Metin Rengi',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        _buildTriToggle(
-                          value: _textColorMode,
-                          labels: const ['Sistem', 'Koyu', 'Açık'],
-                          onChanged: (mode) async {
-                            setState(() { _textColorMode = mode; });
-                            await WidgetBridgeService.setSmallWidgetTextColorMode(mode);
-                            await WidgetBridgeService.forceUpdateSmallWidget();
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextOnlyWidgetCard(BuildContext context) {
-    final textColor = GlassBarConstants.getTextColor(context);
-    if (!_isTextWidgetAdded) {
-      return Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Metin Widget',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(2),
-                backgroundColor: GlassBarConstants.getBackgroundColor(context).withOpacity(0.2),
-                minimumSize: const Size(34, 34),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () async {
-                try {
-                  await WidgetBridgeService.requestPinTextWidget();
-                  await Future.delayed(const Duration(seconds: 2));
-                  final status = await WidgetBridgeService.isTextWidgetPinned();
-                  if (mounted) {
-                    setState(() { 
-                      _isTextWidgetAdded = status; 
-                      _isTextWidgetExpanded = status;
-                    });
-                  }
-                } catch (_) {}
-              },
-              child: Icon(Symbols.add, size: 16, color: GlassBarConstants.getTextColor(context)),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() { _isTextWidgetExpanded = !_isTextWidgetExpanded; });
-      },
-      child: AnimatedContainer(
-        duration: AnimationConstants.quickTransition.duration,
-        curve: AnimationConstants.quickTransition.curve,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Metin Widgetı',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                AnimatedRotation(
-                  turns: _isTextWidgetExpanded ? 0.75 : 0.25,
-                  duration: AnimationConstants.quickTransition.duration,
-                  child: Icon(
-                    Symbols.arrow_forward_ios_rounded,
-                    color: textColor,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-            AnimatedContainer(
-              duration: AnimationConstants.quickTransition.duration,
-              curve: AnimationConstants.quickTransition.curve,
-              height: _isTextWidgetExpanded ? 160.0 : 0.0,
-              child: ClipRect(
-                child: AnimatedOpacity(
-                  duration: AnimationConstants.quickTransition.duration,
-                  curve: AnimationConstants.quickTransition.curve,
-                  opacity: _isTextWidgetExpanded ? 1.0 : 0.0,
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 12),
-                        Text(
-                          'Metin Boyutu',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _DebouncedSlider(
-                          value: _textOnlyScalePct.toDouble(),
-                          min: 80,
-                          max: 140,
-                          divisions: 60,
-                          labelBuilder: (v) => '${v.round()}%',
-                          onChangedImmediate: (v) {
-                            setState(() { _textOnlyScalePct = v.round(); });
-                          },
-                          onDebouncedChangeEnd: (v) async {
-                            try {
-                              await WidgetBridgeService.setTextOnlyWidgetTextScalePercent(v.round());
-                              await WidgetBridgeService.forceUpdateSmallWidget();
-                            } catch (_) {}
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Metin Rengi',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        _buildTriToggle(
-                          value: _textOnlyColorMode,
-                          labels: const ['Sistem', 'Koyu', 'Açık'],
-                          onChanged: (mode) async {
-                            setState(() { _textOnlyColorMode = mode; });
-                            await WidgetBridgeService.setTextOnlyWidgetTextColorMode(mode);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCalendarWidgetCard(BuildContext context) {
-    final textColor = GlassBarConstants.getTextColor(context);
-    if (!_isCalendarWidgetAdded) {
-      return Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Takvim Widget',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(2),
-                backgroundColor: GlassBarConstants.getBackgroundColor(context).withOpacity(0.2),
-                minimumSize: const Size(34, 34),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () async {
-                try {
-                  await WidgetBridgeService.requestPinCalendarWidget();
-                  await Future.delayed(const Duration(seconds: 2));
-                  final status = await WidgetBridgeService.isCalendarWidgetPinned();
-                  if (mounted) {
-                    setState(() {
-                      _isCalendarWidgetAdded = status;
-                      _isCalendarWidgetExpanded = status;
-                    });
-                  }
-                } catch (_) {}
-              },
-              child: Icon(Symbols.add, size: 16, color: GlassBarConstants.getTextColor(context)),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() { _isCalendarWidgetExpanded = !_isCalendarWidgetExpanded; });
-      },
-      child: AnimatedContainer(
-        duration: AnimationConstants.quickTransition.duration,
-        curve: AnimationConstants.quickTransition.curve,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: GlassBarConstants.getBackgroundColor(context),
-          border: Border.all(
-            color: GlassBarConstants.getBorderColor(context),
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Takvim Widget',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                AnimatedRotation(
-                  turns: _isCalendarWidgetExpanded ? 0.75 : 0.25,
-                  duration: AnimationConstants.quickTransition.duration,
-                  child: Icon(
-                    Symbols.arrow_forward_ios_rounded,
-                    color: textColor,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-            AnimatedContainer(
-              duration: AnimationConstants.quickTransition.duration,
-              curve: AnimationConstants.quickTransition.curve,
-              height: _isCalendarWidgetExpanded ? 440.0 : 0.0,
-              child: ClipRect(
-                child: AnimatedOpacity(
-                  duration: AnimationConstants.quickTransition.duration,
-                  curve: AnimationConstants.quickTransition.curve,
-                  opacity: _isCalendarWidgetExpanded ? 1.0 : 0.0,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tarih Gösterimi',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildTriToggle(
-                            value: _calendarDisplayMode,
-                            labels: const ['Her İkisi', 'Sadece Hicri', 'Sadece Miladi'],
-                            onChanged: (mode) async {
-                              setState(() { _calendarDisplayMode = mode; });
-                              await WidgetBridgeService.setCalendarWidgetDisplayMode(mode);
-                              debugPrint('Takvim widget tarih modu değiştirildi: $mode');
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Arka Plan Opaklığı',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          _DebouncedSlider(
-                            value: _calendarWidgetOpacity,
-                            min: 0.0,
-                            max: 1.0,
-                            divisions: 10,
-                            labelBuilder: (v) => v.toStringAsFixed(1),
-                            onChangedImmediate: (v) {
-                              setState(() { _calendarWidgetOpacity = v; });
-                            },
-                            onDebouncedChangeEnd: (v) async {
-                              try {
-                                await WidgetBridgeService.setCalendarWidgetCardOpacity(v);
-                              } catch (_) {}
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Widget Gradient',
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              _buildCustomSwitch(
-                                isEnabled: _calendarGradientEnabled,
-                                onToggle: () async {
-                                  setState(() {
-                                    _calendarGradientEnabled = !_calendarGradientEnabled;
-                                  });
-                                  try {
-                                    await WidgetBridgeService.setCalendarWidgetGradientEnabled(_calendarGradientEnabled);
-                                  } catch (e) {}
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Köşe Yarıçapı',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          _DebouncedSlider(
-                            value: _calendarWidgetRadius.toDouble(),
-                            min: 0.0,
-                            max: 120.0,
-                            divisions: 12,
-                            labelBuilder: (v) => v.round().toString(),
-                            onChangedImmediate: (v) {
-                              setState(() { _calendarWidgetRadius = v.round(); });
-                            },
-                            onDebouncedChangeEnd: (v) async {
-                              try {
-                                await WidgetBridgeService.setCalendarWidgetCardRadiusDp(v.round());
-                              } catch (_) {}
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Arka Plan Rengi',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _buildTriToggle(
-                            value: _calendarBgColorMode,
-                            labels: const ['Sistem', 'Açık', 'Koyu'],
-                            onChanged: (mode) async {
-                              setState(() { _calendarBgColorMode = mode; });
-                              await WidgetBridgeService.setCalendarWidgetBackgroundColorMode(mode);
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Hicri Tarih Font Stili',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _buildBiToggle(
-                            value: _calendarHijriFontStyle,
-                            labels: const ['Light', 'Bold'],
-                            onChanged: (style) async {
-                              setState(() { _calendarHijriFontStyle = style; });
-                              await WidgetBridgeService.setCalendarWidgetHijriFontStyle(style);
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Miladi Tarih Font Stili',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _buildBiToggle(
-                            value: _calendarGregorianFontStyle,
-                            labels: const ['Light', 'Bold'],
-                            onChanged: (style) async {
-                              setState(() { _calendarGregorianFontStyle = style; });
-                              await WidgetBridgeService.setCalendarWidgetGregorianFontStyle(style);
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Metin Rengi',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          _buildTriToggle(
-                            value: _calendarTextColorMode,
-                            labels: const ['Sistem', 'Koyu', 'Açık'],
-                            onChanged: (mode) async {
-                              setState(() { _calendarTextColorMode = mode; });
-                              await WidgetBridgeService.setCalendarWidgetTextColorMode(mode);
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-} 
-
-class _DebouncedSlider extends StatefulWidget {
-  final double value;
-  final double min;
-  final double max;
-  final int? divisions;
-  final String Function(double) labelBuilder;
-  final ValueChanged<double> onChangedImmediate;
-  final ValueChanged<double> onDebouncedChangeEnd;
-
-  const _DebouncedSlider({
-    required this.value,
-    required this.min,
-    required this.max,
-    this.divisions,
-    required this.labelBuilder,
-    required this.onChangedImmediate,
-    required this.onDebouncedChangeEnd,
-  });
-
-  @override
-  State<_DebouncedSlider> createState() => _DebouncedSliderState();
-}
-
-class _DebouncedSliderState extends State<_DebouncedSlider> {
-  Timer? _debounce;
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Slider(
-      value: widget.value,
-      min: widget.min,
-      max: widget.max,
-      divisions: widget.divisions,
-      label: widget.labelBuilder(widget.value),
-      onChanged: (v) {
-        widget.onChangedImmediate(v);
-        _debounce?.cancel();
-        _debounce = Timer(const Duration(milliseconds: 200), () {
-          widget.onDebouncedChangeEnd(v);
-        });
-      },
-      onChangeEnd: (v) {
-        _debounce?.cancel();
-        widget.onDebouncedChangeEnd(v);
-      },
-    );
-  }
-
 }
