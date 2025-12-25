@@ -1,0 +1,350 @@
+{
+  "@@locale": "ar",
+  "appTitle": "أوقات الصلاة",
+  "locationNotSelected": "الموقع غير محدد",
+  "loading": "جاري التحميل...",
+  "error": "حدث خطأ",
+  "retry": "إعادة المحاولة",
+  "noInternetConnection": "لا يوجد اتصال بالإنترنت.",
+  "dataNotFound": "البيانات غير موجودة.",
+  "serverError": "حدث خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً.",
+  "unknownError": "حدث خطأ غير معروف.",
+  "gpsLocationNotAvailable": "موقع GPS غير متاح",
+  "qiblaDirectionCalculationFailed": "فشل حساب اتجاه القبلة",
+  "locationRefreshFailed": "فشل تحديث الموقع",
+  "compassNeedsCalibration": "يحتاج البوصلة إلى المعايرة",
+  "compassCalibrationRequired": "معايرة البوصلة مطلوبة",
+  "cityNotFoundForLocation": "لم يتم العثور على المدينة لموقعك",
+  "contentNotFound": "المحتوى غير موجود",
+  "retryLowercase": "إعادة المحاولة",
+  "automaticLocation": "الموقع التلقائي",
+  "gettingLocation": "جاري الحصول على الموقع...",
+  "notificationPermission": "إذن الإشعارات",
+  "notificationPermissionDescription": "مطلوب لإرسال إشعارات أوقات الصلاة.",
+  "locationPermission": "إذن الموقع",
+  "locationPermissionDescription": "مطلوب لعرض أوقات الصلاة الدقيقة بناءً على الموقع.",
+  "batteryOptimization": "إزالة من تحسين البطارية (Android)",
+  "batteryOptimizationDescription": "موصى به للإشعارات/التذكيرات الموثوقة في الخلفية.",
+  "granted": "ممنوح",
+  "grantPermission": "منح الإذن",
+  "locationHint": "دعنا نحدد موقعك أولاً حتى نتمكن من الحصول على أوقات الصلاة الدقيقة.",
+  "start": "ابدأ",
+  "monthlyPrayerTimes": "أوقات الصلاة الشهرية",
+  "nextPrayerTime": "وقت {prayerName}",
+  "@nextPrayerTime": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "calculatingTime": "جاري حساب الوقت",
+  "imsakReminderRamadan": "متبقي {timeText} حتى وقت الإمساك. الدقائق الأخيرة للسحور!",
+  "@imsakReminderRamadan": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "imsakReminder": "متبقي {timeText} حتى وقت الإمساك. استعد لصلاة الفجر.",
+  "@imsakReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "sunriseReminder": "متبقي {timeText} حتى شروق الشمس. وقت الإمساك ينتهي.",
+  "@sunriseReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "fridayPrayerReminder": "متبقي {timeText} حتى صلاة الجمعة. لا تنس الذهاب إلى المسجد!",
+  "@fridayPrayerReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "zuhrReminder": "متبقي {timeText} حتى صلاة الظهر. توضأ واستعد.",
+  "@zuhrReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "asrReminder": "متبقي {timeText} حتى صلاة العصر. استعد للصلاة الثانية في اليوم.",
+  "@asrReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "iftarReminder": "متبقي {timeText} حتى وقت الإفطار! صلاة المغرب ووقت الإفطار.",
+  "@iftarReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "maghribReminder": "متبقي {timeText} حتى صلاة المغرب. وقت المغرب يقترب.",
+  "@maghribReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaReminder": "متبقي {timeText} حتى صلاة العشاء. استعد لآخر صلاة في اليوم.",
+  "@ishaReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "prayerTimeReminder": "متبقي {timeText} حتى وقت الصلاة.",
+  "@prayerTimeReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "noSavedLocation": "لا يوجد موقع محفوظ",
+  "customizableNotifications": "إشعارات قابلة للتخصيص",
+  "onTime": "في الوقت المحدد",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "language": "اللغة",
+  "themeColor": "لون المظهر",
+  "notifications": "الإشعارات",
+  "continueButton": "تابع",
+  "searchCity": "ابحث عن مدينة...",
+  "search": "بحث...",
+  "imsak": "الإمساك",
+  "gunes": "الشروق",
+  "ogle": "الظهر",
+  "ikindi": "العصر",
+  "aksam": "المغرب",
+  "yatsi": "العشاء",
+  "cuma": "الجمعة",
+  "duaNotification": "إشعار الدعاء",
+  "date": "التاريخ",
+  "religiousDays": "الأيام والليالي الدينية",
+  "noReligiousDaysThisYear": "لم يتم العثور على أيام دينية لهذا العام.",
+  "diyanetPrayerTimes": "أوقات الصلاة من الديانات",
+  "diyanetPrayerTimesSubtitle": "مصادر رسمية، بيانات أوقات صلاة موثقة",
+  "gpsQiblaCompass": "بوصلة القبلة القائمة على GPS",
+  "gpsQiblaCompassSubtitle": "تصحيح الانحراف والتتبع المباشر عبر GPS",
+  "richThemeOptions": "خيارات مظهر غنية",
+  "richThemeOptionsSubtitle": "متوافق مع الليل/النهار، تصميم فريد مع لوحات ألوان",
+  "customizableNotificationsTitle": "إشعارات قابلة للتخصيص",
+  "customizableNotificationsSubtitle": "تكوين مرن مصمم خصيصاً لك",
+  "custom": "مخصص",
+  "dynamicMode": "ديناميكي",
+  "system": "النظام",
+  "dark": "داكن",
+  "dynamicThemeDescription": "سيتم تعيين لون المظهر ديناميكياً وفقاً لوقت الصلاة. يتم استخدام لون مختلف لكل وقت صلاة.",
+  "blackThemeDescription": "يتم استخدام اللون الأسود النقي. يوفر توفير البطارية على شاشات OLED.",
+  "systemThemeDescription": "على الأجهزة المدعومة، يتم تعديل الألوان تلقائياً وفقاً لوحة ألوان النظام.",
+  "autoDarkMode": "الوضع الداكن التلقائي",
+  "january": "يناير",
+  "february": "فبراير",
+  "march": "مارس",
+  "april": "أبريل",
+  "may": "مايو",
+  "june": "يونيو",
+  "july": "يوليو",
+  "august": "أغسطس",
+  "september": "سبتمبر",
+  "october": "أكتوبر",
+  "november": "نوفمبر",
+  "december": "ديسمبر",
+  "autoDarkModeDescription": "يتحول تلقائياً إلى الوضع الداكن بين 00:00 ووقت شروق الشمس",
+  "close": "إغلاق",
+  "kerahatTimeInfo": "معلومات وقت الكراهة",
+  "hour": "ساعة",
+  "minute": "دقيقة",
+  "minuteShort": "د",
+  "second": "ثانية",
+  "kerahatTime": "وقت الكراهة",
+  "dailyContent": "المحتوى اليومي",
+  "dailyVerse": "آية اليوم",
+  "dailyHadith": "حديث اليوم",
+  "qibla": "القبلة",
+  "distanceToKaaba": "المسافة إلى الكعبة",
+  "calculating": "جاري الحساب...",
+  "calibrateDevice": "لا تنس معايرة\nجهازك",
+  "minutesBefore": "قبل {minutes} دقيقة",
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerTimesLoadError": "حدث خطأ أثناء تحميل أوقات الصلاة لـ {date}: {error}",
+  "@prayerTimesLoadError": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "localFilesClearError": "حدث خطأ أثناء مسح الملفات المحلية: {error}",
+  "@localFilesClearError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryListLoadError": "حدث خطأ أثناء تحميل قائمة البلدان: {error}",
+  "@countryListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateListLoadError": "حدث خطأ أثناء تحميل قائمة الولايات: {error}",
+  "@stateListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityListLoadError": "حدث خطأ أثناء تحميل قائمة المدن: {error}",
+  "@cityListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveError": "حدث خطأ أثناء حفظ الموقع: {error}",
+  "@locationSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationLoadError": "حدث خطأ أثناء تحميل الموقع المحفوظ: {error}",
+  "@savedLocationLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationInitError": "حدث خطأ أثناء تهيئة الموقع: {error}",
+  "@locationInitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countrySearchError": "حدث خطأ أثناء البحث عن البلدان: {error}",
+  "@countrySearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateSearchError": "حدث خطأ أثناء البحث عن الولايات: {error}",
+  "@stateSearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "citySearchError": "حدث خطأ أثناء البحث عن المدن: {error}",
+  "@citySearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSelectError": "حدث خطأ أثناء اختيار الموقع: {error}",
+  "@locationSelectError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultLocationLoadError": "حدث خطأ أثناء تحميل الموقع الافتراضي: {error}",
+  "@defaultLocationLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsLocationFetchError": "حدث خطأ أثناء جلب موقع GPS: {error}",
+  "@gpsLocationFetchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryDataLoadError": "حدث خطأ أثناء تحميل بيانات البلد: {error}",
+  "@countryDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateDataLoadError": "حدث خطأ أثناء تحميل بيانات الولاية: {error}",
+  "@stateDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityDataLoadError": "حدث خطأ أثناء تحميل بيانات المدينة: {error}",
+  "@cityDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveDataError": "حدث خطأ أثناء حفظ بيانات الموقع: {error}",
+  "@locationSaveDataError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationClearError": "حدث خطأ أثناء مسح الموقع المحفوظ: {error}",
+  "@savedLocationClearError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

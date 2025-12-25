@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="3dp">
+
+    <!-- Tüm katmanları aynı köşe yarıçapı ile klipleyecek kart konteyneri -->
+    <FrameLayout
+        android:id="@+id/card_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_card"
+        android:clipToOutline="true"
+        android:outlineProvider="background">
+
+        <!-- Dinamik opaklık için programatik kart overlay (yuvarlak köşe) -->
+        <ImageView
+            android:id="@+id/bg_card_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:contentDescription="card" />
+
+        <!-- Tema renginden üretilen üstten alta transparan gradyan (bitmap ile atanacak) -->
+        <ImageView
+            android:id="@+id/gradient_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:alpha="0.6"
+            android:contentDescription="gradient" />
+
+        <!-- İçerik -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp">
+
+            <!-- Hicri tarih -->
+            <TextView
+                android:id="@+id/tv_hijri_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yükleniyor"
+                android:textStyle="normal"
+                android:fontFamily="sans-serif-light"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="15sp"
+                android:textColor="@color/widget_text_primary"
+                android:visibility="gone" />
+
+            <!-- Miladi tarih -->
+            <TextView
+                android:id="@+id/tv_gregorian_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textStyle="normal"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="16sp"
+                android:textColor="@color/widget_text_secondary" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>
+

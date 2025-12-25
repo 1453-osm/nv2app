@@ -1,0 +1,669 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Namaz Vakitleri",
+  "@appTitle": {
+    "description": "Uygulama başlığı"
+  },
+  "locationNotSelected": "Konum seçilmedi",
+  "@locationNotSelected": {
+    "description": "Konum seçilmediğinde gösterilen metin"
+  },
+  "loading": "Yükleniyor...",
+  "@loading": {
+    "description": "Yükleme durumu metni"
+  },
+  "error": "Hata Oluştu",
+  "@error": {
+    "description": "Genel hata başlığı"
+  },
+  "retry": "Tekrar Dene",
+  "@retry": {
+    "description": "Tekrar deneme butonu metni"
+  },
+  "noInternetConnection": "İnternet bağlantısı yok.",
+  "@noInternetConnection": {
+    "description": "İnternet bağlantısı hatası"
+  },
+  "dataNotFound": "Veri bulunamadı.",
+  "@dataNotFound": {
+    "description": "Veri bulunamadı hatası"
+  },
+  "serverError": "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.",
+  "@serverError": {
+    "description": "Sunucu hatası mesajı"
+  },
+  "unknownError": "Bilinmeyen hata oluştu.",
+  "@unknownError": {
+    "description": "Bilinmeyen hata mesajı"
+  },
+  "gpsLocationNotAvailable": "GPS konumu alınamadı",
+  "@gpsLocationNotAvailable": {
+    "description": "GPS konumu alınamadı hatası"
+  },
+  "qiblaDirectionCalculationFailed": "Kıble yönü hesaplanamadı",
+  "@qiblaDirectionCalculationFailed": {
+    "description": "Kıble yönü hesaplama hatası"
+  },
+  "locationRefreshFailed": "Konum yenilenemedi",
+  "@locationRefreshFailed": {
+    "description": "Konum yenileme hatası"
+  },
+  "compassNeedsCalibration": "Pusula kalibre edilmeli",
+  "@compassNeedsCalibration": {
+    "description": "Pusula kalibrasyon uyarısı"
+  },
+  "compassCalibrationRequired": "Pusula kalibrasyonu gerekli",
+  "@compassCalibrationRequired": {
+    "description": "Pusula kalibrasyon gerekliliği"
+  },
+  "cityNotFoundForLocation": "Konumunuz için şehir bulunamadı",
+  "@cityNotFoundForLocation": {
+    "description": "Şehir bulunamadı hatası"
+  },
+  "contentNotFound": "İçerik bulunamadı",
+  "@contentNotFound": {
+    "description": "İçerik bulunamadı hatası"
+  },
+  "retryLowercase": "Tekrar dene",
+  "@retryLowercase": {
+    "description": "Küçük harfli tekrar deneme metni"
+  },
+  "automaticLocation": "Otomatik Konum",
+  "@automaticLocation": {
+    "description": "Otomatik konum butonu metni"
+  },
+  "gettingLocation": "Konum Alınıyor...",
+  "@gettingLocation": {
+    "description": "Konum alınırken gösterilen metin"
+  },
+  "notificationPermission": "Bildirim İzni",
+  "@notificationPermission": {
+    "description": "Bildirim izni başlığı"
+  },
+  "notificationPermissionDescription": "Vakit bildirimleri gönderebilmek için gereklidir.",
+  "@notificationPermissionDescription": {
+    "description": "Bildirim izni açıklaması"
+  },
+  "locationPermission": "Konum İzni",
+  "@locationPermission": {
+    "description": "Konum izni başlığı"
+  },
+  "locationPermissionDescription": "Konuma göre doğru namaz vakitlerini göstermek için gereklidir.",
+  "@locationPermissionDescription": {
+    "description": "Konum izni açıklaması"
+  },
+  "batteryOptimization": "Pil Optimizasyonundan Çıkar (Android)",
+  "@batteryOptimization": {
+    "description": "Pil optimizasyonu başlığı"
+  },
+  "batteryOptimizationDescription": "Arka planda güvenilir bildirim/hatırlatıcı için önerilir.",
+  "@batteryOptimizationDescription": {
+    "description": "Pil optimizasyonu açıklaması"
+  },
+  "granted": "Verildi",
+  "@granted": {
+    "description": "İzin verildi durumu"
+  },
+  "grantPermission": "İzin Ver",
+  "@grantPermission": {
+    "description": "İzin verme butonu metni"
+  },
+  "locationHint": "Namaz vakitlerini doğru alabilmemiz için önce bulunduğun konumu seçelim.",
+  "@locationHint": {
+    "description": "Konum seçimi ipucu metni"
+  },
+  "start": "Başla",
+  "@start": {
+    "description": "Başlatma butonu metni"
+  },
+  "monthlyPrayerTimes": "Aylık Namaz Vakitleri",
+  "@monthlyPrayerTimes": {
+    "description": "Aylık namaz vakitleri başlığı"
+  },
+  "nextPrayerTime": "{prayerName} vaktine",
+  "@nextPrayerTime": {
+    "description": "Sonraki namaz vakti metni",
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "calculatingTime": "Vakit hesaplanıyor",
+  "@calculatingTime": {
+    "description": "Vakit hesaplanıyor metni"
+  },
+  "imsakReminderRamadan": "İmsak vaktine {timeText} kaldı. Sahur için son dakikalar!",
+  "@imsakReminderRamadan": {
+    "description": "Ramazan'da imsak hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "imsakReminder": "İmsak vaktine {timeText} kaldı. Fecr namazına hazırlanın.",
+  "@imsakReminder": {
+    "description": "Normal imsak hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "sunriseReminder": "Güneş doğuşuna {timeText} kaldı. İmsak vakti sona eriyor.",
+  "@sunriseReminder": {
+    "description": "Güneş doğuşu hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "fridayPrayerReminder": "Cuma namazına {timeText} kaldı. Camiye gitmeyi unutmayın!",
+  "@fridayPrayerReminder": {
+    "description": "Cuma namazı hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "zuhrReminder": "Öğle namazına {timeText} kaldı. Abdest alıp hazırlanın.",
+  "@zuhrReminder": {
+    "description": "Öğle namazı hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "asrReminder": "İkindi namazına {timeText} kaldı. Günün ikinci namazı için hazırlanın.",
+  "@asrReminder": {
+    "description": "İkindi namazı hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "iftarReminder": "İftar vaktine {timeText} kaldı! Akşam namazı ve iftar zamanı.",
+  "@iftarReminder": {
+    "description": "İftar hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "maghribReminder": "Akşam namazına {timeText} kaldı. Maghrib vakti yaklaşıyor.",
+  "@maghribReminder": {
+    "description": "Akşam namazı hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaReminder": "Yatsı namazına {timeText} kaldı. Günün son namazı için hazırlanın.",
+  "@ishaReminder": {
+    "description": "Yatsı namazı hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "prayerTimeReminder": "Namaz vaktine {timeText} kaldı.",
+  "@prayerTimeReminder": {
+    "description": "Genel namaz vakti hatırlatıcısı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "noSavedLocation": "Kayıtlı konum yok",
+  "@noSavedLocation": {
+    "description": "Kayıtlı konum olmadığında gösterilen metin"
+  },
+  "customizableNotifications": "Özelleştirilebilir bildirimler",
+  "@customizableNotifications": {
+    "description": "Özelleştirilebilir bildirimler başlığı"
+  },
+  "onTime": "Tam zamanında",
+  "@onTime": {
+    "description": "Tam zamanında metni"
+  },
+  "save": "Kaydet",
+  "@save": {
+    "description": "Kaydet butonu metni"
+  },
+  "cancel": "İptal",
+  "@cancel": {
+    "description": "İptal butonu metni"
+  },
+  "language": "Dil",
+  "@language": {
+    "description": "Dil seçici başlığı"
+  },
+  "themeColor": "Tema Rengi",
+  "@themeColor": {
+    "description": "Tema rengi menü başlığı"
+  },
+  "notifications": "Bildirimler",
+  "@notifications": {
+    "description": "Bildirimler menü başlığı"
+  },
+  "continueButton": "İlerle",
+  "@continueButton": {
+    "description": "İlerle butonu metni"
+  },
+  "searchCity": "Şehir ara...",
+  "@searchCity": {
+    "description": "Şehir arama placeholder metni"
+  },
+  "search": "Ara...",
+  "@search": {
+    "description": "Genel arama placeholder metni"
+  },
+  "imsak": "İmsak",
+  "@imsak": {
+    "description": "İmsak namaz vakti adı"
+  },
+  "gunes": "Güneş",
+  "@gunes": {
+    "description": "Güneş doğuşu adı"
+  },
+  "ogle": "Öğle",
+  "@ogle": {
+    "description": "Öğle namaz vakti adı"
+  },
+  "ikindi": "İkindi",
+  "@ikindi": {
+    "description": "İkindi namaz vakti adı"
+  },
+  "aksam": "Akşam",
+  "@aksam": {
+    "description": "Akşam namaz vakti adı"
+  },
+  "yatsi": "Yatsı",
+  "@yatsi": {
+    "description": "Yatsı namaz vakti adı"
+  },
+  "cuma": "Cuma",
+  "@cuma": {
+    "description": "Cuma namazı adı"
+  },
+  "duaNotification": "Dua Bildirimi",
+  "@duaNotification": {
+    "description": "Dua bildirimi başlığı"
+  },
+  "date": "Tarih",
+  "@date": {
+    "description": "Tarih başlığı"
+  },
+  "religiousDays": "Dini Gün ve Geceler",
+  "@religiousDays": {
+    "description": "Dini günler başlığı"
+  },
+  "noReligiousDaysThisYear": "Bu yıl için dini gün bulunamadı.",
+  "@noReligiousDaysThisYear": {
+    "description": "Dini gün bulunamadı mesajı"
+  },
+  "diyanetPrayerTimes": "Diyanet kaynaklı vakitler",
+  "@diyanetPrayerTimes": {
+    "description": "Onboarding özellik başlığı"
+  },
+  "diyanetPrayerTimesSubtitle": "Resmi kaynaklardan, doğrulanmış vakit verileriyle",
+  "@diyanetPrayerTimesSubtitle": {
+    "description": "Onboarding özellik alt başlığı"
+  },
+  "gpsQiblaCompass": "GPS tabanlı kıble pusulası",
+  "@gpsQiblaCompass": {
+    "description": "Onboarding özellik başlığı"
+  },
+  "gpsQiblaCompassSubtitle": "Sapma düzeltmesi ve gps ile her an canlı",
+  "@gpsQiblaCompassSubtitle": {
+    "description": "Onboarding özellik alt başlığı"
+  },
+  "richThemeOptions": "Zengin tema seçenekleri",
+  "@richThemeOptions": {
+    "description": "Onboarding özellik başlığı"
+  },
+  "richThemeOptionsSubtitle": "Gece/gündüz uyumlu, renk paletleriyle özgün tasarım",
+  "@richThemeOptionsSubtitle": {
+    "description": "Onboarding özellik alt başlığı"
+  },
+  "customizableNotificationsTitle": "Özelleştirilebilir bildirimler",
+  "@customizableNotificationsTitle": {
+    "description": "Onboarding özellik başlığı"
+  },
+  "customizableNotificationsSubtitle": "Esnek yapılandırma ile sana özel",
+  "@customizableNotificationsSubtitle": {
+    "description": "Onboarding özellik alt başlığı"
+  },
+  "custom": "Özel",
+  "@custom": {
+    "description": "Özel tema modu"
+  },
+  "dynamicMode": "Dinamik",
+  "@dynamicMode": {
+    "description": "Dinamik tema modu"
+  },
+  "system": "Sistem",
+  "@system": {
+    "description": "Sistem tema modu"
+  },
+  "dark": "Karanlık",
+  "@dark": {
+    "description": "Karanlık tema modu"
+  },
+  "dynamicThemeDescription": "Tema rengi namaz vaktine göre dinamik olarak ayarlanacaktır. Her namaz vakti için farklı bir renk kullanılır.",
+  "@dynamicThemeDescription": {
+    "description": "Dinamik tema açıklaması"
+  },
+  "blackThemeDescription": "Tam siyah renk kullanılır. Oled ekranlarda pil tasarrufu sağlar.",
+  "@blackThemeDescription": {
+    "description": "Siyah tema açıklaması"
+  },
+  "systemThemeDescription": "Desteklenen cihazlarda renkler sistem renk paletine göre otomatik olarak ayarlanır.",
+  "@systemThemeDescription": {
+    "description": "Sistem teması açıklaması"
+  },
+  "autoDarkMode": "Oto Karartma",
+  "@autoDarkMode": {
+    "description": "Otomatik karartma başlığı"
+  },
+  "january": "Oca",
+  "@january": {
+    "description": "Ocak ayı kısaltması"
+  },
+  "february": "Şub",
+  "@february": {
+    "description": "Şubat ayı kısaltması"
+  },
+  "march": "Mar",
+  "@march": {
+    "description": "Mart ayı kısaltması"
+  },
+  "april": "Nis",
+  "@april": {
+    "description": "Nisan ayı kısaltması"
+  },
+  "may": "May",
+  "@may": {
+    "description": "Mayıs ayı kısaltması"
+  },
+  "june": "Haz",
+  "@june": {
+    "description": "Haziran ayı kısaltması"
+  },
+  "july": "Tem",
+  "@july": {
+    "description": "Temmuz ayı kısaltması"
+  },
+  "august": "Ağu",
+  "@august": {
+    "description": "Ağustos ayı kısaltması"
+  },
+  "september": "Eyl",
+  "@september": {
+    "description": "Eylül ayı kısaltması"
+  },
+  "october": "Eki",
+  "@october": {
+    "description": "Ekim ayı kısaltması"
+  },
+  "november": "Kas",
+  "@november": {
+    "description": "Kasım ayı kısaltması"
+  },
+  "december": "Ara",
+  "@december": {
+    "description": "Aralık ayı kısaltması"
+  },
+  "autoDarkModeDescription": "00:00 ile güneş vakti arasında otomatik olarak karanlık moda geçer",
+  "@autoDarkModeDescription": {
+    "description": "Otomatik karartma açıklaması"
+  },
+  "close": "Kapat",
+  "@close": {
+    "description": "Kapat butonu metni"
+  },
+  "kerahatTimeInfo": "Kerahat Vakti Bilgisi",
+  "@kerahatTimeInfo": {
+    "description": "Kerahat vakti debug dialog başlığı"
+  },
+  "hour": "saat",
+  "@hour": {
+    "description": "Saat birimi"
+  },
+  "minute": "dakika",
+  "@minute": {
+    "description": "Dakika birimi"
+  },
+  "minuteShort": "dk",
+  "@minuteShort": {
+    "description": "Dakika kısaltması"
+  },
+  "second": "saniye",
+  "@second": {
+    "description": "Saniye birimi"
+  },
+  "kerahatTime": "Kerahat Vakti",
+  "@kerahatTime": {
+    "description": "Kerahat vakti uyarı metni"
+  },
+  "dailyContent": "Günlük İçerik",
+  "@dailyContent": {
+    "description": "Günlük içerik başlığı"
+  },
+  "dailyVerse": "Günün Ayeti",
+  "@dailyVerse": {
+    "description": "Günün ayeti başlığı"
+  },
+  "dailyHadith": "Günün Hadisi",
+  "@dailyHadith": {
+    "description": "Günün hadisi başlığı"
+  },
+  "qibla": "Kıble",
+  "@qibla": {
+    "description": "Kıble başlığı"
+  },
+  "distanceToKaaba": "Kabe'ye mesafe",
+  "@distanceToKaaba": {
+    "description": "Kabe'ye mesafe metni"
+  },
+  "calculating": "Hesaplanıyor...",
+  "@calculating": {
+    "description": "Hesaplanıyor metni"
+  },
+  "calibrateDevice": "Cihazınızı kalibre etmeyi\nunutmayın",
+  "@calibrateDevice": {
+    "description": "Kalibrasyon uyarısı"
+  },
+  "minutesBefore": "{minutes} dakika önce",
+  "@minutesBefore": {
+    "description": "Dakika önce metni",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerTimesLoadError": "{date} tarihinin namaz vakitleri yüklenirken hata oluştu: {error}",
+  "@prayerTimesLoadError": {
+    "description": "Namaz vakitleri yükleme hatası",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "localFilesClearError": "Local dosyalar temizlenirken hata oluştu: {error}",
+  "@localFilesClearError": {
+    "description": "Local dosya temizleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryListLoadError": "Ülke listesi yüklenirken hata oluştu: {error}",
+  "@countryListLoadError": {
+    "description": "Ülke listesi yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateListLoadError": "Eyalet listesi yüklenirken hata oluştu: {error}",
+  "@stateListLoadError": {
+    "description": "Eyalet listesi yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityListLoadError": "Şehir listesi yüklenirken hata oluştu: {error}",
+  "@cityListLoadError": {
+    "description": "Şehir listesi yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveError": "Konum kaydedilirken hata oluştu: {error}",
+  "@locationSaveError": {
+    "description": "Konum kaydetme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationLoadError": "Kaydedilen konum yüklenirken hata oluştu: {error}",
+  "@savedLocationLoadError": {
+    "description": "Kaydedilen konum yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationInitError": "Konum başlatılırken hata oluştu: {error}",
+  "@locationInitError": {
+    "description": "Konum başlatma hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countrySearchError": "Ülke arama yapılırken hata oluştu: {error}",
+  "@countrySearchError": {
+    "description": "Ülke arama hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateSearchError": "Eyalet arama yapılırken hata oluştu: {error}",
+  "@stateSearchError": {
+    "description": "Eyalet arama hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "citySearchError": "Şehir arama yapılırken hata oluştu: {error}",
+  "@citySearchError": {
+    "description": "Şehir arama hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSelectError": "Konum seçilirken hata oluştu: {error}",
+  "@locationSelectError": {
+    "description": "Konum seçme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultLocationLoadError": "Varsayılan konum yüklenirken hata oluştu: {error}",
+  "@defaultLocationLoadError": {
+    "description": "Varsayılan konum yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsLocationFetchError": "GPS konumu alınırken hata oluştu: {error}",
+  "@gpsLocationFetchError": {
+    "description": "GPS konumu alma hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryDataLoadError": "Ülke verileri yüklenirken hata oluştu: {error}",
+  "@countryDataLoadError": {
+    "description": "Ülke verileri yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateDataLoadError": "Eyalet verileri yüklenirken hata oluştu: {error}",
+  "@stateDataLoadError": {
+    "description": "Eyalet verileri yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityDataLoadError": "Şehir verileri yüklenirken hata oluştu: {error}",
+  "@cityDataLoadError": {
+    "description": "Şehir verileri yükleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveDataError": "Konum kaydedilirken hata oluştu: {error}",
+  "@locationSaveDataError": {
+    "description": "Konum kaydetme hatası (servis)",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationClearError": "Kaydedilen konum temizlenirken hata oluştu: {error}",
+  "@savedLocationClearError": {
+    "description": "Kaydedilen konum temizleme hatası",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

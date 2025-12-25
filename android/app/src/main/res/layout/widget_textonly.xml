@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yükleniyor"
+            android:textStyle="normal"
+            android:fontFamily="sans-serif-light"
+            android:maxLines="1"
+            android:ellipsize="end"
+                android:textSize="15sp"
+                android:textColor="#CC000000" />
+
+        <TextView
+            android:id="@+id/tv_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textSize="16sp"
+            android:textColor="#99000000" />
+
+        <Chronometer
+            android:id="@+id/cm_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#99000000"
+                android:countDown="true"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</FrameLayout>
+
+

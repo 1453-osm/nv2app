@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: Varsayılan (base) tema renginde marka yeşili kalsın.
+         Farklı paletler için sistemin temalı ikonları zaten monochrome
+         katmanı üzerinden rengi uyarlayacaktır. -->
+    <color name="ic_launcher_background">#588065</color>
+</resources>
+

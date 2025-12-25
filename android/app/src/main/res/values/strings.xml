@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Namaz Vaktim</string>
+    
+    <!-- Widget Configure Activity -->
+    <string name="configure_widget">Widget Yapılandırma</string>
+    <string name="configure_widget_subtitle">Widget görünümünü özelleştirin</string>
+    <string name="configure_small_widget">Küçük Widget Yapılandırma</string>
+    <string name="configure_text_widget">Metin Widget Yapılandırma</string>
+    <string name="configure_calendar_widget">Takvim Widget Yapılandırma</string>
+    <string name="preview_home_hint">Ana ekran önizlemesi</string>
+    <string name="preview_wallpaper_loading">Duvar kağıdı yükleniyor...</string>
+    <string name="preview_status_time_sample">12:30</string>
+    
+    <string name="card_opacity">Kart Opaklığı</string>
+    <string name="gradient_mode">Gradyan Modu</string>
+    <string name="card_radius">Köşe Yarıçapı</string>
+    <string name="text_color_mode">Metin Rengi</string>
+    <string name="bg_color_mode">Arka Plan Rengi</string>
+    
+    <string name="calendar_settings">Takvim Ayarları</string>
+    <string name="date_display_mode">Tarih Görünümü</string>
+    <string name="hijri_font_style">Hicri Font</string>
+    <string name="gregorian_font_style">Miladi Font</string>
+    <string name="text_size">Metin Boyutu</string>
+    
+    <string name="save">Kaydet</string>
+    <string name="cancel">İptal</string>
+    
+</resources>

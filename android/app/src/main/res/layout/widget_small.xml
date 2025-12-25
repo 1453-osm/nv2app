@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="2dp">
+
+    <!-- Tüm katmanları aynı köşe yarıçapı ile klipleyecek kart konteyneri -->
+    <FrameLayout
+        android:id="@+id/card_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_card"
+        android:clipToOutline="true"
+        android:outlineProvider="background">
+
+        <!-- Duvar kağıdı blur kaldırıldı -->
+
+        <!-- Dinamik opaklık için programatik kart overlay (yuvarlak köşe) -->
+        <ImageView
+            android:id="@+id/bg_card_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:contentDescription="card" />
+
+        <!-- Tema renginden üretilen üstten alta transparan gradyan (bitmap ile atanacak) -->
+        <ImageView
+            android:id="@+id/gradient_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:alpha="0.6"
+            android:contentDescription="gradient" />
+
+        <!-- İçerik -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yükleniyor"
+                android:textStyle="normal"
+                android:fontFamily="sans-serif-light"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="15sp"
+                android:textColor="@color/widget_text_primary" />
+
+            <TextView
+                android:id="@+id/tv_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="16sp"
+                android:textColor="@color/widget_text_secondary" />
+
+            <!-- API 24+ için Chronometer ile gerçek zamanlı geri sayım (uygulama kapalıyken de akar) -->
+            <Chronometer
+                android:id="@+id/cm_countdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/widget_text_secondary"
+                android:countDown="true"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>
+
+

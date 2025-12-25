@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_text_primary">#CC000000</color>
+    <color name="widget_text_secondary">#99000000</color>
+    <!-- Light mode overlay: semi-transparent white -->
+    <color name="widget_overlay_color">#A0FFFFFF</color>
+    <color name="ic_launcher_background">#588065</color>
+</resources>

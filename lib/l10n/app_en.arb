@@ -1,0 +1,350 @@
+{
+  "@@locale": "en",
+  "appTitle": "Prayer Times",
+  "locationNotSelected": "Location not selected",
+  "loading": "Loading...",
+  "error": "Error Occurred",
+  "retry": "Retry",
+  "noInternetConnection": "No internet connection.",
+  "dataNotFound": "Data not found.",
+  "serverError": "Server error occurred. Please try again later.",
+  "unknownError": "Unknown error occurred.",
+  "gpsLocationNotAvailable": "GPS location not available",
+  "qiblaDirectionCalculationFailed": "Qibla direction calculation failed",
+  "locationRefreshFailed": "Location refresh failed",
+  "compassNeedsCalibration": "Compass needs calibration",
+  "compassCalibrationRequired": "Compass calibration required",
+  "cityNotFoundForLocation": "City not found for your location",
+  "contentNotFound": "Content not found",
+  "retryLowercase": "retry",
+  "automaticLocation": "Automatic Location",
+  "gettingLocation": "Getting Location...",
+  "notificationPermission": "Notification Permission",
+  "notificationPermissionDescription": "Required to send prayer time notifications.",
+  "locationPermission": "Location Permission",
+  "locationPermissionDescription": "Required to show accurate prayer times based on location.",
+  "batteryOptimization": "Remove from Battery Optimization (Android)",
+  "batteryOptimizationDescription": "Recommended for reliable background notifications/reminders.",
+  "granted": "Granted",
+  "grantPermission": "Grant Permission",
+  "locationHint": "Let's select your location first so we can get accurate prayer times.",
+  "start": "Start",
+  "monthlyPrayerTimes": "Monthly Prayer Times",
+  "nextPrayerTime": "{prayerName} time",
+  "@nextPrayerTime": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "calculatingTime": "Calculating time",
+  "imsakReminderRamadan": "{timeText} until Imsak time. Last minutes for Suhur!",
+  "@imsakReminderRamadan": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "imsakReminder": "{timeText} until Imsak time. Prepare for Fajr prayer.",
+  "@imsakReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "sunriseReminder": "{timeText} until sunrise. Imsak time is ending.",
+  "@sunriseReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "fridayPrayerReminder": "{timeText} until Friday prayer. Don't forget to go to the mosque!",
+  "@fridayPrayerReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "zuhrReminder": "{timeText} until Zuhr prayer. Perform ablution and prepare.",
+  "@zuhrReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "asrReminder": "{timeText} until Asr prayer. Prepare for the second prayer of the day.",
+  "@asrReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "iftarReminder": "{timeText} until Iftar time! Maghrib prayer and Iftar time.",
+  "@iftarReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "maghribReminder": "{timeText} until Maghrib prayer. Maghrib time is approaching.",
+  "@maghribReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaReminder": "{timeText} until Isha prayer. Prepare for the last prayer of the day.",
+  "@ishaReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "prayerTimeReminder": "{timeText} until prayer time.",
+  "@prayerTimeReminder": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "noSavedLocation": "No saved location",
+  "customizableNotifications": "Customizable notifications",
+  "onTime": "On time",
+  "save": "Save",
+  "cancel": "Cancel",
+  "language": "Language",
+  "themeColor": "Theme Color",
+  "notifications": "Notifications",
+  "continueButton": "Continue",
+  "searchCity": "Search city...",
+  "search": "Search...",
+  "imsak": "Imsak",
+  "gunes": "Sunrise",
+  "ogle": "Zuhr",
+  "ikindi": "Asr",
+  "aksam": "Maghrib",
+  "yatsi": "Isha",
+  "cuma": "Friday",
+  "duaNotification": "Prayer Notification",
+  "date": "Date",
+  "religiousDays": "Religious Days and Nights",
+  "noReligiousDaysThisYear": "No religious days found for this year.",
+  "diyanetPrayerTimes": "Diyanet prayer times",
+  "diyanetPrayerTimesSubtitle": "Official sources, verified prayer time data",
+  "gpsQiblaCompass": "GPS-based Qibla compass",
+  "gpsQiblaCompassSubtitle": "Deviation correction and live GPS tracking",
+  "richThemeOptions": "Rich theme options",
+  "richThemeOptionsSubtitle": "Night/day compatible, unique design with color palettes",
+  "customizableNotificationsTitle": "Customizable notifications",
+  "customizableNotificationsSubtitle": "Flexible configuration tailored to you",
+  "custom": "Custom",
+  "dynamicMode": "Dynamic",
+  "system": "System",
+  "dark": "Dark",
+  "dynamicThemeDescription": "Theme color will be set dynamically according to prayer time. A different color is used for each prayer time.",
+  "blackThemeDescription": "Pure black color is used. Provides battery savings on OLED screens.",
+  "systemThemeDescription": "On supported devices, colors are automatically adjusted according to the system color palette.",
+  "autoDarkMode": "Auto Dark Mode",
+  "january": "Jan",
+  "february": "Feb",
+  "march": "Mar",
+  "april": "Apr",
+  "may": "May",
+  "june": "Jun",
+  "july": "Jul",
+  "august": "Aug",
+  "september": "Sep",
+  "october": "Oct",
+  "november": "Nov",
+  "december": "Dec",
+  "autoDarkModeDescription": "Automatically switches to dark mode between 00:00 and sunrise time",
+  "close": "Close",
+  "kerahatTimeInfo": "Kerahat Time Information",
+  "hour": "hour",
+  "minute": "minute",
+  "minuteShort": "min",
+  "second": "second",
+  "kerahatTime": "Kerahat Time",
+  "dailyContent": "Daily Content",
+  "dailyVerse": "Verse of the Day",
+  "dailyHadith": "Hadith of the Day",
+  "qibla": "Qibla",
+  "distanceToKaaba": "Distance to Kaaba",
+  "calculating": "Calculating...",
+  "calibrateDevice": "Don't forget to\ncalibrate your device",
+  "minutesBefore": "{minutes} minutes before",
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerTimesLoadError": "Error loading prayer times for {date}: {error}",
+  "@prayerTimesLoadError": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "localFilesClearError": "Error clearing local files: {error}",
+  "@localFilesClearError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryListLoadError": "Error loading country list: {error}",
+  "@countryListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateListLoadError": "Error loading state list: {error}",
+  "@stateListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityListLoadError": "Error loading city list: {error}",
+  "@cityListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveError": "Error saving location: {error}",
+  "@locationSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationLoadError": "Error loading saved location: {error}",
+  "@savedLocationLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationInitError": "Error initializing location: {error}",
+  "@locationInitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countrySearchError": "Error searching countries: {error}",
+  "@countrySearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateSearchError": "Error searching states: {error}",
+  "@stateSearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "citySearchError": "Error searching cities: {error}",
+  "@citySearchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSelectError": "Error selecting location: {error}",
+  "@locationSelectError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultLocationLoadError": "Error loading default location: {error}",
+  "@defaultLocationLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsLocationFetchError": "Error fetching GPS location: {error}",
+  "@gpsLocationFetchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "countryDataLoadError": "Error loading country data: {error}",
+  "@countryDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stateDataLoadError": "Error loading state data: {error}",
+  "@stateDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "cityDataLoadError": "Error loading city data: {error}",
+  "@cityDataLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSaveDataError": "Error saving location data: {error}",
+  "@locationSaveDataError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "savedLocationClearError": "Error clearing saved location: {error}",
+  "@savedLocationClearError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

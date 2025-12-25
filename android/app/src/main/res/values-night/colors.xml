@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_text_primary">#FFFFFFFF</color>
+    <color name="widget_text_secondary">#E6FFFFFF</color>
+    <!-- Dark mode overlay: semi-transparent black -->
+    <color name="widget_overlay_color">#A0000000</color>
+    <color name="ic_launcher_background">#588065</color>
+</resources>
+
+

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gradyan modları -->
+    <string-array name="gradient_modes">
+        <item>Kapalı</item>
+        <item>Gradyan</item>
+        <item>Renkli</item>
+    </string-array>
+    
+    <!-- Metin rengi modları -->
+    <string-array name="text_color_modes">
+        <item>Sistem</item>
+        <item>Koyu</item>
+        <item>Açık</item>
+    </string-array>
+    
+    <!-- Arka plan rengi modları -->
+    <string-array name="bg_color_modes">
+        <item>Sistem</item>
+        <item>Açık</item>
+        <item>Koyu</item>
+    </string-array>
+
+    <!-- Tarih görünüm modları -->
+    <string-array name="date_display_modes">
+        <item>Her İkisi</item>
+        <item>Hicri</item>
+        <item>Miladi</item>
+    </string-array>
+
+    <!-- Font stilleri -->
+    <string-array name="font_styles">
+        <item>Normal</item>
+        <item>Kalın</item>
+    </string-array>
+
+    <!-- Metin boyutları -->
+    <string-array name="text_size_options">
+        <item>Küçük</item>
+        <item>Normal</item>
+        <item>Büyük</item>
+        <item>Çok Büyük</item>
+    </string-array>
+</resources>
+
