@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Nv2</string>
+	<string>Namaz Vakti</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>nv2</string>
+	<string>Namaz Vakti</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -67,6 +67,28 @@
 	<array>
 		<string>arm64</string>
 	</array>
-    <!-- Removed always-location usage and background location mode because background location is not required -->
+	
+	<!-- Background Modes for notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	
+	<!-- Notification permission description -->
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Bu uygulama namaz vakitlerinde size hatırlatma bildirimleri göndermek için bildirim izni ister.</string>
+	
+	<!-- App Store Export Compliance -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<!-- Localization support -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>tr</string>
+		<string>en</string>
+		<string>ar</string>
+	</array>
 </dict>
 </plist>
