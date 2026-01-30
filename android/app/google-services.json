@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "977812493931",
+    "project_id": "namazvaktim-1453",
+    "storage_bucket": "namazvaktim-1453.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977812493931:android:abb9be480eef54e6b5032e",
+        "android_client_info": {
+          "package_name": "com.example.nv2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0nhOhZcUlOsLPkoau6HvP3Tsl9vmBwUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977812493931:android:686759747b5989d2b5032e",
+        "android_client_info": {
+          "package_name": "com.osm.NamazVaktim"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0nhOhZcUlOsLPkoau6HvP3Tsl9vmBwUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
