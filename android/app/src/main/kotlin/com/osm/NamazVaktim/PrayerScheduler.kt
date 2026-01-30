@@ -18,8 +18,13 @@ object PrayerScheduler {
 		"aksam" to 105,
 		"yatsi" to 106,
 		"cuma" to 107,
-		"dua" to 108
+		"dua" to 108,
+		"autodark_night" to 109,
+		"autodark_sunrise" to 110
 	)
+
+	private const val ACTION_AUTO_DARK_NIGHT = "com.osm.NamazVaktim.ACTION_AUTO_DARK_NIGHT"
+	private const val ACTION_AUTO_DARK_SUNRISE = "com.osm.NamazVaktim.ACTION_AUTO_DARK_SUNRISE"
 
 	private fun baseNotificationId(id: String): String = id.substringBefore('_')
 
@@ -131,6 +136,7 @@ object PrayerScheduler {
 					putExtra("text", text)
 					putExtra("soundId", soundId)
 					putExtra("requestCode", req)
+					putExtra("notificationId", id) // Sessiz mod kontrolü için
 				}
 				val pi = PendingIntent.getBroadcast(context, req, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
@@ -181,6 +187,9 @@ object PrayerScheduler {
 			// Günlük dua bildirimi (10:00)
 			scheduleGroup("dua", 10, 0, 0)
 			scheduleGroup("dua", 10, 0, 1)
+
+			// Oto Karartma Planlaması
+			scheduleAutoDarkMode(context, flutterPrefs)
 		} catch (e: Exception) {
 			Log.e(TAG, "scheduleAll error", e)
 		}
@@ -211,14 +220,14 @@ object PrayerScheduler {
 
 	private fun titleFor(id: String): String = when(baseNotificationId(id)) {
 		"imsak" -> "\uD83C\uDF05 İmsak Vakti"
-		"gunes" -> "☀️ Güneş Doğuşu"
-		"ogle" -> "🕌 Öğle Namazı"
-		"ikindi" -> "🕐 İkindi Namazı"
-		"aksam" -> "🌇 Akşam Namazı"
-		"yatsi" -> "🌙 Yatsı Namazı"
-		"cuma" -> "🕌 Cuma Namazı"
+		"gunes" -> "Güneş Doğuşu"
+		"ogle" -> "Öğle Namazı"
+		"ikindi" -> "İkindi Namazı"
+		"aksam" -> "Akşam Namazı"
+		"yatsi" -> "Yatsı Namazı"
+		"cuma" -> "Cuma Namazı"
 		"dua" -> "\uD83E\uDD32 Günün Duası"
-		else -> "🕌 Namaz Vakti"
+		else -> "Namaz Vakti"
 	}
 
 	private fun bodyFor(id: String, minutes: Int): String {
@@ -260,16 +269,18 @@ object PrayerScheduler {
 	private fun notifyMinutes(context: Context, id: String): Int {
 		return try {
 			val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+			val baseId = baseNotificationId(id)
+			val defaultMinutes = if (baseId == "cuma") 45 else 5
 			var minutes = prefs.readIntCompat(
 				"flutter.nv_notif_${id}_minutes",
 				"nv_notif_${id}_minutes",
-				5
+				defaultMinutes
 			)
-			if (baseNotificationId(id) == "cuma" && minutes < 15) {
+			if (baseId == "cuma" && minutes < 15) {
 				minutes = 15
 			}
 			minutes
-		} catch (_: Exception) { if (baseNotificationId(id) == "cuma") 15 else 5 }
+		} catch (_: Exception) { if (baseNotificationId(id) == "cuma") 45 else 5 }
 	}
 
 	@Suppress("SameParameterValue")
@@ -316,6 +327,73 @@ object PrayerScheduler {
 			}
 		}
 		return fallback
+	}
+
+	private fun scheduleAutoDarkMode(context: Context, prefs: SharedPreferences) {
+		try {
+			val isAutoDarkMode = prefs.readBooleanCompat("flutter.auto_dark_mode", "auto_dark_mode", false)
+			if (!isAutoDarkMode) return
+
+			val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+			// 1) Gece Yarısı (00:00) - Gece moduna geçiş
+			val midnightCal = java.util.Calendar.getInstance().apply {
+				set(java.util.Calendar.HOUR_OF_DAY, 0)
+				set(java.util.Calendar.MINUTE, 0)
+				set(java.util.Calendar.SECOND, 0)
+				set(java.util.Calendar.MILLISECOND, 0)
+				if (timeInMillis <= System.currentTimeMillis()) {
+					add(java.util.Calendar.DAY_OF_YEAR, 1)
+				}
+			}
+			val midnightIntent = Intent(context, AutoDarkModeReceiver::class.java).apply {
+				action = ACTION_AUTO_DARK_NIGHT
+			}
+			val midnightPi = PendingIntent.getBroadcast(context, 109, midnightIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+				am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnightCal.timeInMillis, midnightPi)
+			} else {
+				am.setExact(AlarmManager.RTC_WAKEUP, midnightCal.timeInMillis, midnightPi)
+			}
+
+			// 2) Gün Doğumu - Gündüz moduna geri dönüş
+			fun scheduleSunrise(sunriseStr: String?, dayOffset: Int) {
+				if (sunriseStr.isNullOrEmpty()) return
+				val parts = sunriseStr.split(":")
+				if (parts.size != 2) return
+				val h = parts[0].toIntOrNull() ?: return
+				val m = parts[1].toIntOrNull() ?: return
+
+				val sunriseCal = java.util.Calendar.getInstance().apply {
+					add(java.util.Calendar.DAY_OF_YEAR, dayOffset)
+					set(java.util.Calendar.HOUR_OF_DAY, h)
+					set(java.util.Calendar.MINUTE, m)
+					set(java.util.Calendar.SECOND, 0)
+					set(java.util.Calendar.MILLISECOND, 500) // Tam saniyede tetiklensin
+				}
+
+				if (sunriseCal.timeInMillis <= System.currentTimeMillis()) return
+
+				val sunriseIntent = Intent(context, AutoDarkModeReceiver::class.java).apply {
+					action = ACTION_AUTO_DARK_SUNRISE
+				}
+				val sunrisePi = PendingIntent.getBroadcast(context, 110 + dayOffset, sunriseIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+					am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, sunriseCal.timeInMillis, sunrisePi)
+				} else {
+					am.setExact(AlarmManager.RTC_WAKEUP, sunriseCal.timeInMillis, sunrisePi)
+				}
+			}
+
+			val sunriseToday = prefs.readStringCompat("flutter.nv_sunrise", "nv_sunrise", "")
+			val sunriseTomorrow = prefs.readStringCompat("flutter.nv_sunrise_tomorrow", "nv_sunrise_tomorrow", "")
+			
+			scheduleSunrise(sunriseToday, 0)
+			scheduleSunrise(sunriseTomorrow, 1)
+
+		} catch (e: Exception) {
+			Log.e(TAG, "scheduleAutoDarkMode error", e)
+		}
 	}
 }
 

@@ -278,6 +278,7 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
 
             // İçerik: SharedPreferences üzerinden Flutter'ın yazdığı değerler
             val now = java.util.Calendar.getInstance()
+            val locale = WidgetLocalizationHelper.getLocale(prefs)
             // Öncelik: Flutter'ın kaydettiği kesin hedef zaman (epoch ms)
             val directEpoch = prefsReadLongCompat(prefs, "flutter.nv_next_epoch_ms")
             val nowWall = System.currentTimeMillis()
@@ -287,9 +288,20 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
                 val remain = directEpoch!! - nowWall
                 Triple(directName, null, remain)
             } else {
-                findNextPrayerAndCountdown(prefs, now)
+                findNextPrayerAndCountdown(prefs, now, locale)
             }
-            val title = if (triple.first.isNullOrBlank()) "Vakit hesaplanıyor" else "${triple.first} vaktine"
+            val calculatingText = WidgetLocalizationHelper.getCalculatingTimeText(locale)
+            val nextPrayerFormat = WidgetLocalizationHelper.getNextPrayerTimeFormat(locale)
+            val prayerName = if (triple.first.isNullOrBlank()) {
+                null
+            } else {
+                WidgetLocalizationHelper.getPrayerName(locale, triple.first!!)
+            }
+            val title = if (prayerName.isNullOrBlank()) {
+                calculatingText
+            } else {
+                "$prayerName $nextPrayerFormat"
+            }
             views.setTextViewText(R.id.tv_title, title)
             val subtitle = triple.second ?: "--"
             val remainingMs = triple.third
@@ -300,20 +312,21 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
 
                 if (hours > 0) {
                     // 1- Xsaat Ydk
-                    val text = "${hours}saat ${minutes}dk"
+                    val text = WidgetLocalizationHelper.formatTimeRemaining(locale, hours, minutes, 0)
                     views.setTextViewText(R.id.tv_subtitle, text)
                     views.setViewVisibility(R.id.tv_subtitle, android.view.View.VISIBLE)
                     views.setViewVisibility(R.id.cm_countdown, android.view.View.GONE)
                 } else if (minutes > 0) {
                     // 2- Ydakika
-                    val text = "${minutes}dakika"
+                    val text = WidgetLocalizationHelper.formatTimeRemaining(locale, 0, minutes, 0)
                     views.setTextViewText(R.id.tv_subtitle, text)
                     views.setViewVisibility(R.id.tv_subtitle, android.view.View.VISIBLE)
                     views.setViewVisibility(R.id.cm_countdown, android.view.View.GONE)
                 } else {
                     // 3- Zsaniye (bir dakikanın altında) - Chronometer ile saniye saniye akar
                     val base = android.os.SystemClock.elapsedRealtime() + remainingMs
-                    views.setChronometer(R.id.cm_countdown, base, "%s saniye", true)
+                    val secondText = WidgetLocalizationHelper.getSecondText(locale)
+                    views.setChronometer(R.id.cm_countdown, base, "%s $secondText", true)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         views.setChronometerCountDown(R.id.cm_countdown, true)
                     }
@@ -402,7 +415,7 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
 
 
 
-        private fun findNextPrayerAndCountdown(prefs: SharedPreferences, now: java.util.Calendar): Triple<String?, String?, Long> {
+        private fun findNextPrayerAndCountdown(prefs: SharedPreferences, now: java.util.Calendar, locale: String): Triple<String?, String?, Long> {
             // Öncelik: her zaman vakitlerden hesaplama (uygulama kapalıyken de çalışır)
             // Flutter'ın yazdığı stringler yalnızca yedek olarak kullanılsın.
             val directName = prefs.getString("flutter.nv_next_prayer_name", null)
@@ -458,17 +471,7 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
                     val m = ((diffMs % 3_600_000) / 60_000).toInt()
                     val s = ((diffMs % 60_000) / 1000).toInt()
                     val remainingMs = diffMs
-                    val parts = mutableListOf<String>()
-                    if (h > 0) {
-                        parts.add("${h}saat")
-                    }
-                    if (m > 0) {
-                        if (h > 0) parts.add("${m}dk") else parts.add("${m}dakika")
-                    }
-                    if (h == 0 && m == 0) {
-                        parts.add("${s}saniye")
-                    }
-                    val subtitle = parts.joinToString(" ")
+                    val subtitle = WidgetLocalizationHelper.formatTimeRemaining(locale, h, m, s)
                     return Triple(name, subtitle, remainingMs)
                 }
             }
@@ -487,17 +490,7 @@ class SmallPrayerWidgetProvider : AppWidgetProvider() {
                     val m = ((diffMs % 3_600_000) / 60_000).toInt()
                     val s = ((diffMs % 60_000) / 1000).toInt()
                     val remainingMs = diffMs
-                    val parts = mutableListOf<String>()
-                    if (h > 0) {
-                        parts.add("${h}saat")
-                    }
-                    if (m > 0) {
-                        if (h > 0) parts.add("${m}dk") else parts.add("${m}dakika")
-                    }
-                    if (h == 0 && m == 0) {
-                        parts.add("${s}saniye")
-                    }
-                    val subtitle = parts.joinToString(" ")
+                    val subtitle = WidgetLocalizationHelper.formatTimeRemaining(locale, h, m, s)
                     return Triple("İmsak", subtitle, remainingMs)
                 }
             }

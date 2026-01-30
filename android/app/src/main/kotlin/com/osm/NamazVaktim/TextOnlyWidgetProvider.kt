@@ -197,6 +197,7 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
 
             // İçerik verisi
             val now = java.util.Calendar.getInstance()
+            val locale = WidgetLocalizationHelper.getLocale(prefs)
             val directEpoch = prefsReadLongCompat(prefs, "flutter.nv_next_epoch_ms")
             val nowWall = System.currentTimeMillis()
             val useDirect = directEpoch != null && directEpoch > nowWall && (directEpoch - nowWall) < 36L * 3_600_000L
@@ -205,10 +206,21 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
                 val remain = directEpoch!! - nowWall
                 Triple(directName, null, remain)
             } else {
-                findNextPrayerAndCountdown(prefs, now)
+                findNextPrayerAndCountdown(prefs, now, locale)
             }
 
-            val title = if (triple.first.isNullOrBlank()) "Vakit hesaplanıyor" else "${triple.first} vaktine"
+            val calculatingText = WidgetLocalizationHelper.getCalculatingTimeText(locale)
+            val nextPrayerFormat = WidgetLocalizationHelper.getNextPrayerTimeFormat(locale)
+            val prayerName = if (triple.first.isNullOrBlank()) {
+                null
+            } else {
+                WidgetLocalizationHelper.getPrayerName(locale, triple.first!!)
+            }
+            val title = if (prayerName.isNullOrBlank()) {
+                calculatingText
+            } else {
+                "$prayerName $nextPrayerFormat"
+            }
             views.setTextViewText(R.id.tv_title, title)
             val subtitle = triple.second ?: "--"
             val remainingMs = triple.third
@@ -217,18 +229,19 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
                 val minutes = ((remainingMs % 3_600_000L) / 60_000L).toInt()
                 val seconds = ((remainingMs % 60_000L) / 1_000L).toInt()
                 if (hours > 0) {
-                    val text = "${hours}saat ${minutes}dk"
+                    val text = WidgetLocalizationHelper.formatTimeRemaining(locale, hours, minutes, 0)
                     views.setTextViewText(R.id.tv_subtitle, text)
                     views.setViewVisibility(R.id.tv_subtitle, android.view.View.VISIBLE)
                     views.setViewVisibility(R.id.cm_countdown, android.view.View.GONE)
                 } else if (minutes > 0) {
-                    val text = "${minutes}dakika"
+                    val text = WidgetLocalizationHelper.formatTimeRemaining(locale, 0, minutes, 0)
                     views.setTextViewText(R.id.tv_subtitle, text)
                     views.setViewVisibility(R.id.tv_subtitle, android.view.View.VISIBLE)
                     views.setViewVisibility(R.id.cm_countdown, android.view.View.GONE)
                 } else {
                     val base = android.os.SystemClock.elapsedRealtime() + remainingMs
-                    views.setChronometer(R.id.cm_countdown, base, "%s saniye", true)
+                    val secondText = WidgetLocalizationHelper.getSecondText(locale)
+                    views.setChronometer(R.id.cm_countdown, base, "%s $secondText", true)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         views.setChronometerCountDown(R.id.cm_countdown, true)
                     }
@@ -314,7 +327,7 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun findNextPrayerAndCountdown(prefs: android.content.SharedPreferences, now: java.util.Calendar): Triple<String?, String?, Long> {
+        private fun findNextPrayerAndCountdown(prefs: android.content.SharedPreferences, now: java.util.Calendar, locale: String): Triple<String?, String?, Long> {
             val directName = prefs.getString("flutter.nv_next_prayer_name", null)
             val directCountdown = prefs.getString("flutter.nv_countdown_text", null)
 
@@ -366,13 +379,7 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
                     val m = ((diffMs % 3_600_000) / 60_000).toInt()
                     val s = ((diffMs % 60_000) / 1000).toInt()
                     val remainingMs = diffMs
-                    val parts = mutableListOf<String>()
-                    if (h > 0) parts.add("${h}saat")
-                    if (m > 0) {
-                        if (h > 0) parts.add("${m}dk") else parts.add("${m}dakika")
-                    }
-                    if (h == 0 && m == 0) parts.add("${s}saniye")
-                    val subtitle = parts.joinToString(" ")
+                    val subtitle = WidgetLocalizationHelper.formatTimeRemaining(locale, h, m, s)
                     return Triple(name, subtitle, remainingMs)
                 }
             }
@@ -391,13 +398,7 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
                     val m = ((diffMs % 3_600_000) / 60_000).toInt()
                     val s = ((diffMs % 60_000) / 1000).toInt()
                     val remainingMs = diffMs
-                    val parts2 = mutableListOf<String>()
-                    if (h > 0) parts2.add("${h}saat")
-                    if (m > 0) {
-                        if (h > 0) parts2.add("${m}dk") else parts2.add("${m}dakika")
-                    }
-                    if (h == 0 && m == 0) parts2.add("${s}saniye")
-                    val subtitle = parts2.joinToString(" ")
+                    val subtitle = WidgetLocalizationHelper.formatTimeRemaining(locale, h, m, s)
                     return Triple("İmsak", subtitle, remainingMs)
                 }
             }
@@ -406,6 +407,18 @@ class TextOnlyWidgetProvider : AppWidgetProvider() {
                 return Triple(directName, directCountdown, -1L)
             }
             return Triple(null, null, -1L)
+        }
+
+        fun requestThemeAwareRefresh(context: Context) {
+            try {
+                val mgr = AppWidgetManager.getInstance(context)
+                val ids = mgr.getAppWidgetIds(ComponentName(context, TextOnlyWidgetProvider::class.java))
+                if (ids != null && ids.isNotEmpty()) {
+                    ids.forEach { updateAppWidget(context, mgr, it) }
+                    val viewIds = intArrayOf(R.id.tv_title, R.id.tv_subtitle, R.id.cm_countdown, R.id.root_container)
+                    viewIds.forEach { vId -> mgr.notifyAppWidgetViewDataChanged(ids, vId) }
+                }
+            } catch (_: Exception) {}
         }
 
 

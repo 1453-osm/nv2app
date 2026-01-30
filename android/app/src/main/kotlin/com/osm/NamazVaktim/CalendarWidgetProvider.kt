@@ -215,6 +215,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             }
 
             // Tarih içeriği: SharedPreferences'tan Flutter'ın yazdığı değerler
+            val locale = WidgetLocalizationHelper.getLocale(prefs)
             val hijriDate = prefs.getString("flutter.nv_calendar_hijri_date", "") ?: ""
             val gregorianDate = prefs.getString("flutter.nv_calendar_gregorian_date", "") ?: ""
             
@@ -241,6 +242,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 return spannable
             }
 
+            val loadingText = WidgetLocalizationHelper.getLoadingText(locale)
             when (dateDisplayMode) {
                 0 -> {
                     // Her ikisi
@@ -250,13 +252,13 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     } else {
                         views.setViewVisibility(R.id.tv_hijri_date, android.view.View.GONE)
                     }
-                    val gregorianText = gregorianDate.ifEmpty { "Yükleniyor..." }
+                    val gregorianText = gregorianDate.ifEmpty { loadingText }
                     views.setTextViewText(R.id.tv_gregorian_date, createStyledText(gregorianText, gregorianFontStyle == 1))
                     views.setViewVisibility(R.id.tv_gregorian_date, android.view.View.VISIBLE)
                 }
                 1 -> {
                     // Sadece Hicri
-                    val hijriText = hijriDate.ifEmpty { "Yükleniyor..." }
+                    val hijriText = hijriDate.ifEmpty { loadingText }
                     views.setTextViewText(R.id.tv_hijri_date, createStyledText(hijriText, hijriFontStyle == 1))
                     views.setViewVisibility(R.id.tv_hijri_date, android.view.View.VISIBLE)
                     views.setViewVisibility(R.id.tv_gregorian_date, android.view.View.GONE)
@@ -264,7 +266,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 2 -> {
                     // Sadece Miladi
                     views.setViewVisibility(R.id.tv_hijri_date, android.view.View.GONE)
-                    val gregorianText = gregorianDate.ifEmpty { "Yükleniyor..." }
+                    val gregorianText = gregorianDate.ifEmpty { loadingText }
                     views.setTextViewText(R.id.tv_gregorian_date, createStyledText(gregorianText, gregorianFontStyle == 1))
                     views.setViewVisibility(R.id.tv_gregorian_date, android.view.View.VISIBLE)
                 }

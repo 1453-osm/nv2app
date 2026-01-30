@@ -25,6 +25,11 @@ class BootReceiver : BroadcastReceiver() {
                 pi
             )
 
+            // Tüm namaz vakti ve tema alarmlarını yeniden planla
+            try {
+                PrayerScheduler.scheduleAll(context)
+            } catch (_: Exception) {}
+
             // İlk güncelleme için bir kere tetikle
             context.sendBroadcast(Intent(context, WidgetUpdateReceiver::class.java))
         }

@@ -14,6 +14,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.NotificationManager
 import android.content.Context
+import android.media.AudioManager
 
 class MainActivity : FlutterActivity() {
     private val channelName = "com.osm.namazvaktim/widgets"
@@ -146,6 +147,7 @@ class MainActivity : FlutterActivity() {
                         val text = call.argument<String>("text") ?: "Namaz vakti"
                         val soundId = call.argument<String>("soundId") ?: "alarm"
                         val requestCode = call.argument<Int>("requestCode") ?: 0x900
+                        val notificationId = call.argument<String>("notificationId")
 
                         val am = getSystemService(ALARM_SERVICE) as AlarmManager
                         val intent = Intent(this, PrayerAlarmReceiver::class.java).apply {
@@ -153,6 +155,9 @@ class MainActivity : FlutterActivity() {
                             putExtra("text", text)
                             putExtra("soundId", soundId)
                             putExtra("requestCode", requestCode)
+                            if (notificationId != null) {
+                                putExtra("notificationId", notificationId)
+                            }
                         }
                         val pi = PendingIntent.getBroadcast(
                             this,
@@ -227,6 +232,129 @@ class MainActivity : FlutterActivity() {
                             result.success(false)
                         }
                     } else {
+                        result.success(false)
+                    }
+                }
+                "isNotificationPolicyAccessGranted" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        result.success(notificationManager.isNotificationPolicyAccessGranted)
+                    } else {
+                        result.success(true) // Android M öncesi için her zaman true
+                    }
+                }
+                "requestNotificationPolicyAccess" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        if (!notificationManager.isNotificationPolicyAccessGranted) {
+                            val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            result.success(true)
+                        } else {
+                            result.success(true)
+                        }
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "setSilentMode" -> {
+                    try {
+                        val enabled = call.argument<Boolean>("enabled") ?: false
+                        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                        
+                        if (enabled) {
+                            // Mevcut ringer mode'u kaydet
+                            val currentMode = am.ringerMode
+                            prefs.edit().putInt("nv_saved_ringer_mode", currentMode).apply()
+                            
+                            // Sessiz moda al
+                            am.ringerMode = AudioManager.RINGER_MODE_SILENT
+                            result.success(true)
+                        } else {
+                            // Kaydedilmiş ringer mode'u geri yükle
+                            val savedMode = prefs.getInt("nv_saved_ringer_mode", AudioManager.RINGER_MODE_NORMAL)
+                            am.ringerMode = savedMode
+                            prefs.edit().remove("nv_saved_ringer_mode").apply()
+                            result.success(true)
+                        }
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
+                "scheduleSilentModeRestore" -> {
+                    try {
+                        val minutes = call.argument<Int>("minutes") ?: 15
+                        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        val cal = java.util.Calendar.getInstance().apply {
+                            add(java.util.Calendar.MINUTE, minutes)
+                        }
+                        val intent = Intent(this, SilentModeRestoreReceiver::class.java)
+                        val pi = PendingIntent.getBroadcast(
+                            this,
+                            0x800,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
+                        } else {
+                            am.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
+                        }
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
+                "cancelSilentModeRestore" -> {
+                    try {
+                        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        val intent = Intent(this, SilentModeRestoreReceiver::class.java)
+                        val pi = PendingIntent.getBroadcast(
+                            this,
+                            0x800,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        am.cancel(pi)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
+                "scheduleSilentModeAlarm" -> {
+                    // Sessiz mod için özel alarm kur
+                    try {
+                        val epochMillis = (call.argument<Number>("epochMillis")?.toLong()) ?: 0L
+                        val durationMinutes = call.argument<Int>("durationMinutes") ?: 15
+                        val prayerId = call.argument<String>("prayerId") ?: "unknown"
+                        val requestCode = call.argument<Int>("requestCode") ?: 0x600
+
+                        android.util.Log.d("MainActivity", "Sessiz mod alarmı kuruluyor: prayerId=$prayerId, epoch=$epochMillis, duration=$durationMinutes")
+
+                        val am = getSystemService(ALARM_SERVICE) as AlarmManager
+                        val intent = Intent(this, SilentModeReceiver::class.java).apply {
+                            putExtra("durationMinutes", durationMinutes)
+                            putExtra("prayerId", prayerId)
+                        }
+                        val pi = PendingIntent.getBroadcast(
+                            this,
+                            requestCode,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epochMillis, pi)
+                        } else {
+                            am.setExact(AlarmManager.RTC_WAKEUP, epochMillis, pi)
+                        }
+
+                        android.util.Log.d("MainActivity", "Sessiz mod alarmı kuruldu!")
+                        result.success(true)
+                    } catch (e: Exception) {
+                        android.util.Log.e("MainActivity", "Sessiz mod alarmı kurulamadı", e)
                         result.success(false)
                     }
                 }

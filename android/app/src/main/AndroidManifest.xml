@@ -24,6 +24,10 @@
     <!-- Lock screen widget izinleri (One UI 7 uyumluluğu için) -->
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Sessiz mod kontrolü için -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
         android:usesCleartextTraffic="false"
@@ -190,6 +194,29 @@
         <receiver
             android:name=".StopAlarmReceiver"
             android:exported="false" />
+
+        <!-- Sessiz mod için (namaz vakti girince) -->
+        <receiver
+            android:name=".SilentModeReceiver"
+            android:exported="false"
+            android:directBootAware="true" />
+
+        <!-- Sessiz moddan çıkış için -->
+        <receiver
+            android:name=".SilentModeRestoreReceiver"
+            android:exported="false"
+            android:directBootAware="true" />
+
+        <!-- Oto Karartma (Gece/Gündüz geçişi) için -->
+        <receiver
+            android:name=".AutoDarkModeReceiver"
+            android:exported="false"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.osm.NamazVaktim.ACTION_AUTO_DARK_NIGHT" />
+                <action android:name="com.osm.NamazVaktim.ACTION_AUTO_DARK_SUNRISE" />
+            </intent-filter>
+        </receiver>
 
         <!-- Boot sonrası tekrar planlama -->
         <receiver

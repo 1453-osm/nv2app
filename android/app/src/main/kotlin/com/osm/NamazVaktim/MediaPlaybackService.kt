@@ -43,7 +43,7 @@ class MediaPlaybackService : Service() {
 		val notif: Notification = NotificationCompat.Builder(this, channelId)
 			.setContentTitle(title)
 			.setContentText(text)
-			.setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+			.setSmallIcon(R.mipmap.ic_launcher)
 			.addAction(android.R.drawable.ic_media_pause, "Durdur", stopPi)
 			.setOngoing(true)
 			.build()
