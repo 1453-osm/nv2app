@@ -247,6 +247,10 @@
   "@language": {
     "description": "Dil seçici başlığı"
   },
+  "automatic": "Otomatik",
+  "@automatic": {
+    "description": "Otomatik dil seçimi"
+  },
   "themeColor": "Tema Rengi",
   "@themeColor": {
     "description": "Tema rengi menü başlığı"
@@ -423,7 +427,7 @@
   "@december": {
     "description": "Aralık ayı kısaltması"
   },
-  "autoDarkModeDescription": "00:00 ile güneş vakti arasında otomatik olarak karanlık moda geçer",
+  "autoDarkModeDescription": "00:00 ile güneş vakti arasında otomatik olarak karanlık temaya geçer",
   "@autoDarkModeDescription": {
     "description": "Otomatik karartma açıklaması"
   },
@@ -665,5 +669,368 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notificationTestTitle": "🔔 Test Bildirimi",
+  "@notificationTestTitle": {
+    "description": "Test bildirimi başlığı"
+  },
+  "notificationTestBody": "Bildirim sistemi çalışıyor.",
+  "@notificationTestBody": {
+    "description": "Test bildirimi gövdesi"
+  },
+  "notificationTestDuaTitle": "🤲 Test - Günün Duası",
+  "@notificationTestDuaTitle": {
+    "description": "Test dua bildirimi başlığı"
+  },
+  "notificationImsakTitle": "İmsak Vakti",
+  "@notificationImsakTitle": {
+    "description": "İmsak bildirimi başlığı"
+  },
+  "notificationSunriseTitle": "Güneş Doğuşu",
+  "@notificationSunriseTitle": {
+    "description": "Güneş doğuşu bildirimi başlığı"
+  },
+  "notificationZuhrTitle": "Öğle Namazı",
+  "@notificationZuhrTitle": {
+    "description": "Öğle namazı bildirimi başlığı"
+  },
+  "notificationAsrTitle": "İkindi Namazı",
+  "@notificationAsrTitle": {
+    "description": "İkindi namazı bildirimi başlığı"
+  },
+  "notificationMaghribTitle": "Akşam Namazı",
+  "@notificationMaghribTitle": {
+    "description": "Akşam namazı bildirimi başlığı"
+  },
+  "notificationIshaTitle": "Yatsı Namazı",
+  "@notificationIshaTitle": {
+    "description": "Yatsı namazı bildirimi başlığı"
+  },
+  "notificationPrayerTimeTitle": "Namaz Vakti",
+  "@notificationPrayerTimeTitle": {
+    "description": "Genel namaz vakti bildirimi başlığı"
+  },
+  "notificationImsakImmediateRamadan": "İmsak vakti girdi! Sahur bitmiştir, oruç başladı.",
+  "@notificationImsakImmediateRamadan": {
+    "description": "Ramazan'da imsak vakti anlık mesajı"
+  },
+  "notificationImsakImmediate": "İmsak vakti girdi. Sabah namazı vakti başladı.",
+  "@notificationImsakImmediate": {
+    "description": "İmsak vakti anlık mesajı"
+  },
+  "notificationSunriseImmediate": "Güneş doğdu! İmsak vakti sona erdi.",
+  "@notificationSunriseImmediate": {
+    "description": "Güneş doğuşu anlık mesajı"
+  },
+  "notificationZuhrImmediateFriday": "Cuma namazı vakti girdi! Allah kabul etsin.",
+  "@notificationZuhrImmediateFriday": {
+    "description": "Cuma günü öğle namazı anlık mesajı"
+  },
+  "notificationZuhrImmediate": "Öğle namazı vakti girdi. Allah kabul etsin.",
+  "@notificationZuhrImmediate": {
+    "description": "Öğle namazı anlık mesajı"
+  },
+  "notificationAsrImmediate": "İkindi namazı vakti girdi. Allah kabul etsin.",
+  "@notificationAsrImmediate": {
+    "description": "İkindi namazı anlık mesajı"
+  },
+  "notificationMaghribImmediateRamadan": "Akşam namazı vakti girdi! İftar zamanı geldi. 🌙",
+  "@notificationMaghribImmediateRamadan": {
+    "description": "Ramazan'da akşam namazı anlık mesajı"
+  },
+  "notificationMaghribImmediate": "Akşam namazı vakti girdi. Allah kabul etsin.",
+  "@notificationMaghribImmediate": {
+    "description": "Akşam namazı anlık mesajı"
+  },
+  "notificationIshaImmediate": "Yatsı namazı vakti girdi. Allah kabul etsin.",
+  "@notificationIshaImmediate": {
+    "description": "Yatsı namazı anlık mesajı"
+  },
+  "notificationPrayerTimeImmediate": "Namaz vakti girdi. Allah kabul etsin.",
+  "@notificationPrayerTimeImmediate": {
+    "description": "Genel namaz vakti anlık mesajı"
+  },
+  "notificationImsakAdvance": "İmsak vaktine {timeText} kaldı",
+  "@notificationImsakAdvance": {
+    "description": "İmsak vakti önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationImsakAfter": "İmsak vaktinden {timeText} sonra",
+  "@notificationImsakAfter": {
+    "description": "İmsak vakti sonrası mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAdvance": "Güneş doğuşuna {timeText} kaldı",
+  "@notificationSunriseAdvance": {
+    "description": "Güneş doğuşu önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAfter": "Güneş doğduktan {timeText} sonra",
+  "@notificationSunriseAfter": {
+    "description": "Güneş doğuşu sonrası mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvanceFriday": "Cuma namazına {timeText} kaldı",
+  "@notificationZuhrAdvanceFriday": {
+    "description": "Cuma namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvance": "Öğle namazına {timeText} kaldı",
+  "@notificationZuhrAdvance": {
+    "description": "Öğle namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationAsrAdvance": "İkindi namazına {timeText} kaldı",
+  "@notificationAsrAdvance": {
+    "description": "İkindi namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvanceRamadan": "İftar vaktine {timeText} kaldı !",
+  "@notificationMaghribAdvanceRamadan": {
+    "description": "Ramazan'da akşam namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvance": "Akşam namazına {timeText} kaldı",
+  "@notificationMaghribAdvance": {
+    "description": "Akşam namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationIshaAdvance": "Yatsı namazına {timeText} kaldı",
+  "@notificationIshaAdvance": {
+    "description": "Yatsı namazı önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationPrayerTimeAdvance": "Namaz vaktine {timeText} kaldı.",
+  "@notificationPrayerTimeAdvance": {
+    "description": "Genel namaz vakti önceden mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayTitle": "Cuma Namazı",
+  "@notificationFridayTitle": {
+    "description": "Cuma namazı bildirimi başlığı"
+  },
+  "notificationFridayMessage15": "Cuma namazına {timeText} kaldı. Camiye hareket etme zamanı!",
+  "@notificationFridayMessage15": {
+    "description": "Cuma namazı 15 dakika öncesi mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessage30": "Cuma namazına {timeText} kaldı. Hazırlıklara başlayın.",
+  "@notificationFridayMessage30": {
+    "description": "Cuma namazı 30 dakika öncesi mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessageMore": "Cuma namazına {timeText} kaldı. Abdest alıp hazırlanmayı unutmayın.",
+  "@notificationFridayMessageMore": {
+    "description": "Cuma namazı 30 dakikadan fazla öncesi mesajı",
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationDuaTitle": "🤲 Günün Duası",
+  "@notificationDuaTitle": {
+    "description": "Dua bildirimi başlığı"
+  },
+  "timeMinutes": "{minutes} dakika",
+  "@timeMinutes": {
+    "description": "Dakika metni",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{hours} saat",
+  "@timeHours": {
+    "description": "Saat metni",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursMinutes": "{hours} saat {minutes} dakika",
+  "@timeHoursMinutes": {
+    "description": "Saat ve dakika metni",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "themeColorRavza": "Ravza",
+  "@themeColorRavza": {
+    "description": "Ravza tema rengi adı"
+  },
+  "themeColorHarem": "Harem",
+  "@themeColorHarem": {
+    "description": "Harem tema rengi adı"
+  },
+  "themeColorAksa": "Aksa",
+  "@themeColorAksa": {
+    "description": "Aksa tema rengi adı"
+  },
+  "themeColorImsak": "İmsak",
+  "@themeColorImsak": {
+    "description": "İmsak tema rengi adı"
+  },
+  "themeColorGunes": "Güneş",
+  "@themeColorGunes": {
+    "description": "Güneş tema rengi adı"
+  },
+  "themeColorOgle": "Öğle",
+  "@themeColorOgle": {
+    "description": "Öğle tema rengi adı"
+  },
+  "themeColorIkindi": "İkindi",
+  "@themeColorIkindi": {
+    "description": "İkindi tema rengi adı"
+  },
+  "themeColorAksam": "Akşam",
+  "@themeColorAksam": {
+    "description": "Akşam tema rengi adı"
+  },
+  "themeColorYatsi": "Yatsı",
+  "@themeColorYatsi": {
+    "description": "Yatsı tema rengi adı"
+  },
+  "soundDefault": "Varsayılan",
+  "@soundDefault": {
+    "description": "Varsayılan ses seçeneği"
+  },
+  "soundAdhan7": "Arap Ezan",
+  "@soundAdhan7": {
+    "description": "Arap ezan sesi seçeneği"
+  },
+  "soundAdhan": "Ezan",
+  "@soundAdhan": {
+    "description": "Ezan sesi seçeneği"
+  },
+  "soundSela": "Sela",
+  "@soundSela": {
+    "description": "Sela sesi seçeneği"
+  },
+  "soundHard": "Sert Ton",
+  "@soundHard": {
+    "description": "Sert ton ses seçeneği"
+  },
+  "soundSoft": "Yumuşak Ton",
+  "@soundSoft": {
+    "description": "Yumuşak ton ses seçeneği"
+  },
+  "soundBird": "Kuşlar",
+  "@soundBird": {
+    "description": "Kuşlar sesi seçeneği"
+  },
+  "soundAlarm": "Alarm",
+  "@soundAlarm": {
+    "description": "Alarm sesi seçeneği"
+  },
+  "soundSilent": "Sessiz",
+  "@soundSilent": {
+    "description": "Sessiz ses seçeneği"
+  },
+  "silentModeAfterPrayer": "Namazdan sonra sessiz mod",
+  "@silentModeAfterPrayer": {
+    "description": "Namazdan sonra sessiz moda alma seçeneği"
+  },
+  "silentModeDuration": "Sessiz mod süresi",
+  "@silentModeDuration": {
+    "description": "Sessiz mod süresi başlığı"
+  },
+  "minutesAfter": "{minutes} dakika",
+  "@minutesAfter": {
+    "description": "Kaç dakika metni",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesAfterNotification": "{minutes} dakika sonra",
+  "@minutesAfterNotification": {
+    "description": "Dakika sonra metni (bildirimler için)",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "silentModePermissionRequired": "Sessiz mod izni gerekli. Ayarları açmak için dokunun.",
+  "religiousDayDaysUntil": "{days} gün sonra {name}",
+  "@religiousDayDaysUntil": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTomorrow": "Yarın {name}",
+  "@religiousDayTomorrow": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayToday": "{name} mübarek olsun",
+  "@religiousDayToday": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTodayEid": "Hayırlı Bayramlar"
 }

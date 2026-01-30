@@ -180,6 +180,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get language => 'Dil';
 
   @override
+  String get automatic => 'Otomatik';
+
+  @override
   String get themeColor => 'Tema Rengi';
 
   @override
@@ -320,7 +323,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get autoDarkModeDescription =>
-      '00:00 ile güneş vakti arasında otomatik olarak karanlık moda geçer';
+      '00:00 ile güneş vakti arasında otomatik olarak karanlık temaya geçer';
 
   @override
   String get close => 'Kapat';
@@ -463,4 +466,257 @@ class AppLocalizationsTr extends AppLocalizations {
   String savedLocationClearError(String error) {
     return 'Kaydedilen konum temizlenirken hata oluştu: $error';
   }
+
+  @override
+  String get notificationTestTitle => '🔔 Test Bildirimi';
+
+  @override
+  String get notificationTestBody => 'Bildirim sistemi çalışıyor.';
+
+  @override
+  String get notificationTestDuaTitle => '🤲 Test - Günün Duası';
+
+  @override
+  String get notificationImsakTitle => 'İmsak Vakti';
+
+  @override
+  String get notificationSunriseTitle => 'Güneş Doğuşu';
+
+  @override
+  String get notificationZuhrTitle => 'Öğle Namazı';
+
+  @override
+  String get notificationAsrTitle => 'İkindi Namazı';
+
+  @override
+  String get notificationMaghribTitle => 'Akşam Namazı';
+
+  @override
+  String get notificationIshaTitle => 'Yatsı Namazı';
+
+  @override
+  String get notificationPrayerTimeTitle => 'Namaz Vakti';
+
+  @override
+  String get notificationImsakImmediateRamadan =>
+      'İmsak vakti girdi! Sahur bitmiştir, oruç başladı.';
+
+  @override
+  String get notificationImsakImmediate =>
+      'İmsak vakti girdi. Sabah namazı vakti başladı.';
+
+  @override
+  String get notificationSunriseImmediate =>
+      'Güneş doğdu! İmsak vakti sona erdi.';
+
+  @override
+  String get notificationZuhrImmediateFriday =>
+      'Cuma namazı vakti girdi! Allah kabul etsin.';
+
+  @override
+  String get notificationZuhrImmediate =>
+      'Öğle namazı vakti girdi. Allah kabul etsin.';
+
+  @override
+  String get notificationAsrImmediate =>
+      'İkindi namazı vakti girdi. Allah kabul etsin.';
+
+  @override
+  String get notificationMaghribImmediateRamadan =>
+      'Akşam namazı vakti girdi! İftar zamanı geldi. 🌙';
+
+  @override
+  String get notificationMaghribImmediate =>
+      'Akşam namazı vakti girdi. Allah kabul etsin.';
+
+  @override
+  String get notificationIshaImmediate =>
+      'Yatsı namazı vakti girdi. Allah kabul etsin.';
+
+  @override
+  String get notificationPrayerTimeImmediate =>
+      'Namaz vakti girdi. Allah kabul etsin.';
+
+  @override
+  String notificationImsakAdvance(String timeText) {
+    return 'İmsak vaktine $timeText kaldı';
+  }
+
+  @override
+  String notificationImsakAfter(String timeText) {
+    return 'İmsak vaktinden $timeText sonra';
+  }
+
+  @override
+  String notificationSunriseAdvance(String timeText) {
+    return 'Güneş doğuşuna $timeText kaldı';
+  }
+
+  @override
+  String notificationSunriseAfter(String timeText) {
+    return 'Güneş doğduktan $timeText sonra';
+  }
+
+  @override
+  String notificationZuhrAdvanceFriday(String timeText) {
+    return 'Cuma namazına $timeText kaldı';
+  }
+
+  @override
+  String notificationZuhrAdvance(String timeText) {
+    return 'Öğle namazına $timeText kaldı';
+  }
+
+  @override
+  String notificationAsrAdvance(String timeText) {
+    return 'İkindi namazına $timeText kaldı';
+  }
+
+  @override
+  String notificationMaghribAdvanceRamadan(String timeText) {
+    return 'İftar vaktine $timeText kaldı !';
+  }
+
+  @override
+  String notificationMaghribAdvance(String timeText) {
+    return 'Akşam namazına $timeText kaldı';
+  }
+
+  @override
+  String notificationIshaAdvance(String timeText) {
+    return 'Yatsı namazına $timeText kaldı';
+  }
+
+  @override
+  String notificationPrayerTimeAdvance(String timeText) {
+    return 'Namaz vaktine $timeText kaldı.';
+  }
+
+  @override
+  String get notificationFridayTitle => 'Cuma Namazı';
+
+  @override
+  String notificationFridayMessage15(String timeText) {
+    return 'Cuma namazına $timeText kaldı. Camiye hareket etme zamanı!';
+  }
+
+  @override
+  String notificationFridayMessage30(String timeText) {
+    return 'Cuma namazına $timeText kaldı. Hazırlıklara başlayın.';
+  }
+
+  @override
+  String notificationFridayMessageMore(String timeText) {
+    return 'Cuma namazına $timeText kaldı. Abdest alıp hazırlanmayı unutmayın.';
+  }
+
+  @override
+  String get notificationDuaTitle => '🤲 Günün Duası';
+
+  @override
+  String timeMinutes(int minutes) {
+    return '$minutes dakika';
+  }
+
+  @override
+  String timeHours(int hours) {
+    return '$hours saat';
+  }
+
+  @override
+  String timeHoursMinutes(int hours, int minutes) {
+    return '$hours saat $minutes dakika';
+  }
+
+  @override
+  String get themeColorRavza => 'Ravza';
+
+  @override
+  String get themeColorHarem => 'Harem';
+
+  @override
+  String get themeColorAksa => 'Aksa';
+
+  @override
+  String get themeColorImsak => 'İmsak';
+
+  @override
+  String get themeColorGunes => 'Güneş';
+
+  @override
+  String get themeColorOgle => 'Öğle';
+
+  @override
+  String get themeColorIkindi => 'İkindi';
+
+  @override
+  String get themeColorAksam => 'Akşam';
+
+  @override
+  String get themeColorYatsi => 'Yatsı';
+
+  @override
+  String get soundDefault => 'Varsayılan';
+
+  @override
+  String get soundAdhan7 => 'Arap Ezan';
+
+  @override
+  String get soundAdhan => 'Ezan';
+
+  @override
+  String get soundSela => 'Sela';
+
+  @override
+  String get soundHard => 'Sert Ton';
+
+  @override
+  String get soundSoft => 'Yumuşak Ton';
+
+  @override
+  String get soundBird => 'Kuşlar';
+
+  @override
+  String get soundAlarm => 'Alarm';
+
+  @override
+  String get soundSilent => 'Sessiz';
+
+  @override
+  String get silentModeAfterPrayer => 'Namazdan sonra sessiz mod';
+
+  @override
+  String get silentModeDuration => 'Sessiz mod süresi';
+
+  @override
+  String minutesAfter(int minutes) {
+    return '$minutes dakika';
+  }
+
+  @override
+  String minutesAfterNotification(int minutes) {
+    return '$minutes dakika sonra';
+  }
+
+  @override
+  String get silentModePermissionRequired =>
+      'Sessiz mod izni gerekli. Ayarları açmak için dokunun.';
+
+  @override
+  String religiousDayDaysUntil(int days, String name) {
+    return '$days gün sonra $name';
+  }
+
+  @override
+  String religiousDayTomorrow(String name) {
+    return 'Yarın $name';
+  }
+
+  @override
+  String religiousDayToday(String name) {
+    return '$name mübarek olsun';
+  }
+
+  @override
+  String get religiousDayTodayEid => 'Hayırlı Bayramlar';
 }

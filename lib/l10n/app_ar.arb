@@ -125,6 +125,10 @@
   "save": "حفظ",
   "cancel": "إلغاء",
   "language": "اللغة",
+  "automatic": "تلقائي",
+  "@automatic": {
+    "description": "اختيار اللغة التلقائي"
+  },
   "themeColor": "لون المظهر",
   "notifications": "الإشعارات",
   "continueButton": "تابع",
@@ -141,8 +145,8 @@
   "date": "التاريخ",
   "religiousDays": "الأيام والليالي الدينية",
   "noReligiousDaysThisYear": "لم يتم العثور على أيام دينية لهذا العام.",
-  "diyanetPrayerTimes": "أوقات الصلاة من الديانات",
-  "diyanetPrayerTimesSubtitle": "مصادر رسمية، بيانات أوقات صلاة موثقة",
+  "diyanetPrayerTimes": "أوقات الصلاة من رئاسة الشؤون الدينية التركية",
+  "diyanetPrayerTimesSubtitle": "مصادر رسمية، بيانات أوقات صلاة موثوقة",
   "gpsQiblaCompass": "بوصلة القبلة القائمة على GPS",
   "gpsQiblaCompassSubtitle": "تصحيح الانحراف والتتبع المباشر عبر GPS",
   "richThemeOptions": "خيارات مظهر غنية",
@@ -346,5 +350,260 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notificationTestTitle": "🔔 إشعار تجريبي",
+  "notificationTestBody": "نظام الإشعارات يعمل.",
+  "notificationTestDuaTitle": "🤲 اختبار - دعاء اليوم",
+  "notificationImsakTitle": "وقت الإمساك",
+  "notificationSunriseTitle": "شروق الشمس",
+  "notificationZuhrTitle": "صلاة الظهر",
+  "notificationAsrTitle": "صلاة العصر",
+  "notificationMaghribTitle": "صلاة المغرب",
+  "notificationIshaTitle": "صلاة العشاء",
+  "notificationPrayerTimeTitle": "وقت الصلاة",
+  "notificationImsakImmediateRamadan": "حان وقت الإمساك! انتهى السحور، بدأ الصيام.",
+  "notificationImsakImmediate": "حان وقت الإمساك. بدأ وقت صلاة الفجر.",
+  "notificationSunriseImmediate": "طلعت الشمس! انتهى وقت الإمساك.",
+  "notificationZuhrImmediateFriday": "حان وقت صلاة الجمعة! تقبل الله.",
+  "notificationZuhrImmediate": "حان وقت صلاة الظهر. تقبل الله.",
+  "notificationAsrImmediate": "حان وقت صلاة العصر. تقبل الله.",
+  "notificationMaghribImmediateRamadan": "حان وقت صلاة المغرب! حان وقت الإفطار. 🌙",
+  "notificationMaghribImmediate": "حان وقت صلاة المغرب. تقبل الله.",
+  "notificationIshaImmediate": "حان وقت صلاة العشاء. تقبل الله.",
+  "notificationPrayerTimeImmediate": "حان وقت الصلاة. تقبل الله.",
+  "notificationImsakAdvance": "متبقي {timeText} حتى وقت الإمساك",
+  "@notificationImsakAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationImsakAfter": "بعد {timeText} من وقت الإمساك",
+  "@notificationImsakAfter": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAfter": "بعد {timeText} من شروق الشمس",
+  "@notificationSunriseAfter": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAdvance": "متبقي {timeText} حتى شروق الشمس",
+  "@notificationSunriseAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvanceFriday": "متبقي {timeText} حتى صلاة الجمعة",
+  "@notificationZuhrAdvanceFriday": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvance": "متبقي {timeText} حتى صلاة الظهر",
+  "@notificationZuhrAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationAsrAdvance": "متبقي {timeText} حتى صلاة العصر",
+  "@notificationAsrAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvanceRamadan": "متبقي {timeText} حتى وقت الإفطار!",
+  "@notificationMaghribAdvanceRamadan": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvance": "متبقي {timeText} حتى صلاة المغرب",
+  "@notificationMaghribAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationIshaAdvance": "متبقي {timeText} حتى صلاة العشاء",
+  "@notificationIshaAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationPrayerTimeAdvance": "متبقي {timeText} حتى وقت الصلاة.",
+  "@notificationPrayerTimeAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayTitle": "صلاة الجمعة",
+  "notificationFridayMessage15": "متبقي {timeText} حتى صلاة الجمعة. حان الوقت للذهاب إلى المسجد!",
+  "@notificationFridayMessage15": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessage30": "متبقي {timeText} حتى صلاة الجمعة. ابدأ بالتحضير.",
+  "@notificationFridayMessage30": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessageMore": "متبقي {timeText} حتى صلاة الجمعة. لا تنس الوضوء والتحضير.",
+  "@notificationFridayMessageMore": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationDuaTitle": "🤲 دعاء اليوم",
+  "timeMinutes": "{minutes} دقيقة",
+  "@timeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{hours} ساعة",
+  "@timeHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursMinutes": "{hours} ساعة {minutes} دقيقة",
+  "@timeHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "themeColorRavza": "الروضة",
+  "themeColorHarem": "الحرم",
+  "themeColorAksa": "الأقصى",
+  "themeColorImsak": "الإمساك",
+  "themeColorGunes": "الشروق",
+  "themeColorOgle": "الظهر",
+  "themeColorIkindi": "العصر",
+  "themeColorAksam": "المغرب",
+  "themeColorYatsi": "العشاء",
+  "soundDefault": "افتراضي",
+  "@soundDefault": {
+    "description": "خيار الصوت الافتراضي"
+  },
+  "soundAdhan7": "أذان عربي",
+  "@soundAdhan7": {
+    "description": "خيار صوت الأذان العربي"
+  },
+  "soundAdhan": "أذان",
+  "@soundAdhan": {
+    "description": "خيار صوت الأذان"
+  },
+  "soundSela": "الصلوات",
+  "@soundSela": {
+    "description": "خيار صوت الصلوات"
+  },
+  "soundHard": "نغمة قوية",
+  "@soundHard": {
+    "description": "خيار النغمة القوية"
+  },
+  "soundSoft": "نغمة ناعمة",
+  "@soundSoft": {
+    "description": "خيار النغمة الناعمة"
+  },
+  "soundBird": "طيور",
+  "@soundBird": {
+    "description": "خيار صوت الطيور"
+  },
+  "soundAlarm": "منبه",
+  "@soundAlarm": {
+    "description": "خيار صوت المنبه"
+  },
+  "soundSilent": "صامت",
+  "@soundSilent": {
+    "description": "خيار الصوت الصامت"
+  },
+  "silentModeAfterPrayer": "الوضع الصامت بعد الصلاة",
+  "@silentModeAfterPrayer": {
+    "description": "خيار تفعيل الوضع الصامت بعد الصلاة"
+  },
+  "silentModeDuration": "مدة الوضع الصامت",
+  "@silentModeDuration": {
+    "description": "عنوان مدة الوضع الصامت"
+  },
+  "minutesAfter": "بعد {minutes} دقيقة",
+  "@minutesAfter": {
+    "description": "نص بعد كم دقيقة",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "silentModePermissionRequired": "مطلوب إذن الوضع الصامت. انقر لفتح الإعدادات.",
+  "@silentModePermissionRequired": {
+    "description": "تحذير بأن إذن عدم الإزعاج مطلوب للوضع الصامت"
+  },
+  "minutesAfterNotification": "بعد {minutes} دقيقة",
+  "@minutesAfterNotification": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "religiousDayDaysUntil": "بقي {days} أيام على {name}",
+  "@religiousDayDaysUntil": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTomorrow": "غداً {name}",
+  "@religiousDayTomorrow": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayToday": "مبارك عليكم {name}",
+  "@religiousDayToday": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTodayEid": "عيد مبارك"
 }

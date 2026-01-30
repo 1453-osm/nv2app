@@ -46,25 +46,16 @@ class LocationBarViewModel extends ChangeNotifier {
   bool _containsArabic(String text) {
     return text.runes.any((rune) => rune >= 0x0600 && rune <= 0x06FF);
   }
-
-  /// Arapça metin için normalizasyon (diacritics temizleme ve lowercase)
-  String _normalizeArabic(String s) {
-    // Arapça karakterler için diacritics (harekeler) temizleme
-    // Unicode normalization kullanarak diacritics'i kaldır
-    String normalized = s;
-    // Arapça diacritics karakterlerini temizle (0x064B-0x065F arası)
-    normalized = normalized.replaceAll(RegExp(r'[\u064B-\u065F\u0670]'), '');
-    // Arapça harflerin varyasyonlarını normalize et
-    normalized = normalized.replaceAll('أ', 'ا');
-    normalized = normalized.replaceAll('إ', 'ا');
-    normalized = normalized.replaceAll('آ', 'ا');
-    normalized = normalized.replaceAll('ى', 'ي');
-    normalized = normalized.replaceAll('ة', 'ه');
-    return normalized.toLowerCase();
-  }
   
   final LocationService _locationService = LocationService();
   final PrayerTimesService _prayerTimesService = PrayerTimesService();
+  
+  // Cache için
+  List<StateProvince>? _cachedStates;
+  List<Country>? _cachedCountries;
+  List<SelectedLocation>? _cachedEnrichedHistory;
+  DateTime? _cacheTimestamp;
+  static const Duration _cacheValidityDuration = Duration(hours: 1);
   
   /// Pre-load history when ViewModel is created (lazy - sadece drawer açıldığında)
   LocationBarViewModel() {
@@ -74,7 +65,23 @@ class LocationBarViewModel extends ChangeNotifier {
   
   bool _isHistoryLoading = false;
   
-  /// Loads saved location history from SharedPreferences (lazy loading)
+  /// Cache'in geçerli olup olmadığını kontrol eder
+  bool _isCacheValid() {
+    if (_cachedStates == null || _cachedCountries == null || _cacheTimestamp == null) {
+      return false;
+    }
+    return DateTime.now().difference(_cacheTimestamp!) < _cacheValidityDuration;
+  }
+  
+  /// Cache'i temizler
+  void _clearCache() {
+    _cachedStates = null;
+    _cachedCountries = null;
+    _cachedEnrichedHistory = null;
+    _cacheTimestamp = null;
+  }
+  
+  /// Loads saved location history from SharedPreferences (lazy loading with cache)
   Future<void> _loadHistory() async {
     // Eğer history zaten yüklenmişse veya yükleniyorsa tekrar yükleme
     if (_history.isNotEmpty || _isHistoryLoading) return;
@@ -82,7 +89,7 @@ class LocationBarViewModel extends ChangeNotifier {
     _isHistoryLoading = true;
     
     try {
-      // Önce raw history'yi yükle (hızlı, isolate ile)
+      // Önce raw history'yi yükle (hızlı)
       final rawHistory = await _locationService.loadLocationHistory();
       
       // Eğer history boşsa, states ve countries yüklemeden çık
@@ -93,30 +100,75 @@ class LocationBarViewModel extends ChangeNotifier {
         return;
       }
       
-      // Önce raw history'yi göster (kullanıcı hemen görsün)
-      _history = rawHistory;
+      // Cache kontrolü - eğer cache geçerliyse direkt kullan
+      if (_isCacheValid() && _cachedEnrichedHistory != null) {
+        // Cache'deki history ile raw history'yi karşılaştır
+        final rawHistoryIds = rawHistory.map((sl) => sl.city.id).toSet();
+        final cachedHistoryIds = _cachedEnrichedHistory!.map((sl) => sl.city.id).toSet();
+        
+        // Eğer aynıysa cache'i kullan
+        if (rawHistoryIds.length == cachedHistoryIds.length && 
+            rawHistoryIds.every((id) => cachedHistoryIds.contains(id))) {
+          _history = List.from(_cachedEnrichedHistory!);
+          _isHistoryLoading = false;
+          notifyListeners();
+          return;
+        }
+      }
+      
+      // Önce raw history'yi göster (kullanıcı hemen görsün - UI responsive kalır)
+      _history = List.from(rawHistory); // Yeni liste oluştur
+      _isHistoryLoading = false;
       notifyListeners();
       
       // Sonra states ve countries'i paralel yükle ve zenginleştir (arka planda)
-      final statesFuture = _locationService.getStates();
-      final countriesFuture = _locationService.getCountries();
-      final states = await statesFuture;
-      final countries = await countriesFuture;
-      
-      // History'yi zenginleştir (güncelle)
-      _history = _enrichHistory(rawHistory, states, countries);
-      notifyListeners();
+      // Bu işlem UI'ı bloke etmez çünkü await kullanmıyoruz
+      Future.microtask(() async {
+        try {
+          List<StateProvince> states;
+          List<Country> countries;
+          
+          // Cache'den states ve countries'i al veya yükle
+          if (_isCacheValid() && _cachedStates != null && _cachedCountries != null) {
+            states = _cachedStates!;
+            countries = _cachedCountries!;
+          } else {
+            // Cache yoksa veya geçersizse yükle ve cache'le
+            final statesFuture = _locationService.getStates();
+            final countriesFuture = _locationService.getCountries();
+            states = await statesFuture;
+            countries = await countriesFuture;
+            
+            // Cache'e kaydet
+            _cachedStates = states;
+            _cachedCountries = countries;
+            _cacheTimestamp = DateTime.now();
+          }
+          
+          // History'yi zenginleştir (güncelle)
+          final enrichedHistory = _enrichHistory(rawHistory, states, countries);
+          _history = enrichedHistory;
+          
+          // Zenginleştirilmiş history'yi cache'le
+          _cachedEnrichedHistory = List.from(enrichedHistory);
+          
+          notifyListeners();
+        } catch (_) {
+          // Hata durumunda sessizce devam et
+        }
+      });
     } catch (_) {
       // Hata durumunda boş history göster
       _history = [];
-    } finally {
       _isHistoryLoading = false;
+      notifyListeners();
     }
   }
   
   /// Refresh history (public metod)
   Future<void> refreshHistory() async {
-    // History'yi sıfırla ve yeniden yükle
+    // Cache'i temizle ve history'yi sıfırla
+    _clearCache();
     _history = [];
     _isHistoryLoading = false;
     await _loadHistory();
@@ -147,19 +199,25 @@ class LocationBarViewModel extends ChangeNotifier {
   
   bool get isExpanded => _currentStep != LocationBarStep.collapsed;
 
+  /// History'yi arka planda preload et (uygulama açılışında çağrılır)
+  void preloadHistory() {
+    // Eğer history zaten yüklenmişse veya yükleniyorsa tekrar yükleme
+    if (_history.isNotEmpty || _isHistoryLoading) return;
+    
+    // History'yi arka planda yükle (UI'ı bloke etmez)
+    _loadHistory();
+  }
+
   Future<void> ensureDataLoaded() async {
     // History'yi lazy load yap (ilk açılışta)
-    if (_history.isEmpty) {
+    // Sadece history yüklü değilse yükle, şehirleri yükleme (sadece arama yapıldığında yüklenecek)
+    if (_history.isEmpty && !_isHistoryLoading) {
       // History'yi arka planda yükle (UI'ı bloke etmez)
       _loadHistory();
     }
     
-    // Eğer şehirler zaten yüklüyse veya yükleniyorsa, tekrar yükleme
-    if (_cities.isNotEmpty || _isLoading) return;
-    
-    // Şehirleri arka planda yükle
-    // UI'ı bloke etmemek için await kullanmıyoruz
-    _loadCitiesInBackground();
+    // Şehirleri sadece arama yapıldığında yükle (ilk açılışta yükleme)
+    // Bu sayede drawer açılış performansı artar
   }
   
   /// Şehirleri arka planda yükler, UI'ı bloke etmez
@@ -218,19 +276,22 @@ class LocationBarViewModel extends ChangeNotifier {
     
     // Eğer arama yapılıyorsa ve şehirler yüklenmemişse, önce yükle
     if (query.isNotEmpty && _cities.isEmpty && !_isLoading) {
+      // Şehirleri arka planda yükle (UI'ı bloke etmez)
       _loadCitiesInBackground().then((_) {
         // Şehirler yüklendikten sonra arama yap
         if (_searchQuery == query && _cities.isNotEmpty) {
           _runSearch();
         }
       });
+      // Arama yapılırken loading göster
+      notifyListeners();
     } else if (query.isEmpty) {
       // Arama temizlendiğinde sonuçları temizle
       _filteredCities.clear();
       notifyListeners();
-    } else {
-      // Normal arama debounce
-      _searchDebounce = Timer(const Duration(milliseconds: 220), () {
+    } else if (_cities.isNotEmpty) {
+      // Normal arama debounce (sadece şehirler yüklüyse) - 300ms optimizasyonu
+      _searchDebounce = Timer(const Duration(milliseconds: 300), () {
         _runSearch();
       });
       notifyListeners();
@@ -359,7 +420,16 @@ class LocationBarViewModel extends ChangeNotifier {
       await _prayerTimesService.clearLocalFile(location.city.id, DateTime.now().year);
       // Silinen konumu seçili konum hafızasından sil
       await _locationService.clearSavedLocation();
-      _history.removeWhere((sl) => sl.city.id == location.city.id);
+      // Yeni liste oluştur (Selector'ın değişikliği algılaması için)
+      _history = _history.where((sl) => sl.city.id != location.city.id).toList();
+      
+      // Cache'i de güncelle
+      if (_cachedEnrichedHistory != null) {
+        _cachedEnrichedHistory = _cachedEnrichedHistory!
+            .where((sl) => sl.city.id != location.city.id)
+            .toList();
+      }
+      
       notifyListeners();
     } catch (e) {
       // ignore errors

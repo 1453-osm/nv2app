@@ -56,9 +56,9 @@ class ThemeService extends ChangeNotifier {
   ThemeColorData _findThemeData(Color color) {
     try {
       return SettingsConstants.themeColors.firstWhere(
-        (e) => e.color.value == color.value,
+        (e) => e.color == color,
         orElse: () => SettingsConstants.prayerColors.values.firstWhere(
-          (e) => e.color.value == color.value,
+          (e) => e.color == color,
           orElse: () => SettingsConstants.defaultThemeColor,
         ),
       );
@@ -274,7 +274,7 @@ class ThemeService extends ChangeNotifier {
       if (savedColor != null) {
         final loaded = Color(savedColor);
         // Tam siyah rengi varsayılana dönüştür (eski kayıtlar)
-        _selectedThemeColor = (loaded.value == const Color(0xFF000000).value)
+        _selectedThemeColor = (loaded == const Color(0xFF000000))
             ? SettingsConstants.defaultThemeColor.color
             : loaded;
       }
@@ -313,8 +313,8 @@ class ThemeService extends ChangeNotifier {
       _prefsCache ??= await SharedPreferences.getInstance();
       final prefs = _prefsCache!;
 
-      await prefs.setInt(AppKeys.currentThemeColor, _currentThemeColor.value);
-      await prefs.setInt(AppKeys.selectedThemeColor, _selectedThemeColor.value);
+      await prefs.setInt(AppKeys.currentThemeColor, _currentThemeColor.toARGB32());
+      await prefs.setInt(AppKeys.selectedThemeColor, _selectedThemeColor.toARGB32());
 
       // Anında görsel güncelleme
       await WidgetBridgeService.forceUpdateSmallWidget();
@@ -337,7 +337,7 @@ class ThemeService extends ChangeNotifier {
   Future<void> _saveSelectedThemeColor(Color color) async {
     try {
       _prefsCache ??= await SharedPreferences.getInstance();
-      await _prefsCache!.setInt(AppKeys.selectedThemeColor, color.value);
+      await _prefsCache!.setInt(AppKeys.selectedThemeColor, color.toARGB32());
     } catch (e, stackTrace) {
       AppLogger.error('Seçili tema rengi kaydetme hatası', tag: 'ThemeService', error: e, stackTrace: stackTrace);
     }
@@ -349,10 +349,10 @@ class ThemeService extends ChangeNotifier {
 
   /// Harem ve Aksa için özel renk rollerini uygular.
   ColorScheme _applySpecialColorRoles(ColorScheme baseScheme, Brightness brightness) {
-    if (_selectedThemeColor.value == _haremColor.value) {
+    if (_selectedThemeColor == _haremColor) {
       return _applyHaremRoles(baseScheme, brightness);
     }
-    if (_selectedThemeColor.value == _aksaColor.value) {
+    if (_selectedThemeColor == _aksaColor) {
       return _applyAksaRoles(baseScheme, brightness);
     }
     return baseScheme;
@@ -446,8 +446,8 @@ class ThemeService extends ChangeNotifier {
   }
 
   /// Özel tema renklerinin aktif olup olmadığını kontrol eder.
-  bool get isHaremThemeActive => _selectedThemeColor.value == _haremColor.value;
-  bool get isAksaThemeActive => _selectedThemeColor.value == _aksaColor.value;
+  bool get isHaremThemeActive => _selectedThemeColor == _haremColor;
+  bool get isAksaThemeActive => _selectedThemeColor == _aksaColor;
 
   /// Aktif özel tema adını döndürür.
   String? get activeSpecialTheme {

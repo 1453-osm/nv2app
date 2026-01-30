@@ -13,6 +13,9 @@ class NotificationSetting {
   final bool pickerVisible;
   final String sound;
   final bool soundPickerVisible;
+  final bool silentModeEnabled;
+  final int silentModeDuration;
+  final bool silentModePickerVisible;
 
   const NotificationSetting({
     required this.id,
@@ -22,6 +25,9 @@ class NotificationSetting {
     this.pickerVisible = false,
     this.sound = 'default',
     this.soundPickerVisible = false,
+    this.silentModeEnabled = false,
+    this.silentModeDuration = 15,
+    this.silentModePickerVisible = false,
   });
 
   NotificationSetting copyWith({
@@ -31,6 +37,9 @@ class NotificationSetting {
     bool? pickerVisible,
     String? sound,
     bool? soundPickerVisible,
+    bool? silentModeEnabled,
+    int? silentModeDuration,
+    bool? silentModePickerVisible,
   }) {
     return NotificationSetting(
       id: id,
@@ -40,6 +49,10 @@ class NotificationSetting {
       pickerVisible: pickerVisible ?? this.pickerVisible,
       sound: sound ?? this.sound,
       soundPickerVisible: soundPickerVisible ?? this.soundPickerVisible,
+      silentModeEnabled: silentModeEnabled ?? this.silentModeEnabled,
+      silentModeDuration: silentModeDuration ?? this.silentModeDuration,
+      silentModePickerVisible:
+          silentModePickerVisible ?? this.silentModePickerVisible,
     );
   }
 
@@ -52,16 +65,29 @@ class NotificationSetting {
         other.minutes == minutes &&
         other.pickerVisible == pickerVisible &&
         other.sound == sound &&
-        other.soundPickerVisible == soundPickerVisible;
+        other.soundPickerVisible == soundPickerVisible &&
+        other.silentModeEnabled == silentModeEnabled &&
+        other.silentModeDuration == silentModeDuration &&
+        other.silentModePickerVisible == silentModePickerVisible;
   }
 
   @override
   int get hashCode {
-    return Object.hash(id, enabled, minutes, pickerVisible, sound, soundPickerVisible);
+    return Object.hash(
+        id,
+        enabled,
+        minutes,
+        pickerVisible,
+        sound,
+        soundPickerVisible,
+        silentModeEnabled,
+        silentModeDuration,
+        silentModePickerVisible);
   }
 
   @override
-  String toString() => 'NotificationSetting(id: $id, enabled: $enabled, minutes: $minutes)';
+  String toString() =>
+      'NotificationSetting(id: $id, enabled: $enabled, minutes: $minutes, silentModeEnabled: $silentModeEnabled, silentModeDuration: $silentModeDuration)';
 }
 
 /// Bildirim ayarlarını yöneten singleton servis.
@@ -72,7 +98,8 @@ class NotificationSetting {
 /// - Dua bildirimi
 /// - Her bildirim için dakika ve ses ayarları
 class NotificationSettingsService extends ChangeNotifier {
-  static final NotificationSettingsService _instance = NotificationSettingsService._internal();
+  static final NotificationSettingsService _instance =
+      NotificationSettingsService._internal();
   factory NotificationSettingsService() => _instance;
   NotificationSettingsService._internal();
 
@@ -91,8 +118,9 @@ class NotificationSettingsService extends ChangeNotifier {
     NotificationSetting(id: AppKeys.notifIdIkindi, title: 'İkindi', minutes: 5),
     NotificationSetting(id: AppKeys.notifIdAksam, title: 'Akşam', minutes: 5),
     NotificationSetting(id: AppKeys.notifIdYatsi, title: 'Yatsı', minutes: 5),
-    NotificationSetting(id: AppKeys.notifIdCuma, title: 'Cuma', minutes: 30),
-    NotificationSetting(id: AppKeys.notifIdDua, title: 'Dua Bildirimi', minutes: 0),
+    NotificationSetting(id: AppKeys.notifIdCuma, title: 'Cuma', minutes: 45),
+    NotificationSetting(
+        id: AppKeys.notifIdDua, title: 'Dua Bildirimi', minutes: 0),
   ];
 
   /// Ayarları yükler (sadece bir kez).
@@ -117,13 +145,15 @@ class NotificationSettingsService extends ChangeNotifier {
       final List<NotificationSetting> loadedSettings = [];
 
       for (final setting in _settings) {
-        final loadedSetting = _loadSettingFromPrefs(prefs, setting, availableSoundIds);
+        final loadedSetting =
+            _loadSettingFromPrefs(prefs, setting, availableSoundIds);
         loadedSettings.add(loadedSetting);
       }
 
       // Ek (çoklu) bildirimleri keşfet ve ekle
       final List<NotificationSetting> extraSettings =
-          _loadAdditionalSettingsFromPrefs(prefs, loadedSettings, availableSoundIds);
+          _loadAdditionalSettingsFromPrefs(
+              prefs, loadedSettings, availableSoundIds);
 
       _settings = [
         ...loadedSettings,
@@ -134,9 +164,11 @@ class NotificationSettingsService extends ChangeNotifier {
       notifyListeners();
 
       AppLogger.stopTimer(stopwatch, 'NotificationSettings.loadSettings');
-      AppLogger.success('Loaded ${_settings.length} notification settings', tag: 'NotificationSettings');
+      AppLogger.success('Loaded ${_settings.length} notification settings',
+          tag: 'NotificationSettings');
     } catch (e, stackTrace) {
-      AppLogger.error('Error loading settings', tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
+      AppLogger.error('Error loading settings',
+          tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
       _isLoaded = true; // Hata olsa bile varsayılanlarla devam et
     }
   }
@@ -148,9 +180,14 @@ class NotificationSettingsService extends ChangeNotifier {
     Set<String> availableSoundIds,
   ) {
     final String base = '${AppKeys.notificationPrefix}${setting.id}_';
-    final bool storedEnabled = prefs.getBool('${base}enabled') ?? setting.enabled;
+    final bool storedEnabled =
+        prefs.getBool('${base}enabled') ?? setting.enabled;
     final int storedMinutes = prefs.getInt('${base}minutes') ?? setting.minutes;
     final String storedSound = prefs.getString('${base}sound') ?? setting.sound;
+    final bool storedSilentModeEnabled =
+        prefs.getBool('${base}silentModeEnabled') ?? setting.silentModeEnabled;
+    final int storedSilentModeDuration =
+        prefs.getInt('${base}silentModeDuration') ?? setting.silentModeDuration;
 
     String sound = storedSound;
     if (!availableSoundIds.contains(sound)) {
@@ -161,6 +198,8 @@ class NotificationSettingsService extends ChangeNotifier {
       enabled: storedEnabled,
       minutes: storedMinutes,
       sound: sound,
+      silentModeEnabled: storedSilentModeEnabled,
+      silentModeDuration: storedSilentModeDuration,
     );
 
     return _sanitizeSetting(candidate);
@@ -183,13 +222,17 @@ class NotificationSettingsService extends ChangeNotifier {
   }
 
   /// Picker görünürlüğünü günceller (kaydetmez).
-  void updatePickerVisibility(String id, {bool? pickerVisible, bool? soundPickerVisible}) {
+  void updatePickerVisibility(String id,
+      {bool? pickerVisible,
+      bool? soundPickerVisible,
+      bool? silentModePickerVisible}) {
     final index = _settings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
 
     _settings[index] = _settings[index].copyWith(
       pickerVisible: pickerVisible,
       soundPickerVisible: soundPickerVisible,
+      silentModePickerVisible: silentModePickerVisible,
     );
     notifyListeners();
   }
@@ -200,6 +243,7 @@ class NotificationSettingsService extends ChangeNotifier {
       _settings[i] = _settings[i].copyWith(
         pickerVisible: false,
         soundPickerVisible: false,
+        silentModePickerVisible: false,
       );
     }
     notifyListeners();
@@ -225,13 +269,18 @@ class NotificationSettingsService extends ChangeNotifier {
         prefs.setBool('${base}enabled', setting.enabled),
         prefs.setInt('${base}minutes', setting.minutes),
         prefs.setString('${base}sound', setting.sound),
+        prefs.setBool('${base}silentModeEnabled', setting.silentModeEnabled),
+        prefs.setInt('${base}silentModeDuration', setting.silentModeDuration),
       ]);
 
       await prefs.reload();
 
-      AppLogger.debug('Saved ${setting.id}: enabled=${setting.enabled}, minutes=${setting.minutes}', tag: 'NotificationSettings');
+      AppLogger.debug(
+          'Saved ${setting.id}: enabled=${setting.enabled}, minutes=${setting.minutes}, silentModeEnabled=${setting.silentModeEnabled}, silentModeDuration=${setting.silentModeDuration}',
+          tag: 'NotificationSettings');
     } catch (e, stackTrace) {
-      AppLogger.error('Error saving ${setting.id}', tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
+      AppLogger.error('Error saving ${setting.id}',
+          tag: 'NotificationSettings', error: e, stackTrace: stackTrace);
     }
   }
 
@@ -242,8 +291,18 @@ class NotificationSettingsService extends ChangeNotifier {
         ? SettingsConstants.notificationMinutes.where((m) => m >= 15).toList()
         : List<int>.from(SettingsConstants.notificationMinutes);
 
+    // Imsak ve Gunes için sonrası (negatif) seçenekleri de ekle
+    final String baseId = _basePrayerId(setting.id);
+    if (baseId == AppKeys.notifIdImsak || baseId == AppKeys.notifIdGunes) {
+      minutesList.addAll(SettingsConstants.notificationMinutes
+          .where((m) => m > 0)
+          .map((m) => -m));
+    }
+
     if (minutesList.isEmpty) {
-      minutesList = <int>[setting.id == AppKeys.notifIdCuma ? 15 : setting.minutes];
+      minutesList = <int>[
+        setting.id == AppKeys.notifIdCuma ? 15 : setting.minutes
+      ];
     } else {
       minutesList.sort();
     }
@@ -257,8 +316,17 @@ class NotificationSettingsService extends ChangeNotifier {
       minutes = 15;
     }
 
-    if (minutes != setting.minutes) {
-      return setting.copyWith(minutes: minutes);
+    int silentModeDuration = setting.silentModeDuration;
+    if (silentModeDuration < 5) {
+      silentModeDuration = 5;
+    }
+
+    if (minutes != setting.minutes ||
+        silentModeDuration != setting.silentModeDuration) {
+      return setting.copyWith(
+        minutes: minutes,
+        silentModeDuration: silentModeDuration,
+      );
     }
     return setting;
   }
@@ -280,8 +348,8 @@ class NotificationSettingsService extends ChangeNotifier {
     for (final baseEntry in baseById.entries) {
       final String baseId = baseEntry.key;
       final NotificationSetting baseSetting = baseEntry.value;
-      final RegExp pattern =
-          RegExp('^${RegExp.escape(AppKeys.notificationPrefix)}${RegExp.escape(baseId)}_(\\d+)_enabled\$');
+      final RegExp pattern = RegExp(
+          '^${RegExp.escape(AppKeys.notificationPrefix)}${RegExp.escape(baseId)}_(\\d+)_enabled\$');
 
       for (final key in keys) {
         final match = pattern.firstMatch(key);
@@ -295,9 +363,18 @@ class NotificationSettingsService extends ChangeNotifier {
         processedIds.add(extraId);
 
         final String prefBase = '${AppKeys.notificationPrefix}${extraId}_';
-        final bool storedEnabled = prefs.getBool('${prefBase}enabled') ?? baseSetting.enabled;
-        final int storedMinutes = prefs.getInt('${prefBase}minutes') ?? baseSetting.minutes;
-        final String storedSound = prefs.getString('${prefBase}sound') ?? baseSetting.sound;
+        final bool storedEnabled =
+            prefs.getBool('${prefBase}enabled') ?? baseSetting.enabled;
+        final int storedMinutes =
+            prefs.getInt('${prefBase}minutes') ?? baseSetting.minutes;
+        final String storedSound =
+            prefs.getString('${prefBase}sound') ?? baseSetting.sound;
+        final bool storedSilentModeEnabled =
+            prefs.getBool('${prefBase}silentModeEnabled') ??
+                baseSetting.silentModeEnabled;
+        final int storedSilentModeDuration =
+            prefs.getInt('${prefBase}silentModeDuration') ??
+                baseSetting.silentModeDuration;
 
         String sound = storedSound;
         if (!availableSoundIds.contains(sound)) {
@@ -312,6 +389,9 @@ class NotificationSettingsService extends ChangeNotifier {
           pickerVisible: false,
           sound: sound,
           soundPickerVisible: false,
+          silentModeEnabled: storedSilentModeEnabled,
+          silentModeDuration: storedSilentModeDuration,
+          silentModePickerVisible: false,
         );
 
         extras.add(_sanitizeSetting(candidate));
@@ -319,10 +399,19 @@ class NotificationSettingsService extends ChangeNotifier {
     }
 
     if (extras.isNotEmpty) {
-      AppLogger.debug('Loaded ${extras.length} additional settings: ${extras.map((e) => e.id).toList()}', tag: 'NotificationSettings');
+      AppLogger.debug(
+          'Loaded ${extras.length} additional settings: ${extras.map((e) => e.id).toList()}',
+          tag: 'NotificationSettings');
     }
 
     return extras;
+  }
+
+  /// imsak_1, imsak_2 gibi ID'leri için temel vakit kimliğini (imsak) döndürür.
+  String _basePrayerId(String id) {
+    final int idx = id.indexOf('_');
+    if (idx == -1) return id;
+    return id.substring(0, idx);
   }
 
   /// Desteklenen değere en yakın dakikayı bulur.

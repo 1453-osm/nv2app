@@ -179,6 +179,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get language => 'اللغة';
 
   @override
+  String get automatic => 'تلقائي';
+
+  @override
   String get themeColor => 'لون المظهر';
 
   @override
@@ -228,11 +231,12 @@ class AppLocalizationsAr extends AppLocalizations {
       'لم يتم العثور على أيام دينية لهذا العام.';
 
   @override
-  String get diyanetPrayerTimes => 'أوقات الصلاة من الديانات';
+  String get diyanetPrayerTimes =>
+      'أوقات الصلاة من رئاسة الشؤون الدينية التركية';
 
   @override
   String get diyanetPrayerTimesSubtitle =>
-      'مصادر رسمية، بيانات أوقات صلاة موثقة';
+      'مصادر رسمية، بيانات أوقات صلاة موثوقة';
 
   @override
   String get gpsQiblaCompass => 'بوصلة القبلة القائمة على GPS';
@@ -462,4 +466,251 @@ class AppLocalizationsAr extends AppLocalizations {
   String savedLocationClearError(String error) {
     return 'حدث خطأ أثناء مسح الموقع المحفوظ: $error';
   }
+
+  @override
+  String get notificationTestTitle => '🔔 إشعار تجريبي';
+
+  @override
+  String get notificationTestBody => 'نظام الإشعارات يعمل.';
+
+  @override
+  String get notificationTestDuaTitle => '🤲 اختبار - دعاء اليوم';
+
+  @override
+  String get notificationImsakTitle => 'وقت الإمساك';
+
+  @override
+  String get notificationSunriseTitle => 'شروق الشمس';
+
+  @override
+  String get notificationZuhrTitle => 'صلاة الظهر';
+
+  @override
+  String get notificationAsrTitle => 'صلاة العصر';
+
+  @override
+  String get notificationMaghribTitle => 'صلاة المغرب';
+
+  @override
+  String get notificationIshaTitle => 'صلاة العشاء';
+
+  @override
+  String get notificationPrayerTimeTitle => 'وقت الصلاة';
+
+  @override
+  String get notificationImsakImmediateRamadan =>
+      'حان وقت الإمساك! انتهى السحور، بدأ الصيام.';
+
+  @override
+  String get notificationImsakImmediate =>
+      'حان وقت الإمساك. بدأ وقت صلاة الفجر.';
+
+  @override
+  String get notificationSunriseImmediate => 'طلعت الشمس! انتهى وقت الإمساك.';
+
+  @override
+  String get notificationZuhrImmediateFriday =>
+      'حان وقت صلاة الجمعة! تقبل الله.';
+
+  @override
+  String get notificationZuhrImmediate => 'حان وقت صلاة الظهر. تقبل الله.';
+
+  @override
+  String get notificationAsrImmediate => 'حان وقت صلاة العصر. تقبل الله.';
+
+  @override
+  String get notificationMaghribImmediateRamadan =>
+      'حان وقت صلاة المغرب! حان وقت الإفطار. 🌙';
+
+  @override
+  String get notificationMaghribImmediate => 'حان وقت صلاة المغرب. تقبل الله.';
+
+  @override
+  String get notificationIshaImmediate => 'حان وقت صلاة العشاء. تقبل الله.';
+
+  @override
+  String get notificationPrayerTimeImmediate => 'حان وقت الصلاة. تقبل الله.';
+
+  @override
+  String notificationImsakAdvance(String timeText) {
+    return 'متبقي $timeText حتى وقت الإمساك';
+  }
+
+  @override
+  String notificationImsakAfter(String timeText) {
+    return 'بعد $timeText من وقت الإمساك';
+  }
+
+  @override
+  String notificationSunriseAdvance(String timeText) {
+    return 'متبقي $timeText حتى شروق الشمس';
+  }
+
+  @override
+  String notificationSunriseAfter(String timeText) {
+    return 'بعد $timeText من شروق الشمس';
+  }
+
+  @override
+  String notificationZuhrAdvanceFriday(String timeText) {
+    return 'متبقي $timeText حتى صلاة الجمعة';
+  }
+
+  @override
+  String notificationZuhrAdvance(String timeText) {
+    return 'متبقي $timeText حتى صلاة الظهر';
+  }
+
+  @override
+  String notificationAsrAdvance(String timeText) {
+    return 'متبقي $timeText حتى صلاة العصر';
+  }
+
+  @override
+  String notificationMaghribAdvanceRamadan(String timeText) {
+    return 'متبقي $timeText حتى وقت الإفطار!';
+  }
+
+  @override
+  String notificationMaghribAdvance(String timeText) {
+    return 'متبقي $timeText حتى صلاة المغرب';
+  }
+
+  @override
+  String notificationIshaAdvance(String timeText) {
+    return 'متبقي $timeText حتى صلاة العشاء';
+  }
+
+  @override
+  String notificationPrayerTimeAdvance(String timeText) {
+    return 'متبقي $timeText حتى وقت الصلاة.';
+  }
+
+  @override
+  String get notificationFridayTitle => 'صلاة الجمعة';
+
+  @override
+  String notificationFridayMessage15(String timeText) {
+    return 'متبقي $timeText حتى صلاة الجمعة. حان الوقت للذهاب إلى المسجد!';
+  }
+
+  @override
+  String notificationFridayMessage30(String timeText) {
+    return 'متبقي $timeText حتى صلاة الجمعة. ابدأ بالتحضير.';
+  }
+
+  @override
+  String notificationFridayMessageMore(String timeText) {
+    return 'متبقي $timeText حتى صلاة الجمعة. لا تنس الوضوء والتحضير.';
+  }
+
+  @override
+  String get notificationDuaTitle => '🤲 دعاء اليوم';
+
+  @override
+  String timeMinutes(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String timeHours(int hours) {
+    return '$hours ساعة';
+  }
+
+  @override
+  String timeHoursMinutes(int hours, int minutes) {
+    return '$hours ساعة $minutes دقيقة';
+  }
+
+  @override
+  String get themeColorRavza => 'الروضة';
+
+  @override
+  String get themeColorHarem => 'الحرم';
+
+  @override
+  String get themeColorAksa => 'الأقصى';
+
+  @override
+  String get themeColorImsak => 'الإمساك';
+
+  @override
+  String get themeColorGunes => 'الشروق';
+
+  @override
+  String get themeColorOgle => 'الظهر';
+
+  @override
+  String get themeColorIkindi => 'العصر';
+
+  @override
+  String get themeColorAksam => 'المغرب';
+
+  @override
+  String get themeColorYatsi => 'العشاء';
+
+  @override
+  String get soundDefault => 'افتراضي';
+
+  @override
+  String get soundAdhan7 => 'أذان عربي';
+
+  @override
+  String get soundAdhan => 'أذان';
+
+  @override
+  String get soundSela => 'الصلوات';
+
+  @override
+  String get soundHard => 'نغمة قوية';
+
+  @override
+  String get soundSoft => 'نغمة ناعمة';
+
+  @override
+  String get soundBird => 'طيور';
+
+  @override
+  String get soundAlarm => 'منبه';
+
+  @override
+  String get soundSilent => 'صامت';
+
+  @override
+  String get silentModeAfterPrayer => 'الوضع الصامت بعد الصلاة';
+
+  @override
+  String get silentModeDuration => 'مدة الوضع الصامت';
+
+  @override
+  String minutesAfter(int minutes) {
+    return 'بعد $minutes دقيقة';
+  }
+
+  @override
+  String minutesAfterNotification(int minutes) {
+    return 'بعد $minutes دقيقة';
+  }
+
+  @override
+  String get silentModePermissionRequired =>
+      'مطلوب إذن الوضع الصامت. انقر لفتح الإعدادات.';
+
+  @override
+  String religiousDayDaysUntil(int days, String name) {
+    return 'بقي $days أيام على $name';
+  }
+
+  @override
+  String religiousDayTomorrow(String name) {
+    return 'غداً $name';
+  }
+
+  @override
+  String religiousDayToday(String name) {
+    return 'مبارك عليكم $name';
+  }
+
+  @override
+  String get religiousDayTodayEid => 'عيد مبارك';
 }

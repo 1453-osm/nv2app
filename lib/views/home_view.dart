@@ -5,6 +5,7 @@ import '../viewmodels/location_viewmodel.dart';
 import '../viewmodels/prayer_times_viewmodel.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../viewmodels/qibla_viewmodel.dart';
+import '../viewmodels/location_bar_viewmodel.dart';
 import '../services/theme_service.dart';
 import '../services/notification_sound_service.dart';
 import '../models/location_model.dart';
@@ -29,31 +30,34 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
+class _HomeViewState extends State<HomeView>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   // Bar keys
-  final GlobalKey<LocationBarState> _locationBarKey = GlobalKey<LocationBarState>();
-  final GlobalKey<SettingsBarState> _settingsBarKey = GlobalKey<SettingsBarState>();
+  final GlobalKey<LocationBarState> _locationBarKey =
+      GlobalKey<LocationBarState>();
+  final GlobalKey<SettingsBarState> _settingsBarKey =
+      GlobalKey<SettingsBarState>();
   final GlobalKey<QiblaBarState> _qiblaBarKey = GlobalKey<QiblaBarState>();
-  
+
   // Bar states
   final Map<String, bool> _isBarExpanded = {
     'location': false,
     'settings': false,
     'qibla': false,
   };
-  
+
   final Map<String, bool> _isBarClosing = {
     'location': false,
     'settings': false,
     'qibla': false,
   };
-  
+
   final Map<String, Timer?> _barTimers = {
     'location': null,
     'settings': null,
     'qibla': null,
   };
-  
+
   bool _isLocationDrawerOpen = false;
   bool _isQiblaDrawerOpen = false;
   bool _isSettingsDrawerOpen = false;
@@ -65,10 +69,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _locationServiceStatusFuture = Geolocator.isLocationServiceEnabled();
     // getServiceStatusStream web platformunda desteklenmiyor
     if (!kIsWeb) {
-      _locationServiceStatusSubscription = Geolocator.getServiceStatusStream().listen((status) {
+      _locationServiceStatusSubscription =
+          Geolocator.getServiceStatusStream().listen((status) {
         final enabled = status == ServiceStatus.enabled;
         if (enabled != _isLocationServiceEnabled && mounted) {
           setState(() {
@@ -80,26 +86,51 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       // Web platformunda varsayılan olarak servis aktif kabul edilir
       _isLocationServiceEnabled = true;
     }
+
+    // LocationBar history'yi arka planda preload et (drawer açılış performansı için)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        final locationBarVm = context.read<LocationBarViewModel>();
+        locationBarVm.preloadHistory();
+      } catch (_) {
+        // Provider henüz oluşturulmamışsa sessizce devam et
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Uygulama resume olduğunda, eğer konum yüklü değilse yeniden yüklemeyi dene
+    if (state == AppLifecycleState.resumed) {
+      if (mounted) {
+        final locationVm = context.read<LocationViewModel>();
+        // Konum yüklü değilse ve kaydedilmiş konum varsa yüklemeyi dene
+        locationVm.ensureLocationLoaded();
+      }
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locationServiceStatusSubscription?.cancel();
     _disposeTimers();
     super.dispose();
   }
-  
+
   void _disposeTimers() {
     _barTimers.values.forEach((timer) => timer?.cancel());
   }
 
   // Herhangi bir bar açık mı?
-  bool get _isAnyBarExpanded => _isBarExpanded.values.any((expanded) => expanded);
-  
+  bool get _isAnyBarExpanded =>
+      _isBarExpanded.values.any((expanded) => expanded);
+
   // Bar kapanma animasyonunu başlat
   void _startClosingAnimation(String barType) {
     if (!_isBarClosing.containsKey(barType)) return;
-    
+
     _isBarClosing[barType] = true;
     _barTimers[barType]?.cancel();
     _barTimers[barType] = Timer(AnimationConstants.medium, () {
@@ -110,15 +141,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       }
     });
   }
-  
-  
+
   // Bar sıralaması helper metodu
   void _reorderBarsForZIndex(List<Widget> bars) {
     final barTypes = ['location', 'qibla'];
-    
+
     for (int i = 0; i < barTypes.length; i++) {
       final barType = barTypes[i];
-      if ((_isBarExpanded[barType] ?? false) || (_isBarClosing[barType] ?? false)) {
+      if ((_isBarExpanded[barType] ?? false) ||
+          (_isBarClosing[barType] ?? false)) {
         final bar = bars.removeAt(i);
         bars.add(bar);
         break; // Sadece bir bar en üste olabilir
@@ -130,13 +161,22 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildLocationDrawerButton(String locationName) {
     return Builder(
       builder: (BuildContext context) {
+        final isCompact = context.isLandscape && context.isPhone;
+        final scaleFactor = isCompact ? 0.8 : 1.0;
+
+        final buttonHeight = context.space(SpaceSize.xxl) * scaleFactor;
+        final horizontalPadding = context.space(SpaceSize.sm) * scaleFactor;
+        final verticalPadding = context.space(SpaceSize.xs) * scaleFactor;
+        final fontSize = context.font(FontSize.xs) * scaleFactor;
+
         return ClipRRect(
           borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
           child: Container(
-            height: 40,
+            height: buttonHeight,
             decoration: BoxDecoration(
               color: GlassBarConstants.getBackgroundColor(context),
-              borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+              borderRadius:
+                  BorderRadius.circular(GlassBarConstants.borderRadius),
               border: Border.all(
                 color: GlassBarConstants.getBorderColor(context),
                 width: GlassBarConstants.borderWidth,
@@ -149,20 +189,22 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   // Drawer'ı aç
                   Scaffold.of(context).openDrawer();
                 },
-                borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+                borderRadius:
+                    BorderRadius.circular(GlassBarConstants.borderRadius),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding, vertical: verticalPadding),
                   child: Center(
                     child: Text(
                       locationName,
                       style: TextStyle(
                         color: GlassBarConstants.getTextColor(context),
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: fontSize,
                         letterSpacing: 0.7,
                       ),
                       maxLines: 1,
-                      overflow: TextOverflow.clip,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -179,14 +221,21 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildDrawerButton() {
     return Builder(
       builder: (BuildContext context) {
+        final isCompact = context.isLandscape && context.isPhone;
+        final scaleFactor = isCompact ? 0.8 : 1.0;
+
+        final buttonSize = context.space(SpaceSize.xxl) * scaleFactor;
+        final iconSize = context.icon(IconSizeLevel.md) * scaleFactor;
+
         return ClipRRect(
           borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
           child: Container(
-            width: 40,
-            height: 40,
+            width: buttonSize,
+            height: buttonSize,
             decoration: BoxDecoration(
               color: GlassBarConstants.getBackgroundColor(context),
-              borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+              borderRadius:
+                  BorderRadius.circular(GlassBarConstants.borderRadius),
               border: Border.all(
                 color: GlassBarConstants.getBorderColor(context),
                 width: GlassBarConstants.borderWidth,
@@ -202,12 +251,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   });
                   Scaffold.of(context).openEndDrawer();
                 },
-                borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+                borderRadius:
+                    BorderRadius.circular(GlassBarConstants.borderRadius),
                 child: Center(
                   child: Icon(
                     Symbols.menu_rounded,
                     color: GlassBarConstants.getTextColor(context),
-                    size: 22,
+                    size: iconSize,
                   ),
                 ),
               ),
@@ -222,28 +272,40 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildQiblaDrawerButton(SelectedLocation selectedLocation) {
     return Builder(
       builder: (BuildContext context) {
-        return Consumer<QiblaViewModel>(
-          builder: (context, viewModel, _) {
+        final isCompact = context.isLandscape && context.isPhone;
+        final scaleFactor = isCompact ? 0.8 : 1.0;
+
+        final buttonSize = context.space(SpaceSize.xxl) * scaleFactor;
+        final iconSizeNormal = context.icon(IconSizeLevel.md) * scaleFactor;
+        final iconSizeSmall = context.icon(IconSizeLevel.sm) * scaleFactor;
+
+        return Selector<QiblaViewModel, (QiblaStatus, ErrorCode?, bool)>(
+          selector: (_, vm) => (vm.status, vm.errorCode, vm.isPointingToQibla),
+          builder: (context, data, _) {
+            final (status, errorCode, isPointingToQibla) = data;
             final textColor = GlassBarConstants.getTextColor(context);
-            final bool isGpsError = viewModel.status == QiblaStatus.error && viewModel.errorCode == ErrorCode.gpsLocationNotAvailable;
-            final bool isPointingToQibla = viewModel.isPointingToQibla;
-            
+            final bool isGpsError = status == QiblaStatus.error &&
+                errorCode == ErrorCode.gpsLocationNotAvailable;
+
             return FutureBuilder<bool>(
               future: _locationServiceStatusFuture,
               builder: (context, snapshot) {
-                final bool isLocationServiceDisabled = !(_isLocationServiceEnabled ?? snapshot.data ?? true);
-                
+                final bool isLocationServiceDisabled =
+                    !(_isLocationServiceEnabled ?? snapshot.data ?? true);
+
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+                  borderRadius:
+                      BorderRadius.circular(GlassBarConstants.borderRadius),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: 40,
-                    height: 40,
+                    width: buttonSize,
+                    height: buttonSize,
                     decoration: BoxDecoration(
-                      color: isPointingToQibla 
+                      color: isPointingToQibla
                           ? Colors.green.withValues(alpha: 0.3)
                           : GlassBarConstants.getBackgroundColor(context),
-                      borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+                      borderRadius:
+                          BorderRadius.circular(GlassBarConstants.borderRadius),
                       border: Border.all(
                         color: isPointingToQibla
                             ? Colors.green.withValues(alpha: 0.7)
@@ -254,30 +316,42 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                    onTap: () {
-                      // Qibla drawer'ı aç (sağdan)
-                      setState(() {
-                        _isQiblaActive = true;
-                      });
-                      Scaffold.of(context).openEndDrawer();
-                      // Konum hesapla
-                      if (viewModel.status != QiblaStatus.ready) {
-                        viewModel.calculateQiblaDirection();
-                      }
-                    },
-                        borderRadius: BorderRadius.circular(GlassBarConstants.borderRadius),
+                        onTap: () {
+                          // Qibla drawer'ı aç (sağdan)
+                          setState(() {
+                            _isQiblaActive = true;
+                          });
+                          Scaffold.of(context).openEndDrawer();
+                          // Konum hesapla
+                          if (status != QiblaStatus.ready) {
+                            context
+                                .read<QiblaViewModel>()
+                                .calculateQiblaDirection();
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(
+                            GlassBarConstants.borderRadius),
                         child: Center(
-                          child: Transform.rotate(
-                            angle: (viewModel.status == QiblaStatus.ready)
-                                ? (viewModel.qiblaDirection - viewModel.currentDirection) * (math.pi / 180)
-                                : 0,
-                            child: Icon(
-                              isGpsError || isLocationServiceDisabled 
-                                  ? Symbols.near_me_disabled_rounded 
-                                  : Symbols.navigation_rounded,
-                              color: textColor,
-                              size: isGpsError || isLocationServiceDisabled ? 18 : 22,
-                            ),
+                          child: Selector<QiblaViewModel, (double, double)>(
+                            selector: (_, vm) =>
+                                (vm.qiblaDirection, vm.currentDirection),
+                            builder: (context, angles, _) {
+                              final (qiblaDir, currentDir) = angles;
+                              return Transform.rotate(
+                                angle: (status == QiblaStatus.ready)
+                                    ? (qiblaDir - currentDir) * (math.pi / 180)
+                                    : 0,
+                                child: Icon(
+                                  isGpsError || isLocationServiceDisabled
+                                      ? Symbols.near_me_disabled_rounded
+                                      : Symbols.navigation_rounded,
+                                  color: textColor,
+                                  size: isGpsError || isLocationServiceDisabled
+                                      ? iconSizeSmall
+                                      : iconSizeNormal,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -291,11 +365,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       },
     );
   }
-  
+
   // Qibla drawer'ını oluştur (sağdan açılır)
   Widget _buildQiblaDrawer() {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Drawer genişliğini ekran boyutuna göre ayarla
     final drawerWidth = Responsive.value<double>(
       context,
@@ -305,7 +379,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       lg: 400.0,
       xl: 420.0,
     ).clamp(280.0, screenWidth * 0.9);
-    
+
     return Drawer(
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -336,15 +410,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 onTap: () {
                   // Menü içine tıklanınca hiçbir şey yapma
                 },
-                child: Consumer<QiblaViewModel>(
-                  builder: (context, viewModel, _) {
-                    final bool isPointingToQibla = viewModel.isPointingToQibla;
+                child: Selector<QiblaViewModel, bool>(
+                  selector: (_, vm) => vm.isPointingToQibla,
+                  builder: (context, isPointingToQibla, _) {
                     final bool isRTL = RTLHelper.isRTLFromContext(context);
-                    
+
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       decoration: BoxDecoration(
-                        color: isPointingToQibla 
+                        color: isPointingToQibla
                             ? Colors.green.withValues(alpha: 0.3)
                             : GlassBarConstants.getBackgroundColor(context),
                         borderRadius: isRTL
@@ -359,18 +433,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 bottomRight: Radius.circular(34),
                               ),
                         border: Border(
-                          left: isRTL ? BorderSide.none : BorderSide(
-                            color: isPointingToQibla
-                                ? Colors.green.withValues(alpha: 0.7)
-                                : GlassBarConstants.getBorderColor(context),
-                            width: GlassBarConstants.borderWidth,
-                          ),
-                          right: isRTL ? BorderSide(
-                            color: isPointingToQibla
-                                ? Colors.green.withValues(alpha: 0.7)
-                                : GlassBarConstants.getBorderColor(context),
-                            width: GlassBarConstants.borderWidth,
-                          ) : BorderSide.none,
+                          left: isRTL
+                              ? BorderSide.none
+                              : BorderSide(
+                                  color: isPointingToQibla
+                                      ? Colors.green.withValues(alpha: 0.7)
+                                      : GlassBarConstants.getBorderColor(
+                                          context),
+                                  width: GlassBarConstants.borderWidth,
+                                ),
+                          right: isRTL
+                              ? BorderSide(
+                                  color: isPointingToQibla
+                                      ? Colors.green.withValues(alpha: 0.7)
+                                      : GlassBarConstants.getBorderColor(
+                                          context),
+                                  width: GlassBarConstants.borderWidth,
+                                )
+                              : BorderSide.none,
                           top: BorderSide.none,
                           bottom: BorderSide(
                             color: isPointingToQibla
@@ -410,7 +490,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                               child: QiblaBar(
                                 key: _qiblaBarKey,
                                 isDrawerMode: true,
-                                location: context.watch<LocationViewModel>().selectedLocation,
+                                location: context
+                                    .watch<LocationViewModel>()
+                                    .selectedLocation,
                                 onDrawerClose: () {
                                   Navigator.of(context).pop();
                                 },
@@ -436,7 +518,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   // Konum drawer'ını oluştur
   Widget _buildLocationDrawer() {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Drawer genişliğini ekran boyutuna göre ayarla
     final drawerWidth = Responsive.value<double>(
       context,
@@ -446,7 +528,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       lg: 400.0,
       xl: 420.0,
     ).clamp(280.0, screenWidth * 0.9);
-    
+
     return Drawer(
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -500,7 +582,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         child: Container(
                           width: drawerWidth,
                           decoration: BoxDecoration(
-                            color: GlassBarConstants.getBackgroundColor(context),
+                            color:
+                                GlassBarConstants.getBackgroundColor(context),
                             borderRadius: isRTL
                                 ? const BorderRadius.only(
                                     topLeft: Radius.circular(34),
@@ -513,17 +596,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                     bottomLeft: Radius.circular(34),
                                   ),
                             border: Border(
-                              right: isRTL ? BorderSide.none : BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
-                                width: GlassBarConstants.borderWidth,
-                              ),
-                              left: isRTL ? BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
-                                width: GlassBarConstants.borderWidth,
-                              ) : BorderSide.none,
+                              right: isRTL
+                                  ? BorderSide.none
+                                  : BorderSide(
+                                      color: GlassBarConstants.getBorderColor(
+                                          context),
+                                      width: GlassBarConstants.borderWidth,
+                                    ),
+                              left: isRTL
+                                  ? BorderSide(
+                                      color: GlassBarConstants.getBorderColor(
+                                          context),
+                                      width: GlassBarConstants.borderWidth,
+                                    )
+                                  : BorderSide.none,
                               top: BorderSide.none,
                               bottom: BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
+                                color:
+                                    GlassBarConstants.getBorderColor(context),
                                 width: GlassBarConstants.borderWidth,
                               ),
                             ),
@@ -533,15 +623,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                             left: isRTL,
                             right: !isRTL,
                             bottom: false,
-                            child: Consumer<LocationViewModel>(
-                              builder: (context, locationViewModel, _) {
+                            child:
+                                Selector<LocationViewModel, SelectedLocation?>(
+                              selector: (_, vm) => vm.selectedLocation,
+                              builder: (context, selectedLocation, _) {
                                 final locale = Localizations.localeOf(context);
+                                final locationViewModel =
+                                    context.read<LocationViewModel>();
+
                                 return LocationBar(
                                   key: _locationBarKey,
-                                  location: locationViewModel.selectedLocation?.city.getDisplayName(locale) ?? '',
-                                  onLocationSelected: (selectedLocation) {
-                                    locationViewModel.selectLocation(selectedLocation);
-                                    context.read<PrayerTimesViewModel>().loadPrayerTimes(selectedLocation.city.id);
+                                  location: selectedLocation?.city
+                                          .getDisplayName(locale) ??
+                                      '',
+                                  onLocationSelected: (sl) {
+                                    locationViewModel.selectLocation(sl);
+                                    context
+                                        .read<PrayerTimesViewModel>()
+                                        .loadPrayerTimes(sl.city.id);
                                   },
                                 );
                               },
@@ -563,7 +662,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   // Ayarlar drawer'ını oluştur (sağdan açılır)
   Widget _buildSettingsDrawer() {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Drawer genişliğini ekran boyutuna göre ayarla
     final drawerWidth = Responsive.value<double>(
       context,
@@ -573,7 +672,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       lg: 400.0,
       xl: 420.0,
     ).clamp(280.0, screenWidth * 0.9);
-    
+
     return Drawer(
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -628,7 +727,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         child: Container(
                           width: drawerWidth,
                           decoration: BoxDecoration(
-                            color: GlassBarConstants.getBackgroundColor(context),
+                            color:
+                                GlassBarConstants.getBackgroundColor(context),
                             borderRadius: isRTL
                                 ? const BorderRadius.only(
                                     topRight: Radius.circular(34),
@@ -641,17 +741,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                     bottomRight: Radius.circular(34),
                                   ),
                             border: Border(
-                              left: isRTL ? BorderSide.none : BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
-                                width: GlassBarConstants.borderWidth,
-                              ),
-                              right: isRTL ? BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
-                                width: GlassBarConstants.borderWidth,
-                              ) : BorderSide.none,
+                              left: isRTL
+                                  ? BorderSide.none
+                                  : BorderSide(
+                                      color: GlassBarConstants.getBorderColor(
+                                          context),
+                                      width: GlassBarConstants.borderWidth,
+                                    ),
+                              right: isRTL
+                                  ? BorderSide(
+                                      color: GlassBarConstants.getBorderColor(
+                                          context),
+                                      width: GlassBarConstants.borderWidth,
+                                    )
+                                  : BorderSide.none,
                               top: BorderSide.none,
                               bottom: BorderSide(
-                                color: GlassBarConstants.getBorderColor(context),
+                                color:
+                                    GlassBarConstants.getBorderColor(context),
                                 width: GlassBarConstants.borderWidth,
                               ),
                             ),
@@ -664,9 +771,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                             child: SettingsBar(
                               key: _settingsBarKey,
                               isDrawerMode: true,
-                              onSettingsPressed: () => Navigator.pushNamed(context, '/settings'),
-                              themeMode: context.watch<SettingsViewModel>().themeMode,
-                              onThemeChanged: (mode) => context.read<SettingsViewModel>().changeThemeMode(mode),
+                              onSettingsPressed: () =>
+                                  Navigator.pushNamed(context, '/settings'),
+                              themeMode:
+                                  context.watch<SettingsViewModel>().themeMode,
+                              onThemeChanged: (mode) => context
+                                  .read<SettingsViewModel>()
+                                  .changeThemeMode(mode),
                               onExpandedChanged: (isExpanded) {
                                 // Drawer içinde expansion durumunu yönet
                                 if (mounted) {
@@ -696,54 +807,44 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   // Dinamik z-index için bar sıralaması
   List<Widget> _buildBarWidgets(SelectedLocation selectedLocation) {
     final List<Widget> bars = [];
-    final media = MediaQuery.of(context);
-    final bool isLandscape = media.orientation == Orientation.landscape;
-    final double screenWidth = media.size.width;
-    // Landscape'te PrayerTimesSection sol (flex:7) ve sağ (flex:5) olarak bölünüyor
-    // Üst barları sol sütunun sağ üstüne yerleştirmek için sağ sütun genişliği kadar içeri alıyoruz
-    const double rightColumnFlex = 5.0;
-    const double leftColumnFlex = 7.0;
-    final double rightColumnWidth = isLandscape ? screenWidth * (rightColumnFlex / (leftColumnFlex + rightColumnFlex)) : 0.0;
-    final double settingsBaseRight = (isLandscape ? rightColumnWidth : 0.0) + context.rem(15);
-    final double qiblaBaseRightOffset = Responsive.value<double>(
-      context,
-      xs: 57.0,
-      sm: 65.0,
-      md: 73.0,
-      lg: 81.0,
-      xl: 89.0,
-    );
-    final double qiblaRight = (isLandscape ? rightColumnWidth : 0.0) + qiblaBaseRightOffset;
-    
-    // Location Drawer butonu
+    // Barlar için konumları hesapla - simetrik padding
+    final double topPadding = context.space(SpaceSize.md);
+    final double horizontalPadding = context.space(SpaceSize.md);
+    final double buttonSpacing = context.space(SpaceSize.xs);
+    final double buttonSize = context.space(SpaceSize.xxl) *
+        (context.isLandscape && context.isPhone ? 0.8 : 1.0);
+
+    // Location Drawer butonu - sol üst köşe
     final locale = Localizations.localeOf(context);
     bars.add(
       PositionedDirectional(
-        top: context.rem(15),
-        start: context.rem(15),
-        child: _buildLocationDrawerButton(selectedLocation.city.getDisplayName(locale)),
+        top: topPadding,
+        start: horizontalPadding,
+        child: _buildLocationDrawerButton(
+            selectedLocation.city.getDisplayName(locale)),
       ),
     );
 
-    // Qibla Drawer butonu (küçük pusula butonu)
+    // Qibla Drawer butonu (küçük pusula butonu) - sağ üst
+    // Settings butonunun solunda, aralarında buttonSpacing boşluk
     bars.add(
       PositionedDirectional(
-        top: context.rem(15),
-        end: qiblaRight,
+        top: topPadding,
+        end: horizontalPadding + buttonSize + buttonSpacing,
         child: _buildQiblaDrawerButton(selectedLocation),
       ),
     );
 
-    // Settings Drawer butonu
+    // Settings Drawer butonu - sağ üst köşe (konum butonuyla simetrik)
     bars.add(
       PositionedDirectional(
-        top: context.rem(15),
-        end: settingsBaseRight,
+        top: topPadding,
+        end: horizontalPadding,
         child: _buildDrawerButton(),
       ),
     );
 
-      // Overlay'i ekle - animasyonlu overlay ve blur
+    // Overlay'i ekle - animasyonlu overlay ve blur
     bars.add(
       Positioned.fill(
         child: IgnorePointer(
@@ -764,10 +865,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     sigmaY: GlassBarConstants.blurSigma * (value * 0.015),
                   ),
                   child: Container(
-                    color: Colors.black.withValues(alpha: 
-                      ((Theme.of(context).brightness == Brightness.dark) 
-                        ? AppConstants.overlayOpacityDark 
-                        : AppConstants.overlayOpacityLight) * value,
+                    color: Colors.black.withValues(
+                      alpha: ((Theme.of(context).brightness == Brightness.dark)
+                              ? AppConstants.overlayOpacityDark
+                              : AppConstants.overlayOpacityLight) *
+                          value,
                     ),
                   ),
                 );
@@ -795,7 +897,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: isDarkTheme ? Colors.black : Colors.grey[500],
-      drawerScrimColor: Colors.transparent,
+      drawerScrimColor: DrawerConstants.scrimColor,
       drawer: _buildLocationDrawer(),
       endDrawer: _isQiblaActive ? _buildQiblaDrawer() : _buildSettingsDrawer(),
       onDrawerChanged: (isOpened) {
@@ -814,184 +916,199 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       },
       body: Stack(
         children: [
-          Consumer<ThemeService>(
-        builder: (context, themeService, child) {
-          // Dinamik tema rengini al
-          final themeColor = themeService.currentThemeColor;
-          
-          Color effectiveSecondary;
-          
-          // İkincil renk sadece dinamik modda kullanılır
-          if (themeService.themeColorMode == ThemeColorMode.dynamic) {
-            final secondaryColor = themeService.currentSecondaryColor;
-            // Karanlık modda ikincil rengi hafifçe koyulaştır
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            effectiveSecondary = isDark 
-                ? Color.lerp(secondaryColor, Colors.black, 0.15) ?? secondaryColor 
-                : secondaryColor;
-          } else {
-            // Diğer modlarda ana rengin opaklığı azaltılmış halini kullan
-            effectiveSecondary = themeColor.withValues(alpha: 0.4);
-          }
-          
-          return AnimatedContainer(
-            width: double.infinity,
-            height: double.infinity,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  themeColor,
-                  effectiveSecondary,
-                ],
-                stops: const [0.0, 1.0],
-              ),
+          Selector<ThemeService, (Color, Color, ThemeColorMode)>(
+            selector: (_, service) => (
+              service.currentThemeColor,
+              service.currentSecondaryColor,
+              service.themeColorMode,
             ),
-            child: Stack(
-              children: [
-                Listener(
-                  behavior: HitTestBehavior.translucent,
-                  onPointerDown: (_) {
-                    // Ekranda herhangi bir dokunuşta önizleme sesini durdur
-                    NotificationSoundService.stopPreview();
-                  },
-                  child: SafeArea(
-                    // Bottom padding'i devre dışı bırak, manuel olarak yönetiyoruz
-                    bottom: false,
-                    child: Selector<LocationViewModel, SelectedLocation?>(
-                      selector: (context, locationViewModel) => locationViewModel.selectedLocation,
-                      builder: (context, selectedLocation, child) {
-                        if (selectedLocation == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          );
-                        }
+            builder: (context, data, _) {
+              final (themeColor, secondaryColor, themeColorMode) = data;
 
-                        return Stack(
-                          children: [
-                            // Namaz vakitleri, geri sayım ve tarih en altta
-                            PrayerTimesSection(location: selectedLocation),
-                            // Dinamik z-index ile barlar ve overlay
-                            ..._buildBarWidgets(selectedLocation),
-                          ],
-                        );
+              Color effectiveSecondary;
+
+              // İkincil renk sadece dinamik modda kullanılır
+              if (themeColorMode == ThemeColorMode.dynamic) {
+                // Karanlık modda ikincil rengi hafifçe koyulaştır
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                effectiveSecondary = isDark
+                    ? Color.lerp(secondaryColor, Colors.black, 0.15) ??
+                        secondaryColor
+                    : secondaryColor;
+              } else {
+                // Diğer modlarda ana rengin opaklığı azaltılmış halini kullan
+                effectiveSecondary = themeColor.withValues(alpha: 0.4);
+              }
+
+              return AnimatedContainer(
+                width: double.infinity,
+                height: double.infinity,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      themeColor,
+                      effectiveSecondary,
+                    ],
+                    stops: const [0.0, 1.0],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Listener(
+                      behavior: HitTestBehavior.translucent,
+                      onPointerDown: (_) {
+                        // Ekranda herhangi bir dokunuşta önizleme sesini durdur
+                        NotificationSoundService.stopPreview();
                       },
-                    ),
-                  ),
-                ),
+                      child: SafeArea(
+                        // Bottom padding'i devre dışı bırak, manuel olarak yönetiyoruz
+                        bottom: false,
+                        child: Selector<LocationViewModel, SelectedLocation?>(
+                          selector: (context, locationViewModel) =>
+                              locationViewModel.selectedLocation,
+                          builder: (context, selectedLocation, child) {
+                            if (selectedLocation == null) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              );
+                            }
 
-                // SafeArea dış kenarları için overlay (landscape'te kenarlar açık kalmasın)
-                Positioned(
-                  left: 0,
-                  top: mediaQuery.padding.top,
-                  bottom: mediaQuery.padding.bottom,
-                  width: mediaQuery.padding.left,
-                  child: IgnorePointer(
-                    ignoring: !_isAnyBarExpanded,
-                    child: GestureDetector(
-                      onTap: _handleOverlayTap,
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
-                        duration: AnimationConstants.medium,
-                        curve: Curves.easeInOut,
-                        builder: (context, value, child) {
-                          return Container(
-                            color: Colors.black.withValues(alpha: overlayOpacityBase * value),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: mediaQuery.padding.top,
-                  bottom: mediaQuery.padding.bottom,
-                  width: mediaQuery.padding.right,
-                  child: IgnorePointer(
-                    ignoring: !_isAnyBarExpanded,
-                    child: GestureDetector(
-                      onTap: _handleOverlayTap,
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
-                        duration: AnimationConstants.medium,
-                        curve: Curves.easeInOut,
-                        builder: (context, value, child) {
-                          return Container(
-                            color: Colors.black.withValues(alpha: overlayOpacityBase * value),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: mediaQuery.padding.bottom,
-                  child: IgnorePointer(
-                    ignoring: !_isAnyBarExpanded,
-                    child: GestureDetector(
-                      onTap: _handleOverlayTap,
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
-                        duration: AnimationConstants.medium,
-                        curve: Curves.easeInOut,
-                        builder: (context, value, child) {
-                          return Container(
-                            color: Colors.black.withValues(alpha: overlayOpacityBase * value),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Status bar alanı için kararma + kapatma tıklaması (landscape köşeleri de kapsa)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: mediaQuery.padding.top,
-                  child: IgnorePointer(
-                    ignoring: !_isAnyBarExpanded,
-                    child: GestureDetector(
-                      onTap: _handleOverlayTap,
-                      behavior: HitTestBehavior.opaque,
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(
-                          begin: 0.0,
-                          end: _isAnyBarExpanded ? 1.0 : 0.0,
+                            return Stack(
+                              children: [
+                                // Namaz vakitleri, geri sayım ve tarih en altta
+                                PrayerTimesSection(location: selectedLocation),
+                                // Dinamik z-index ile barlar ve overlay
+                                ..._buildBarWidgets(selectedLocation),
+                              ],
+                            );
+                          },
                         ),
-                        duration: AnimationConstants.medium,
-                        curve: Curves.easeInOut,
-                        builder: (context, value, child) {
-                          return Container(
-                            color: Colors.black.withValues(alpha: overlayOpacityBase * value),
-                          );
-                        },
                       ),
                     ),
-                  ),
-                ),
 
-                // Köşe overlay blokları kaldırıldı; sol/sağ kenar overlay'leri artık
-                // status bar ve alt çene padding'lerini hariç tutacak şekilde ayarlandı.
-              ],
-            ),
-          );
-        },
-      ),
+                    // SafeArea dış kenarları için overlay (landscape'te kenarlar açık kalmasın)
+                    Positioned(
+                      left: 0,
+                      top: mediaQuery.padding.top,
+                      bottom: mediaQuery.padding.bottom,
+                      width: mediaQuery.padding.left,
+                      child: IgnorePointer(
+                        ignoring: !_isAnyBarExpanded,
+                        child: GestureDetector(
+                          onTap: _handleOverlayTap,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(
+                                begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
+                            duration: AnimationConstants.medium,
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              return Container(
+                                color: Colors.black.withValues(
+                                    alpha: overlayOpacityBase * value),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: mediaQuery.padding.top,
+                      bottom: mediaQuery.padding.bottom,
+                      width: mediaQuery.padding.right,
+                      child: IgnorePointer(
+                        ignoring: !_isAnyBarExpanded,
+                        child: GestureDetector(
+                          onTap: _handleOverlayTap,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(
+                                begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
+                            duration: AnimationConstants.medium,
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              return Container(
+                                color: Colors.black.withValues(
+                                    alpha: overlayOpacityBase * value),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: mediaQuery.padding.bottom,
+                      child: IgnorePointer(
+                        ignoring: !_isAnyBarExpanded,
+                        child: GestureDetector(
+                          onTap: _handleOverlayTap,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(
+                                begin: 0.0, end: _isAnyBarExpanded ? 1.0 : 0.0),
+                            duration: AnimationConstants.medium,
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              return Container(
+                                color: Colors.black.withValues(
+                                    alpha: overlayOpacityBase * value),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Status bar alanı için kararma + kapatma tıklaması (landscape köşeleri de kapsa)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: mediaQuery.padding.top,
+                      child: IgnorePointer(
+                        ignoring: !_isAnyBarExpanded,
+                        child: GestureDetector(
+                          onTap: _handleOverlayTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween<double>(
+                              begin: 0.0,
+                              end: _isAnyBarExpanded ? 1.0 : 0.0,
+                            ),
+                            duration: AnimationConstants.medium,
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              return Container(
+                                color: Colors.black.withValues(
+                                    alpha: overlayOpacityBase * value),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Köşe overlay blokları kaldırıldı; sol/sağ kenar overlay'leri artık
+                    // status bar ve alt çene padding'lerini hariç tutacak şekilde ayarlandı.
+                  ],
+                ),
+              );
+            },
+          ),
           // Drawer açıkken hafif blur overlay (location, qibla, settings)
           Positioned.fill(
             child: IgnorePointer(
-              ignoring: !(_isLocationDrawerOpen || _isQiblaDrawerOpen || _isSettingsDrawerOpen),
+              ignoring: !(_isLocationDrawerOpen ||
+                  _isQiblaDrawerOpen ||
+                  _isSettingsDrawerOpen),
               child: GestureDetector(
                 onTap: () {
                   // Herhangi bir drawer açıksa kapat
@@ -1006,12 +1123,14 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   duration: const Duration(milliseconds: 300),
                   switchInCurve: Curves.easeInOut,
                   switchOutCurve: Curves.easeInOut,
-                  child: (_isLocationDrawerOpen || _isQiblaDrawerOpen || _isSettingsDrawerOpen)
+                  child: (_isLocationDrawerOpen ||
+                          _isQiblaDrawerOpen ||
+                          _isSettingsDrawerOpen)
                       ? BackdropFilter(
                           key: const ValueKey('blur'),
                           filter: ImageFilter.blur(
-                            sigmaX: 3.0,
-                            sigmaY: 3.0,
+                            sigmaX: DrawerConstants.overlayBlurSigma,
+                            sigmaY: DrawerConstants.overlayBlurSigma,
                           ),
                           child: Container(
                             color: Colors.transparent,
@@ -1033,7 +1152,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       'location': () => _locationBarKey.currentState?.closeLocationBar(),
       'qibla': () => _qiblaBarKey.currentState?.closeQiblaBar(),
     };
-    
+
     for (final barType in _isBarExpanded.keys) {
       if (_isBarExpanded[barType] ?? false) {
         closeMethods[barType]?.call();

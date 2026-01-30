@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui' as ui;
 import '../utils/rtl_helper.dart';
 import '../utils/app_keys.dart';
 import '../utils/app_logger.dart';
@@ -10,11 +11,17 @@ import '../utils/app_logger.dart';
 /// - Uygulama dilini yükleme ve kaydetme
 /// - RTL/LTR metin yönü belirleme
 /// - Desteklenen dilleri listeleme
+/// - Otomatik dil algılama ve cihaz dilini dinleme
 class LocaleService extends ChangeNotifier {
-  Locale _currentLocale = const Locale(AppKeys.langTurkish);
+  Locale _currentLocale = const Locale(AppKeys.langEnglish);
+  bool _isAutoMode = true; // Varsayılan olarak otomatik mod
   SharedPreferences? _prefsCache;
+  ui.PlatformDispatcher? _platformDispatcher;
 
   Locale get currentLocale => _currentLocale;
+  
+  /// Otomatik mod aktif mi?
+  bool get isAutoMode => _isAutoMode;
 
   /// Mevcut locale'in RTL dil olup olmadığını kontrol eder.
   bool get isRTL => RTLHelper.isRTL(_currentLocale);
@@ -39,37 +46,104 @@ class LocaleService extends ChangeNotifier {
     return const Locale(AppKeys.langEnglish);
   }
 
-  /// Kaydedilmiş dili yükler, yoksa cihaz dilini algılar ve kaydeder.
+  /// Cihaz dilini dinler ve otomatik modda günceller.
+  void _listenToDeviceLocale() {
+    _platformDispatcher = WidgetsBinding.instance.platformDispatcher;
+    _platformDispatcher?.onLocaleChanged = () {
+      if (_isAutoMode) {
+        final newLocale = _detectDeviceLocale();
+        if (_currentLocale != newLocale) {
+          _currentLocale = newLocale;
+          AppLogger.info('Cihaz dili değişti, otomatik güncellendi: ${newLocale.languageCode}', tag: 'LocaleService');
+          notifyListeners();
+        }
+      }
+    };
+  }
+
+  /// Kaydedilmiş dili yükler, yoksa otomatik modu aktif eder.
   Future<void> loadSavedLocale() async {
     try {
       _prefsCache ??= await SharedPreferences.getInstance();
-      final localeCode = _prefsCache!.getString(AppKeys.localeKey);
-
-      if (localeCode != null && AppKeys.supportedLanguages.contains(localeCode)) {
-        _currentLocale = Locale(localeCode);
-        AppLogger.info('Kayıtlı dil yüklendi: $localeCode', tag: 'LocaleService');
-      } else {
-        // İlk kurulum: cihaz dilini algıla ve kaydet
+      
+      // Otomatik mod ayarını yükle
+      final autoMode = _prefsCache!.getBool(AppKeys.localeAutoModeKey);
+      _isAutoMode = autoMode ?? true; // Varsayılan olarak otomatik mod
+      
+      if (_isAutoMode) {
+        // Otomatik mod: cihaz dilini algıla
         _currentLocale = _detectDeviceLocale();
-        await _prefsCache!.setString(AppKeys.localeKey, _currentLocale.languageCode);
-        AppLogger.info('Cihaz dili algılandı: ${_currentLocale.languageCode}', tag: 'LocaleService');
+        _listenToDeviceLocale(); // Cihaz dilini dinle
+        AppLogger.info('Otomatik mod aktif, cihaz dili: ${_currentLocale.languageCode}', tag: 'LocaleService');
+      } else {
+        // Manuel mod: kayıtlı dili yükle
+        final localeCode = _prefsCache!.getString(AppKeys.localeKey);
+        if (localeCode != null && AppKeys.supportedLanguages.contains(localeCode)) {
+          _currentLocale = Locale(localeCode);
+          AppLogger.info('Kayıtlı dil yüklendi: $localeCode', tag: 'LocaleService');
+        } else {
+          // Kayıtlı dil yoksa cihaz dilini kullan
+          _currentLocale = _detectDeviceLocale();
+          await _prefsCache!.setString(AppKeys.localeKey, _currentLocale.languageCode);
+          AppLogger.info('Cihaz dili algılandı: ${_currentLocale.languageCode}', tag: 'LocaleService');
+        }
       }
 
       notifyListeners();
     } catch (e, stackTrace) {
       AppLogger.error('Dil yükleme hatası', tag: 'LocaleService', error: e, stackTrace: stackTrace);
       _currentLocale = _detectDeviceLocale();
+      _isAutoMode = true;
       notifyListeners();
     }
   }
 
-  /// Dili değiştirir ve kaydeder.
+  /// Otomatik modu aktif eder veya devre dışı bırakır.
+  Future<void> setAutoMode(bool enabled) async {
+    if (_isAutoMode == enabled) return;
+
+    _isAutoMode = enabled;
+
+    if (enabled) {
+      // Otomatik moda geç: cihaz dilini algıla ve dinle
+      _currentLocale = _detectDeviceLocale();
+      _listenToDeviceLocale();
+      AppLogger.info('Otomatik mod aktif edildi, cihaz dili: ${_currentLocale.languageCode}', tag: 'LocaleService');
+    } else {
+      // Manuel moda geç: cihaz dilini dinlemeyi durdur
+      _platformDispatcher?.onLocaleChanged = null;
+      // Mevcut dili kaydet
+      try {
+        _prefsCache ??= await SharedPreferences.getInstance();
+        await _prefsCache!.setString(AppKeys.localeKey, _currentLocale.languageCode);
+      } catch (e) {
+        AppLogger.error('Dil kaydetme hatası', tag: 'LocaleService', error: e);
+      }
+      AppLogger.info('Manuel moda geçildi, dil: ${_currentLocale.languageCode}', tag: 'LocaleService');
+    }
+
+    notifyListeners();
+
+    try {
+      _prefsCache ??= await SharedPreferences.getInstance();
+      await _prefsCache!.setBool(AppKeys.localeAutoModeKey, enabled);
+    } catch (e, stackTrace) {
+      AppLogger.error('Otomatik mod kaydetme hatası', tag: 'LocaleService', error: e, stackTrace: stackTrace);
+    }
+  }
+
+  /// Dili değiştirir ve kaydeder (manuel mod).
   Future<void> setLocale(Locale locale) async {
     if (_currentLocale == locale) return;
 
     if (!AppKeys.supportedLanguages.contains(locale.languageCode)) {
       AppLogger.warning('Desteklenmeyen dil: ${locale.languageCode}', tag: 'LocaleService');
       return;
+    }
+
+    // Manuel moda geç (kullanıcı manuel seçim yaptı)
+    if (_isAutoMode) {
+      await setAutoMode(false);
     }
 
     _currentLocale = locale;

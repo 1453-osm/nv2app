@@ -101,8 +101,57 @@ String canonicalizeReligiousEventKey(
   String rawName, {
   String? arefeType,
 }) {
+  // Önce büyük harfli versiyonları kontrol et
+  final upper = rawName.toUpperCase().trim();
+
+  // API'den gelen direkt mapping'leri kontrol et
+  final apiMappings = {
+    'ÜÇ AYLARIN BAŞLANGICI': 'uc_aylarin_baslangici',
+    'REGAİB KANDİLİ': 'regaib_kandili',
+    'REGAYIP KANDİLİ': 'regaib_kandili',
+    'MİRAC KANDİLİ': 'mirac_kandili',
+    'MİRAÇ KANDİLİ': 'mirac_kandili',
+    'BERAT KANDİLİ': 'berat_kandili',
+    'RAMAZAN BAŞLANGICI': 'ramazan_baslangici',
+    'KADİR GECESİ': 'kadir_gecesi',
+    'KADIR GECESİ': 'kadir_gecesi',
+    'RAMAZAN BAYRAMI (1 GÜN)': 'ramazan_bayrami_1_gun',
+    'RAMAZAN BAYRAMI (1. Gün)': 'ramazan_bayrami_1_gun',
+    'RAMAZAN BAYRAMI (2 GÜN)': 'ramazan_bayrami_2_gun',
+    'RAMAZAN BAYRAMI (2. Gün)': 'ramazan_bayrami_2_gun',
+    'RAMAZAN BAYRAMI (3 GÜN)': 'ramazan_bayrami_3_gun',
+    'RAMAZAN BAYRAMI (3. Gün)': 'ramazan_bayrami_3_gun',
+    'KURBAN BAYRAMI (1 GÜN)': 'kurban_bayrami_1_gun',
+    'KURBAN BAYRAMI (1. Gün)': 'kurban_bayrami_1_gun',
+    'KURBAN BAYRAMI (2 GÜN)': 'kurban_bayrami_2_gun',
+    'KURBAN BAYRAMI (2. Gün)': 'kurban_bayrami_2_gun',
+    'KURBAN BAYRAMI (3 GÜN)': 'kurban_bayrami_3_gun',
+    'KURBAN BAYRAMI (3. Gün)': 'kurban_bayrami_3_gun',
+    'KURBAN BAYRAMI (4 GÜN)': 'kurban_bayrami_4_gun',
+    'KURBAN BAYRAMI (4. Gün)': 'kurban_bayrami_4_gun',
+    'HİCRİ YILBAŞI': 'hicri_yilbasi',
+    'AŞURE GÜNÜ': 'asure_gunu',
+    'MEVLİD KANDİLİ': 'mevlid_kandili',
+    'MEVLID KANDİLİ': 'mevlid_kandili',
+  };
+
+  var canonical = apiMappings[upper];
+  if (canonical != null) {
+    // Arefe için özel işlem
+    if (canonical == 'arefe' && (arefeType?.trim().isNotEmpty ?? false)) {
+      final normalizedType = arefeType!.toLowerCase().trim();
+      if (normalizedType == 'ramazan') {
+        canonical = 'arefe_ramazan';
+      } else if (normalizedType == 'kurban') {
+        canonical = 'arefe_kurban';
+      }
+    }
+    return canonical;
+  }
+
+  // Eğer mapping'de yoksa eski yöntemle devam et
   final sanitized = _stripNonAscii(rawName);
-  var canonical = sanitized.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+  canonical = sanitized.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   canonical = canonical.replaceAll(RegExp(r'_+'), '_');
   canonical = canonical.replaceAll(RegExp(r'^_+'), '');
   canonical = canonical.replaceAll(RegExp(r'_+$'), '');

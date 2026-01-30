@@ -181,6 +181,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
+  String get automatic => 'Automatic';
+
+  @override
   String get themeColor => 'Theme Color';
 
   @override
@@ -465,4 +468,257 @@ class AppLocalizationsEn extends AppLocalizations {
   String savedLocationClearError(String error) {
     return 'Error clearing saved location: $error';
   }
+
+  @override
+  String get notificationTestTitle => '🔔 Test Notification';
+
+  @override
+  String get notificationTestBody => 'Notification system is working.';
+
+  @override
+  String get notificationTestDuaTitle => '🤲 Test - Prayer of the Day';
+
+  @override
+  String get notificationImsakTitle => 'Imsak Time';
+
+  @override
+  String get notificationSunriseTitle => 'Sunrise';
+
+  @override
+  String get notificationZuhrTitle => 'Zuhr Prayer';
+
+  @override
+  String get notificationAsrTitle => 'Asr Prayer';
+
+  @override
+  String get notificationMaghribTitle => 'Maghrib Prayer';
+
+  @override
+  String get notificationIshaTitle => 'Isha Prayer';
+
+  @override
+  String get notificationPrayerTimeTitle => 'Prayer Time';
+
+  @override
+  String get notificationImsakImmediateRamadan =>
+      'Imsak time has arrived! Suhur has ended, fasting has begun.';
+
+  @override
+  String get notificationImsakImmediate =>
+      'Imsak time has arrived. Fajr prayer time has begun.';
+
+  @override
+  String get notificationSunriseImmediate =>
+      'Sun has risen! Imsak time has ended.';
+
+  @override
+  String get notificationZuhrImmediateFriday =>
+      'Friday prayer time has arrived! May Allah accept.';
+
+  @override
+  String get notificationZuhrImmediate =>
+      'Zuhr prayer time has arrived. May Allah accept.';
+
+  @override
+  String get notificationAsrImmediate =>
+      'Asr prayer time has arrived. May Allah accept.';
+
+  @override
+  String get notificationMaghribImmediateRamadan =>
+      'Maghrib prayer time has arrived! Iftar time has come. 🌙';
+
+  @override
+  String get notificationMaghribImmediate =>
+      'Maghrib prayer time has arrived. May Allah accept.';
+
+  @override
+  String get notificationIshaImmediate =>
+      'Isha prayer time has arrived. May Allah accept.';
+
+  @override
+  String get notificationPrayerTimeImmediate =>
+      'Prayer time has arrived. May Allah accept.';
+
+  @override
+  String notificationImsakAdvance(String timeText) {
+    return '$timeText until Imsak time';
+  }
+
+  @override
+  String notificationImsakAfter(String timeText) {
+    return '$timeText after Imsak';
+  }
+
+  @override
+  String notificationSunriseAdvance(String timeText) {
+    return '$timeText until sunrise';
+  }
+
+  @override
+  String notificationSunriseAfter(String timeText) {
+    return '$timeText after Sunrise';
+  }
+
+  @override
+  String notificationZuhrAdvanceFriday(String timeText) {
+    return '$timeText until Friday prayer';
+  }
+
+  @override
+  String notificationZuhrAdvance(String timeText) {
+    return '$timeText until Zuhr prayer';
+  }
+
+  @override
+  String notificationAsrAdvance(String timeText) {
+    return '$timeText until Asr prayer';
+  }
+
+  @override
+  String notificationMaghribAdvanceRamadan(String timeText) {
+    return '$timeText until Iftar time!';
+  }
+
+  @override
+  String notificationMaghribAdvance(String timeText) {
+    return '$timeText until Maghrib prayer';
+  }
+
+  @override
+  String notificationIshaAdvance(String timeText) {
+    return '$timeText until Isha prayer';
+  }
+
+  @override
+  String notificationPrayerTimeAdvance(String timeText) {
+    return '$timeText until prayer time.';
+  }
+
+  @override
+  String get notificationFridayTitle => 'Friday Prayer';
+
+  @override
+  String notificationFridayMessage15(String timeText) {
+    return '$timeText until Friday prayer. Time to head to the mosque!';
+  }
+
+  @override
+  String notificationFridayMessage30(String timeText) {
+    return '$timeText until Friday prayer. Start preparing.';
+  }
+
+  @override
+  String notificationFridayMessageMore(String timeText) {
+    return '$timeText until Friday prayer. Don\'t forget to perform ablution and prepare.';
+  }
+
+  @override
+  String get notificationDuaTitle => '🤲 Prayer of the Day';
+
+  @override
+  String timeMinutes(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String timeHours(int hours) {
+    return '$hours hours';
+  }
+
+  @override
+  String timeHoursMinutes(int hours, int minutes) {
+    return '$hours hours $minutes minutes';
+  }
+
+  @override
+  String get themeColorRavza => 'Ravza';
+
+  @override
+  String get themeColorHarem => 'Harem';
+
+  @override
+  String get themeColorAksa => 'Al-Aqsa';
+
+  @override
+  String get themeColorImsak => 'Imsak';
+
+  @override
+  String get themeColorGunes => 'Sunrise';
+
+  @override
+  String get themeColorOgle => 'Zuhr';
+
+  @override
+  String get themeColorIkindi => 'Asr';
+
+  @override
+  String get themeColorAksam => 'Maghrib';
+
+  @override
+  String get themeColorYatsi => 'Isha';
+
+  @override
+  String get soundDefault => 'Default';
+
+  @override
+  String get soundAdhan7 => 'Arabic Adhan';
+
+  @override
+  String get soundAdhan => 'Adhan';
+
+  @override
+  String get soundSela => 'Sela';
+
+  @override
+  String get soundHard => 'Hard Tone';
+
+  @override
+  String get soundSoft => 'Soft Tone';
+
+  @override
+  String get soundBird => 'Birds';
+
+  @override
+  String get soundAlarm => 'Alarm';
+
+  @override
+  String get soundSilent => 'Silent';
+
+  @override
+  String get silentModeAfterPrayer => 'Silent mode after prayer';
+
+  @override
+  String get silentModeDuration => 'Silent mode duration';
+
+  @override
+  String minutesAfter(int minutes) {
+    return '$minutes minutes after';
+  }
+
+  @override
+  String minutesAfterNotification(int minutes) {
+    return '$minutes minutes after';
+  }
+
+  @override
+  String get silentModePermissionRequired =>
+      'Silent mode permission required. Tap to open settings.';
+
+  @override
+  String religiousDayDaysUntil(int days, String name) {
+    return '$days days until $name';
+  }
+
+  @override
+  String religiousDayTomorrow(String name) {
+    return 'Tomorrow is $name';
+  }
+
+  @override
+  String religiousDayToday(String name) {
+    return 'Blessed $name';
+  }
+
+  @override
+  String get religiousDayTodayEid => 'Happy Eid';
 }

@@ -1,4 +1,5 @@
 import '../data/religious_day_translations.dart';
+import '../data/religious_days_mapping.dart';
 
 class DetectedReligiousDay {
   final DateTime gregorianDate;
@@ -37,7 +38,7 @@ class DetectedReligiousDay {
     );
   }
 
-  /// Locale tag'e göre lokalize edilmiş ismi döndürür
+  /// Locale tag'e göre lokalize edilmiş dini gün ismini döndürür
   String getLocalizedName(String localeTag) {
     // localeTag formatı: "tr", "en", "ar" veya "tr-TR", "en-US" gibi
     final languageCode = localeTag.split('-').first.toLowerCase();
@@ -55,6 +56,31 @@ class DetectedReligiousDay {
     
     // Fallback: eventName'i döndür
     return eventName;
+  }
+
+  /// Locale tag'e göre lokalize edilmiş Hicri tarihi döndürür
+  /// Örnek: "12 Rebiülevvel 1447" -> "12 Rabi' al-awwal 1447" (en) veya "12 ربيع الأول 1447" (ar)
+  String getLocalizedHijriDate(String localeTag) {
+    // localeTag formatı: "tr", "en", "ar" veya "tr-TR", "en-US" gibi
+    final languageCode = localeTag.split('-').first.toLowerCase();
+    
+    // Hicri tarihi parse et: "12 Rebiülevvel 1447" formatından
+    final parts = hijriDateLong.split(' ');
+    if (parts.length < 3) {
+      // Format beklenen gibi değilse, orijinali döndür
+      return hijriDateLong;
+    }
+    
+    final day = parts[0];
+    final monthName = parts[1];
+    final year = parts[2];
+    
+    // Ay ismini çevir
+    final canonicalMonth = HijriMonthMapping.normalize(monthName);
+    final translatedMonth = HijriMonthMapping.translate(canonicalMonth, languageCode);
+    
+    // Çevrilmiş Hicri tarihi oluştur
+    return '$day $translatedMonth $year';
   }
 }
 

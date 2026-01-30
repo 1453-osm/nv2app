@@ -1,3 +1,5 @@
+import 'dart:io';
+import '../utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -12,22 +14,26 @@ import 'dart:async';
 import '../services/notification_scheduler_service.dart';
 import '../services/notification_settings_service.dart' as notifsvc;
 import '../services/notification_sound_service.dart';
+import '../services/widget_bridge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/gestures.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import '../utils/arabic_numbers_helper.dart';
 
 // Ses seçim listesindeki zorlamalarda ana scroll'u germemek için hafifletilmiş davranış
 class _GentleOverscrollBehavior extends ScrollBehavior {
   const _GentleOverscrollBehavior();
 
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
     // Glow/stretch yerine sakin bir deneyim
     return child;
   }
 
   @override
-  ScrollPhysics getScrollPhysics(BuildContext context) => const ClampingScrollPhysics();
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
 }
 
 // ThemeColorMode artık ThemeService'ten import ediliyor
@@ -37,7 +43,8 @@ class _ColorModeItem {
   final IconData icon;
   final String label;
   final ThemeColorMode mode;
-  const _ColorModeItem({required this.icon, required this.label, required this.mode});
+  const _ColorModeItem(
+      {required this.icon, required this.label, required this.mode});
 }
 
 class _ModeCylinderWidget extends StatefulWidget {
@@ -109,7 +116,8 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
   }
 
   void _handleAnimationStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+    if (status == AnimationStatus.completed ||
+        status == AnimationStatus.dismissed) {
       final double wrapped = _wrapRotation(_controller.value);
       if ((_controller.value - wrapped).abs() > 1e-6) {
         _controller.value = wrapped;
@@ -129,7 +137,8 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
     if (widget.items.isEmpty) return;
     final double normalized = _totalRotation / _itemAngle;
     final int newIndex = (normalized.round()) % widget.items.length;
-    final int positiveIndex = newIndex < 0 ? newIndex + widget.items.length : newIndex;
+    final int positiveIndex =
+        newIndex < 0 ? newIndex + widget.items.length : newIndex;
     if (positiveIndex != _currentIndex) {
       _currentIndex = positiveIndex;
       widget.onSelectedChanged(_currentIndex);
@@ -153,7 +162,8 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
 
   void _animateToStep(int step) {
     if (!mounted || widget.items.isEmpty) return;
-    final int wrappedStep = (step % widget.items.length + widget.items.length) % widget.items.length;
+    final int wrappedStep = (step % widget.items.length + widget.items.length) %
+        widget.items.length;
     final double targetRotation = wrappedStep * _itemAngle;
     _animateToRotation(targetRotation);
   }
@@ -205,8 +215,10 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
             },
             onHorizontalDragUpdate: (details) {
               if (!_isDragging) return;
-              final double primaryDelta = details.primaryDelta ?? details.delta.dx;
-              _totalRotation = _wrapRotation(_totalRotation - primaryDelta * _dragSensitivity);
+              final double primaryDelta =
+                  details.primaryDelta ?? details.delta.dx;
+              _totalRotation = _wrapRotation(
+                  _totalRotation - primaryDelta * _dragSensitivity);
               _controller.value = _totalRotation;
               _updateCurrentIndex();
             },
@@ -235,12 +247,14 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
                   clipBehavior: Clip.none,
                   children: indices.map((i) {
                     final double angle = (i * _itemAngle) - currentRotation;
-                    final double normalizedAngle = ((angle + math.pi) % (2 * math.pi)) - math.pi;
+                    final double normalizedAngle =
+                        ((angle + math.pi) % (2 * math.pi)) - math.pi;
 
                     final double x = _radius * math.sin(normalizedAngle);
                     final double z = _radius * math.cos(normalizedAngle);
                     final double depthScale = (z + _radius) / (2 * _radius);
-                    final double opacity = depthScale < 0.3 ? 0.0 : (0.2 + 0.8 * depthScale);
+                    final double opacity =
+                        depthScale < 0.3 ? 0.0 : (0.2 + 0.8 * depthScale);
                     final double scale = 0.7 + 0.3 * depthScale;
                     final double yOffset = (1.0 - depthScale) * 15.0;
 
@@ -271,28 +285,43 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
                                       color: (isDark
-                                          ? theme.colorScheme.surface.withOpacity(0.3 * depthScale)
-                                          : Colors.white.withOpacity(0.18 * depthScale)),
+                                          ? theme.colorScheme.surface
+                                              .withValues(
+                                                  alpha: 0.3 * depthScale)
+                                          : Colors.white.withValues(
+                                              alpha: 0.18 * depthScale)),
                                       border: Border.all(
                                         color: isSelected
                                             ? (isDark
-                                                ? theme.colorScheme.primary.withOpacity(0.6 * depthScale)
-                                                : Colors.white.withOpacity(0.6 * depthScale))
+                                                ? theme.colorScheme.primary
+                                                    .withValues(
+                                                        alpha: 0.6 * depthScale)
+                                                : Colors.white.withValues(
+                                                    alpha: 0.6 * depthScale))
                                             : (isDark
-                                                ? theme.colorScheme.outline.withOpacity(0.35 * depthScale)
-                                                : Colors.white.withOpacity(0.25 * depthScale)),
+                                                ? theme.colorScheme.outline
+                                                    .withValues(
+                                                        alpha:
+                                                            0.35 * depthScale)
+                                                : Colors.white.withValues(
+                                                    alpha: 0.25 * depthScale)),
                                         width: isSelected ? 2.0 : 1.0,
                                       ),
                                       boxShadow: [
                                         if (depthScale > 0.3)
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.08 * (1.0 - depthScale)),
+                                            color: Colors.black.withValues(
+                                                alpha:
+                                                    0.08 * (1.0 - depthScale)),
                                             blurRadius: 6 * (1.0 - depthScale),
-                                            offset: Offset(0, 3 * (1.0 - depthScale)),
+                                            offset: Offset(
+                                                0, 3 * (1.0 - depthScale)),
                                           ),
                                         if (isSelected)
                                           BoxShadow(
-                                            color: theme.colorScheme.primary.withOpacity(0.3 * depthScale),
+                                            color: theme.colorScheme.primary
+                                                .withValues(
+                                                    alpha: 0.3 * depthScale),
                                             blurRadius: 12,
                                             spreadRadius: 2,
                                           ),
@@ -303,8 +332,12 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
                                       item.icon,
                                       size: 22,
                                       color: isSelected
-                                          ? (isDark ? theme.colorScheme.primary : Colors.white).withOpacity(opacity)
-                                          : widget.textColor.withOpacity(0.8 * opacity),
+                                          ? (isDark
+                                                  ? theme.colorScheme.primary
+                                                  : Colors.white)
+                                              .withValues(alpha: opacity)
+                                          : widget.textColor
+                                              .withValues(alpha: 0.8 * opacity),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
@@ -318,10 +351,16 @@ class _ModeCylinderWidgetState extends State<_ModeCylinderWidget>
                                       style: TextStyle(
                                         fontSize: 11,
                                         height: 1.0,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
                                         color: isSelected
-                                            ? (isDark ? theme.colorScheme.primary : Colors.white).withOpacity(opacity)
-                                            : widget.textColor.withOpacity(0.8 * opacity),
+                                            ? (isDark
+                                                    ? theme.colorScheme.primary
+                                                    : Colors.white)
+                                                .withValues(alpha: opacity)
+                                            : widget.textColor.withValues(
+                                                alpha: 0.8 * opacity),
                                       ),
                                     ),
                                   ),
@@ -351,45 +390,65 @@ class _MinutePickerWidget extends StatefulWidget {
   final int currentMinutes;
   final Color textColor;
   final Function(String, int) onMinuteChanged;
+  final int minMinutes;
 
   const _MinutePickerWidget({
     required this.id,
     required this.currentMinutes,
     required this.textColor,
     required this.onMinuteChanged,
+    this.minMinutes = 0,
   });
 
   @override
   State<_MinutePickerWidget> createState() => _MinutePickerWidgetState();
 }
 
-class _MinutePickerWidgetState extends State<_MinutePickerWidget> 
+class _MinutePickerWidgetState extends State<_MinutePickerWidget>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-
   static const Duration _animationDuration = AnimationConstants.medium;
   static const Duration _momentumDuration = AnimationConstants.pickerMomentum;
-  
+
   late final AnimationController _valueChangeController;
   late final Animation<double> _valueChangeAnimation;
   late final AnimationController _momentumController;
   late Animation<double> _momentumAnimation;
-  
+
   double _wheelOffset = 0.0;
   int _currentIndex = 0;
   late final List<int> _minutes;
-  
+
   @override
   bool get wantKeepAlive => true;
-  
+
   @override
   void initState() {
     super.initState();
-    
-    final List<int> baseList = List<int>.from(SettingsConstants.notificationMinutes);
+
+    final List<int> baseList =
+        List<int>.from(SettingsConstants.notificationMinutes);
     final bool isFridayNotification = widget.id == 'cuma';
-    List<int> resolved = isFridayNotification
-        ? baseList.where((minute) => minute >= 15).toList()
-        : baseList;
+
+    final int effectiveMin =
+        math.max(widget.minMinutes, isFridayNotification ? 15 : 0);
+    List<int> resolved =
+        baseList.where((minute) => minute >= effectiveMin).toList();
+
+    // Güneş ve İmsak için sonrası (negatif) seçenekler ekle
+    final int idx = widget.id.indexOf('_');
+    final String baseId = idx == -1 ? widget.id : widget.id.substring(0, idx);
+    if (baseId == 'imsak' || baseId == 'gunes') {
+      // Tüm pozitif dakikaların negatiflerini de (sonrası) ekle
+      final List<int> afterList = SettingsConstants.notificationMinutes
+          .where((m) => m > 0)
+          .map((m) => -m)
+          .toList();
+      resolved.addAll(afterList);
+      // Büyükten küçüğe sırala: 90, 85, ... 0, -5, -10, ... -90
+      resolved.sort((a, b) => b.compareTo(a));
+    } else {
+      resolved.sort((a, b) => a.compareTo(b));
+    }
 
     if (resolved.isEmpty) {
       resolved = <int>[isFridayNotification ? 15 : 0];
@@ -407,25 +466,25 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
 
     _currentIndex = _minutes.indexOf(initialValue);
     if (_currentIndex == -1) _currentIndex = 0;
-    
+
     _valueChangeController = AnimationController(
       duration: _animationDuration,
       vsync: this,
     );
-    
+
     _momentumController = AnimationController(
       duration: _momentumDuration,
       vsync: this,
     );
-    
+
     _valueChangeAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
     ).animate(CurvedAnimation(
-      parent: _valueChangeController, 
+      parent: _valueChangeController,
       curve: AnimationConstants.elasticOut,
     ));
-    
+
     _wheelOffset = 0.0;
   }
 
@@ -468,7 +527,7 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
 
   void _handlePanEnd(DragEndDetails details) {
     final double velocity = details.velocity.pixelsPerSecond.dx;
-    
+
     if (velocity.abs() > 190) {
       _startMomentumScroll(velocity);
     } else {
@@ -480,24 +539,24 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
     final double currentOffset = _wheelOffset;
     final double momentumDistance = -velocity * 0.18;
     final double targetOffset = currentOffset + momentumDistance;
-    
+
     _momentumAnimation = Tween<double>(
       begin: currentOffset,
       end: targetOffset,
     ).animate(CurvedAnimation(
-      parent: _momentumController, 
+      parent: _momentumController,
       curve: AnimationConstants.decelerate,
     ));
-    
+
     _momentumController.removeListener(_momentumListener);
     _momentumController.addListener(_momentumListener);
-    
+
     _momentumController.reset();
     _momentumController.forward().then((_) {
       if (mounted) _snapToNearestValue();
     });
   }
-  
+
   void _momentumListener() {
     if (_momentumController.isAnimating && mounted) {
       setState(() {
@@ -509,20 +568,22 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
 
   void _checkValueChange() {
     if (_minutes.isEmpty) return;
-    final double normalizedOffset = _wheelOffset / SettingsConstants.pickerLineSpacing;
+    final double normalizedOffset =
+        _wheelOffset / SettingsConstants.pickerLineSpacing;
     final int rawIndex = normalizedOffset.round();
     final int nearestIndex = rawIndex % _minutes.length;
-    final int positiveIndex = nearestIndex < 0 ? nearestIndex + _minutes.length : nearestIndex;
-    
+    final int positiveIndex =
+        nearestIndex < 0 ? nearestIndex + _minutes.length : nearestIndex;
+
     if (positiveIndex != _currentIndex) {
       _currentIndex = positiveIndex;
-      
+
       if (mounted) {
         if (!_valueChangeController.isAnimating) {
           _valueChangeController.reset();
           _valueChangeController.forward();
         }
-        
+
         if (_currentIndex >= 0 && _currentIndex < _minutes.length) {
           widget.onMinuteChanged(widget.id, _minutes[_currentIndex]);
         }
@@ -532,11 +593,13 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
 
   void _snapToNearestValue() {
     if (!mounted) return;
-    
-    final double normalizedOffset = _wheelOffset / SettingsConstants.pickerLineSpacing;
+
+    final double normalizedOffset =
+        _wheelOffset / SettingsConstants.pickerLineSpacing;
     final double nearestStep = normalizedOffset.roundToDouble();
-    final double targetOffset = nearestStep * SettingsConstants.pickerLineSpacing;
-    
+    final double targetOffset =
+        nearestStep * SettingsConstants.pickerLineSpacing;
+
     setState(() {
       _wheelOffset = targetOffset;
     });
@@ -545,10 +608,10 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
   void _handleTap(TapUpDetails details) {
     final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
-    
+
     final double localX = details.localPosition.dx;
     final double centerX = renderBox.size.width / 2;
-    
+
     if (localX < centerX - 20) {
       _changeValueBySteps(-1);
     } else if (localX > centerX + 20) {
@@ -559,19 +622,22 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
   void _changeValueBySteps(int steps) {
     if (_minutes.isEmpty) return;
     final int newIndex = (_currentIndex + steps) % _minutes.length;
-    final int positiveIndex = newIndex < 0 ? newIndex + _minutes.length : newIndex;
-    
+    final int positiveIndex =
+        newIndex < 0 ? newIndex + _minutes.length : newIndex;
+
     if (positiveIndex != _currentIndex && mounted) {
       setState(() {
         _currentIndex = positiveIndex;
-        final double currentNormalized = _wheelOffset / SettingsConstants.pickerLineSpacing;
-        final double targetNormalized = currentNormalized.roundToDouble() + steps;
+        final double currentNormalized =
+            _wheelOffset / SettingsConstants.pickerLineSpacing;
+        final double targetNormalized =
+            currentNormalized.roundToDouble() + steps;
         _wheelOffset = targetNormalized * SettingsConstants.pickerLineSpacing;
       });
-      
+
       _valueChangeController.reset();
       _valueChangeController.forward();
-      
+
       if (_currentIndex >= 0 && _currentIndex < _minutes.length) {
         widget.onMinuteChanged(widget.id, _minutes[_currentIndex]);
       }
@@ -581,7 +647,7 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context); // AutomaticKeepAliveClientMixin için gerekli
-    
+
     return RepaintBoundary(
       child: GestureDetector(
         dragStartBehavior: DragStartBehavior.down,
@@ -602,14 +668,15 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: AnimatedBuilder(
-                    animation: _momentumController.isAnimating 
-                        ? _momentumController 
+                    animation: _momentumController.isAnimating
+                        ? _momentumController
                         : _valueChangeController,
                     builder: (context, child) {
-                      final double currentOffset = _momentumController.isAnimating 
-                          ? _momentumAnimation.value 
-                          : _wheelOffset;
-                      
+                      final double currentOffset =
+                          _momentumController.isAnimating
+                              ? _momentumAnimation.value
+                              : _wheelOffset;
+
                       return RepaintBoundary(
                         child: CustomPaint(
                           painter: _WheelPainter(
@@ -624,7 +691,7 @@ class _MinutePickerWidgetState extends State<_MinutePickerWidget>
                   ),
                 ),
               ),
-              
+
               // Merkez vurgu çizgisi (aktif seçim) - Cache edilmiş widget
               Positioned(
                 left: 0,
@@ -671,11 +738,11 @@ class _WheelPainter extends CustomPainter {
   final double offset;
   final double lineSpacing;
   final int visibleLines;
-  
+
   // Static cache for paint objects
   static final Map<Color, Paint> _mainLinePaintCache = {};
   static final Map<Color, Paint> _subLinePaintCache = {};
-  
+
   late final Paint _mainLinePaint;
   late final Paint _subLinePaint;
 
@@ -687,17 +754,17 @@ class _WheelPainter extends CustomPainter {
   }) {
     // Cache'den al veya yeni oluştur
     _mainLinePaint = _mainLinePaintCache.putIfAbsent(
-      textColor, 
+      textColor,
       () => Paint()
-        ..color = textColor.withOpacity(0.3)
+        ..color = textColor.withValues(alpha: 0.3)
         ..strokeWidth = 1
         ..style = PaintingStyle.stroke,
     );
-    
+
     _subLinePaint = _subLinePaintCache.putIfAbsent(
       textColor,
       () => Paint()
-        ..color = textColor.withOpacity(0.15)
+        ..color = textColor.withValues(alpha: 0.15)
         ..strokeWidth = 1
         ..style = PaintingStyle.stroke,
     );
@@ -708,11 +775,11 @@ class _WheelPainter extends CustomPainter {
     final double centerY = size.height * 0.5;
     final double startX = offset % lineSpacing - lineSpacing;
     final double width = size.width;
-    
+
     // Optimized drawing - sadece görünür çizgileri çiz
     for (int i = 0; i <= visibleLines + 2; i++) {
       final double x = startX + (i * lineSpacing);
-      
+
       if (x >= 1 && x <= width) {
         canvas.drawLine(
           Offset(x, centerY - 10),
@@ -720,7 +787,7 @@ class _WheelPainter extends CustomPainter {
           _mainLinePaint,
         );
       }
-      
+
       final double midX = x + (lineSpacing * 0.5);
       if (midX >= 0 && midX <= width) {
         canvas.drawLine(
@@ -734,12 +801,12 @@ class _WheelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _WheelPainter oldDelegate) {
-    return offset != oldDelegate.offset || 
-           textColor != oldDelegate.textColor ||
-           lineSpacing != oldDelegate.lineSpacing ||
-           visibleLines != oldDelegate.visibleLines;
+    return offset != oldDelegate.offset ||
+        textColor != oldDelegate.textColor ||
+        lineSpacing != oldDelegate.lineSpacing ||
+        visibleLines != oldDelegate.visibleLines;
   }
-  
+
   @override
   bool shouldRebuildSemantics(covariant _WheelPainter oldDelegate) => false;
 }
@@ -753,28 +820,31 @@ class SettingsBar extends StatefulWidget {
   final bool isDrawerMode;
 
   const SettingsBar({
-    Key? key,
+    super.key,
     this.onSettingsPressed,
     required this.themeMode,
     required this.onThemeChanged,
     this.onExpandedChanged,
     this.onDrawerDragLockChanged,
     this.isDrawerMode = true,
-  }) : super(key: key);
+  });
 
   @override
   State<SettingsBar> createState() => SettingsBarState();
 }
 
-class SettingsBarState extends State<SettingsBar> 
+class SettingsBarState extends State<SettingsBar>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   bool _isColorPickerVisible = false;
   bool _isNotificationsVisible = false;
   bool _isLanguageSelectorVisible = false;
   bool _lastDrawerLockState = false;
+  bool _hasDndPermission = false; // DND izin durumu
 
   bool get _isDrawerSubpageActive =>
-      _isColorPickerVisible || _isNotificationsVisible || _isLanguageSelectorVisible;
+      _isColorPickerVisible ||
+      _isNotificationsVisible ||
+      _isLanguageSelectorVisible;
 
   late final ScrollController _soundPickerController;
 
@@ -786,7 +856,6 @@ class SettingsBarState extends State<SettingsBar>
       widget.onDrawerDragLockChanged!(isLocked);
     }
   }
-
 
   // Bildirim ayarları (NotificationSettingsService üzerinden yüklenir)
   List<notifsvc.NotificationSetting> _notificationSettings = [];
@@ -803,6 +872,7 @@ class SettingsBarState extends State<SettingsBar>
     _soundPickerController = ScrollController();
     _initializeNotificationSettings();
     _initializeToggleAnimation();
+    _checkDndPermission(); // DND izin durumunu kontrol et
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -811,38 +881,88 @@ class SettingsBarState extends State<SettingsBar>
     });
   }
 
+  /// DND izin durumunu kontrol et
+  Future<void> _checkDndPermission() async {
+    if (!Platform.isAndroid) {
+      setState(() => _hasDndPermission = true);
+      return;
+    }
+    final hasPermission =
+        await WidgetBridgeService.isNotificationPolicyAccessGranted();
+    if (mounted) {
+      setState(() => _hasDndPermission = hasPermission);
+    }
+  }
 
-  
   void _initializeNotificationSettings() async {
     try {
       final svc = notifsvc.NotificationSettingsService();
       if (!svc.isLoaded) {
         await svc.loadSettings();
       }
-      
+
       // Service'ten ayarları al
       final settings = svc.settings;
-      
+
       // Eğer ayarlar boşsa, varsayılan ayarları kullan
       if (settings.isEmpty) {
         if (mounted) {
           final localizations = AppLocalizations.of(context)!;
           setState(() {
             _notificationSettings = [
-              notifsvc.NotificationSetting(id: 'imsak', title: localizations.imsak, enabled: false, minutes: 0, sound: 'bird'),
-              notifsvc.NotificationSetting(id: 'gunes', title: localizations.gunes, enabled: false, minutes: 0, sound: 'bird'),
-              notifsvc.NotificationSetting(id: 'ogle', title: localizations.ogle, enabled: true, minutes: 10, sound: 'default'),
-              notifsvc.NotificationSetting(id: 'ikindi', title: localizations.ikindi, enabled: true, minutes: 10, sound: 'default'),
-              notifsvc.NotificationSetting(id: 'aksam', title: localizations.aksam, enabled: true, minutes: 10, sound: 'default'),
-              notifsvc.NotificationSetting(id: 'yatsi', title: localizations.yatsi, enabled: true, minutes: 10, sound: 'default'),
-              notifsvc.NotificationSetting(id: 'cuma', title: localizations.cuma, enabled: true, minutes: 45, sound: 'alarm'),
-              notifsvc.NotificationSetting(id: 'dua', title: localizations.duaNotification, enabled: true, minutes: 0),
+              notifsvc.NotificationSetting(
+                  id: 'imsak',
+                  title: localizations.imsak,
+                  enabled: false,
+                  minutes: 0,
+                  sound: 'bird'),
+              notifsvc.NotificationSetting(
+                  id: 'gunes',
+                  title: localizations.gunes,
+                  enabled: false,
+                  minutes: 0,
+                  sound: 'bird'),
+              notifsvc.NotificationSetting(
+                  id: 'ogle',
+                  title: localizations.ogle,
+                  enabled: true,
+                  minutes: 10,
+                  sound: 'default'),
+              notifsvc.NotificationSetting(
+                  id: 'ikindi',
+                  title: localizations.ikindi,
+                  enabled: true,
+                  minutes: 10,
+                  sound: 'default'),
+              notifsvc.NotificationSetting(
+                  id: 'aksam',
+                  title: localizations.aksam,
+                  enabled: true,
+                  minutes: 10,
+                  sound: 'default'),
+              notifsvc.NotificationSetting(
+                  id: 'yatsi',
+                  title: localizations.yatsi,
+                  enabled: true,
+                  minutes: 10,
+                  sound: 'default'),
+              notifsvc.NotificationSetting(
+                  id: 'cuma',
+                  title: localizations.cuma,
+                  enabled: true,
+                  minutes: 45,
+                  sound: 'alarm'),
+              notifsvc.NotificationSetting(
+                  id: 'dua',
+                  title: localizations.duaNotification,
+                  enabled: true,
+                  minutes: 0),
             ];
           });
         }
         return;
       }
-      
+
       if (mounted) {
         // Service'ten gelen title'ları çevir
         final localizations = AppLocalizations.of(context)!;
@@ -915,14 +1035,53 @@ class SettingsBarState extends State<SettingsBar>
         final localizations = AppLocalizations.of(context)!;
         setState(() {
           _notificationSettings = [
-            notifsvc.NotificationSetting(id: 'imsak', title: localizations.imsak, enabled: false, minutes: 0, sound: 'bird'),
-            notifsvc.NotificationSetting(id: 'gunes', title: localizations.gunes, enabled: false, minutes: 0, sound: 'bird'),
-            notifsvc.NotificationSetting(id: 'ogle', title: localizations.ogle, enabled: true, minutes: 10, sound: 'default'),
-            notifsvc.NotificationSetting(id: 'ikindi', title: localizations.ikindi, enabled: true, minutes: 10, sound: 'default'),
-            notifsvc.NotificationSetting(id: 'aksam', title: localizations.aksam, enabled: true, minutes: 10, sound: 'default'),
-            notifsvc.NotificationSetting(id: 'yatsi', title: localizations.yatsi, enabled: true, minutes: 10, sound: 'default'),
-            notifsvc.NotificationSetting(id: 'cuma', title: localizations.cuma, enabled: true, minutes: 45, sound: 'alarm'),
-            notifsvc.NotificationSetting(id: 'dua', title: localizations.duaNotification, enabled: true, minutes: 0),
+            notifsvc.NotificationSetting(
+                id: 'imsak',
+                title: localizations.imsak,
+                enabled: false,
+                minutes: 0,
+                sound: 'bird'),
+            notifsvc.NotificationSetting(
+                id: 'gunes',
+                title: localizations.gunes,
+                enabled: false,
+                minutes: 0,
+                sound: 'bird'),
+            notifsvc.NotificationSetting(
+                id: 'ogle',
+                title: localizations.ogle,
+                enabled: true,
+                minutes: 10,
+                sound: 'default'),
+            notifsvc.NotificationSetting(
+                id: 'ikindi',
+                title: localizations.ikindi,
+                enabled: true,
+                minutes: 10,
+                sound: 'default'),
+            notifsvc.NotificationSetting(
+                id: 'aksam',
+                title: localizations.aksam,
+                enabled: true,
+                minutes: 10,
+                sound: 'default'),
+            notifsvc.NotificationSetting(
+                id: 'yatsi',
+                title: localizations.yatsi,
+                enabled: true,
+                minutes: 10,
+                sound: 'default'),
+            notifsvc.NotificationSetting(
+                id: 'cuma',
+                title: localizations.cuma,
+                enabled: true,
+                minutes: 45,
+                sound: 'alarm'),
+            notifsvc.NotificationSetting(
+                id: 'dua',
+                title: localizations.duaNotification,
+                enabled: true,
+                minutes: 0),
           ];
         });
       }
@@ -940,15 +1099,56 @@ class SettingsBarState extends State<SettingsBar>
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _toggleAnimationController, 
+      parent: _toggleAnimationController,
       curve: AnimationConstants.smoothTransition.curve,
     ));
   }
 
-
-
   void _updateSubpageSizeAnimation() {
     _notifyDrawerGestureLock();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Uygulama resume olduğunda, bildirimler sayfası açıksa izin kontrolü yap
+    if (state == AppLifecycleState.resumed &&
+        _isNotificationsVisible &&
+        Platform.isAndroid) {
+      _checkAndUpdateSilentModePermissions();
+    }
+  }
+
+  /// Sessiz mod izinlerini kontrol et ve güncelle
+  Future<void> _checkAndUpdateSilentModePermissions() async {
+    if (!Platform.isAndroid) return;
+
+    final hasPermission =
+        await WidgetBridgeService.isNotificationPolicyAccessGranted();
+
+    // İzin durumunu güncelle
+    if (mounted && _hasDndPermission != hasPermission) {
+      setState(() {
+        _hasDndPermission = hasPermission;
+      });
+    }
+
+    // İzin verildiyse ve sessiz mod açık olan bildirimler varsa, bildirimleri yeniden planla
+    if (hasPermission) {
+      bool needsReschedule = false;
+      for (int i = 0; i < _notificationSettings.length; i++) {
+        final setting = _notificationSettings[i];
+        if (setting.silentModeEnabled) {
+          needsReschedule = true;
+          break;
+        }
+      }
+
+      if (needsReschedule) {
+        // Bildirimleri yeniden planla (sessiz mod alarmları dahil)
+        await NotificationSchedulerService.instance
+            .rescheduleTodayNotifications();
+      }
+    }
   }
 
   @override
@@ -961,12 +1161,10 @@ class SettingsBarState extends State<SettingsBar>
     super.dispose();
   }
 
-
-
   @override
   void didUpdateWidget(SettingsBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Sadece tema modu değiştiğinde toggle pozisyonunu güncelle
     if (oldWidget.themeMode != widget.themeMode) {
       _updateTogglePosition();
@@ -1010,7 +1208,7 @@ class SettingsBarState extends State<SettingsBar>
       setVisibility();
     });
     _updateSubpageSizeAnimation();
-    
+
     // Bildirimler sayfası açıldığında ayarları yüklemeyi garantile
     if (_isNotificationsVisible && _notificationSettings.isEmpty) {
       _initializeNotificationSettings();
@@ -1032,7 +1230,6 @@ class SettingsBarState extends State<SettingsBar>
         child: Padding(
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top,
-            bottom: MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1096,60 +1293,67 @@ class SettingsBarState extends State<SettingsBar>
     }
   }
 
-
   Widget _buildMainMenu() {
     return Stack(
       children: [
         SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 20, 20, 25),
+            padding: EdgeInsetsDirectional.fromSTEB(
+              context.space(SpaceSize.lg),
+              context.space(SpaceSize.lg),
+              context.space(SpaceSize.lg),
+              context.space(SpaceSize.xl),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildThemeToggle(),
-                const SizedBox(height: 16),
+                SizedBox(height: context.space(SpaceSize.md)),
                 _buildMenuButton(
                   icon: Symbols.palette_rounded,
                   title: AppLocalizations.of(context)!.themeColor,
                   onTap: () => _showSubMenu(() => _isColorPickerVisible = true),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.space(SpaceSize.sm)),
                 _buildMenuButton(
                   icon: Symbols.notifications_rounded,
                   title: AppLocalizations.of(context)!.notifications,
-                  onTap: () => _showSubMenu(() => _isNotificationsVisible = true),
+                  onTap: () =>
+                      _showSubMenu(() => _isNotificationsVisible = true),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.space(SpaceSize.sm)),
                 _buildMenuButton(
                   icon: Symbols.language_rounded,
                   title: AppLocalizations.of(context)!.language,
-                  onTap: () => _showSubMenu(() => _isLanguageSelectorVisible = true),
+                  onTap: () =>
+                      _showSubMenu(() => _isLanguageSelectorVisible = true),
                 ),
               ],
             ),
           ),
         ),
         PositionedDirectional(
-          top: 18,
-          end: 12,
+          top: context.space(SpaceSize.lg),
+          end: context.space(SpaceSize.sm),
           child: GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
             child: Container(
-              width: 45,
-              height: 33,
+              width: context.space(SpaceSize.xxl),
+              height: context.space(SpaceSize.xl),
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(context.space(SpaceSize.sm)),
               ),
               alignment: Alignment.center,
               child: Icon(
                 Symbols.menu_rounded,
                 color: GlassBarConstants.getTextColor(context),
-                size: 28,
+                size: context.icon(IconSizeLevel.lg),
               ),
             ),
           ),
@@ -1161,7 +1365,7 @@ class SettingsBarState extends State<SettingsBar>
   Widget _buildLanguagePage() {
     final surfaceColor = GlassBarConstants.getBackgroundColor(context);
     final borderColor = GlassBarConstants.getBorderColor(context);
-    
+
     // Drawer modunda dinamik boyut
     if (widget.isDrawerMode) {
       return Column(
@@ -1189,74 +1393,60 @@ class SettingsBarState extends State<SettingsBar>
               physics: const ClampingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
-                child: Consumer<LocaleService>(
-                  builder: (context, localeService, child) {
-                    final currentLocale = localeService.currentLocale;
-                    
+                child:
+                    Selector<LocaleService, ({Locale locale, bool isAutoMode})>(
+                  selector: (_, service) => (
+                    locale: service.currentLocale,
+                    isAutoMode: service.isAutoMode
+                  ),
+                  builder: (context, data, _) {
+                    final localeService = context.read<LocaleService>();
+                    final currentLocale = data.locale;
+                    final isAutoMode = data.isAutoMode;
+
                     return Column(
-                      children: LocaleService.supportedLocales.map((Locale locale) {
-                        final isSelected = locale == currentLocale;
-                        final languageName = LocaleService.getLanguageName(locale);
-                        
-                        return Padding(
+                      children: [
+                        // Otomatik seçeneği
+                        Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: GestureDetector(
+                          child: _LanguageListItem(
+                            key: const ValueKey('auto'),
+                            locale: null, // Otomatik için null
+                            languageName:
+                                AppLocalizations.of(context)!.automatic,
+                            isSelected: isAutoMode,
+                            surfaceColor: surfaceColor,
+                            borderColor: borderColor,
                             onTap: () {
                               HapticFeedback.selectionClick();
-                              localeService.setLocale(locale);
+                              localeService.setAutoMode(true);
                             },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeInOut,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: surfaceColor.withOpacity(isSelected ? 0.15 : 0.05),
-                                border: Border.all(
-                                  color: borderColor.withOpacity(isSelected ? 0.6 : 0.3),
-                                  width: isSelected ? 1.5 : 1,
-                                ),
-                              ),
-                              child: Row(
-                                textDirection: TextDirection.ltr, // Dil adı her zaman LTR
-                                children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: surfaceColor.withOpacity(0.1),
-                                    ),
-                                    child: Icon(
-                                      Symbols.language_rounded,
-                                      color: GlassBarConstants.getTextColor(context).withOpacity(0.8),
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      languageName,
-                                      style: TextStyle(
-                                        color: GlassBarConstants.getTextColor(context),
-                                        fontSize: 16,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                      ),
-                                      textDirection: TextDirection.ltr, // Dil adı her zaman LTR
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    Icon(
-                                      Symbols.check_rounded,
-                                      color: GlassBarConstants.getTextColor(context),
-                                      size: 24,
-                                    ),
-                                ],
-                              ),
-                            ),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                        // Diğer diller
+                        ...LocaleService.supportedLocales.map((Locale locale) {
+                          final isSelected =
+                              !isAutoMode && locale == currentLocale;
+                          final languageName =
+                              LocaleService.getLanguageName(locale);
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _LanguageListItem(
+                              key: ValueKey(locale.languageCode),
+                              locale: locale,
+                              languageName: languageName,
+                              isSelected: isSelected,
+                              surfaceColor: surfaceColor,
+                              borderColor: borderColor,
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                localeService.setLocale(locale);
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ],
                     );
                   },
                 ),
@@ -1266,7 +1456,7 @@ class SettingsBarState extends State<SettingsBar>
         ],
       );
     }
-    
+
     // Normal bar modu
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1283,75 +1473,58 @@ class SettingsBarState extends State<SettingsBar>
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: Consumer<LocaleService>(
-              builder: (context, localeService, child) {
-                final currentLocale = localeService.currentLocale;
-                
+            child: Selector<LocaleService, ({Locale locale, bool isAutoMode})>(
+              selector: (_, service) => (
+                locale: service.currentLocale,
+                isAutoMode: service.isAutoMode
+              ),
+              builder: (context, data, _) {
+                final localeService = context.read<LocaleService>();
+                final currentLocale = data.locale;
+                final isAutoMode = data.isAutoMode;
+
                 return ListView.builder(
                   padding: EdgeInsets.zero,
                   physics: const BouncingScrollPhysics(),
-                  itemCount: LocaleService.supportedLocales.length,
+                  itemCount: LocaleService.supportedLocales.length +
+                      1, // +1 for automatic
                   itemBuilder: (context, index) {
-                    final locale = LocaleService.supportedLocales[index];
-                    final isSelected = locale == currentLocale;
+                    if (index == 0) {
+                      // Otomatik seçeneği
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _LanguageListItem(
+                          key: const ValueKey('auto'),
+                          locale: null, // Otomatik için null
+                          languageName: AppLocalizations.of(context)!.automatic,
+                          isSelected: isAutoMode,
+                          surfaceColor: surfaceColor,
+                          borderColor: borderColor,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            localeService.setAutoMode(true);
+                          },
+                        ),
+                      );
+                    }
+
+                    final locale = LocaleService.supportedLocales[index - 1];
+                    final isSelected = !isAutoMode && locale == currentLocale;
                     final languageName = LocaleService.getLanguageName(locale);
-                    
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: GestureDetector(
+                      child: _LanguageListItem(
+                        key: ValueKey(locale.languageCode),
+                        locale: locale,
+                        languageName: languageName,
+                        isSelected: isSelected,
+                        surfaceColor: surfaceColor,
+                        borderColor: borderColor,
                         onTap: () {
                           HapticFeedback.selectionClick();
                           localeService.setLocale(locale);
                         },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeInOut,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: surfaceColor.withOpacity(isSelected ? 0.15 : 0.05),
-                            border: Border.all(
-                              color: borderColor.withOpacity(isSelected ? 0.6 : 0.3),
-                              width: isSelected ? 1.5 : 1,
-                            ),
-                          ),
-                          child: Row(
-                            textDirection: TextDirection.ltr, // Dil adı her zaman LTR
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: surfaceColor.withOpacity(0.1),
-                                ),
-                                child: Icon(
-                                  Symbols.language_rounded,
-                                  color: GlassBarConstants.getTextColor(context).withOpacity(0.8),
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  languageName,
-                                  style: TextStyle(
-                                    color: GlassBarConstants.getTextColor(context),
-                                    fontSize: 16,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                  ),
-                                  textDirection: TextDirection.ltr, // Dil adı her zaman LTR
-                                ),
-                              ),
-                              if (isSelected)
-                                Icon(
-                                  Symbols.check_rounded,
-                                  color: GlassBarConstants.getTextColor(context),
-                                  size: 24,
-                                ),
-                            ],
-                          ),
-                        ),
                       ),
                     );
                   },
@@ -1372,7 +1545,7 @@ class SettingsBarState extends State<SettingsBar>
     final surfaceColor = GlassBarConstants.getBackgroundColor(context);
     final borderColor = GlassBarConstants.getBorderColor(context);
     final textColor = GlassBarConstants.getTextColor(context);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1385,8 +1558,8 @@ class SettingsBarState extends State<SettingsBar>
           border: Border.all(color: borderColor),
         ),
         child: Row(
-          textDirection: Directionality.of(context) == TextDirection.rtl 
-              ? TextDirection.rtl 
+          textDirection: Directionality.of(context) == TextDirection.rtl
+              ? TextDirection.rtl
               : TextDirection.ltr,
           children: [
             Container(
@@ -1398,7 +1571,7 @@ class SettingsBarState extends State<SettingsBar>
               ),
               child: Icon(
                 icon,
-                color: textColor.withOpacity(0.8),
+                color: textColor.withValues(alpha: 0.8),
                 size: 20,
               ),
             ),
@@ -1417,7 +1590,7 @@ class SettingsBarState extends State<SettingsBar>
             ),
             Icon(
               Symbols.arrow_forward_ios_rounded,
-              color: textColor.withOpacity(0.6),
+              color: textColor.withValues(alpha: 0.6),
               size: 16,
             ),
           ],
@@ -1430,7 +1603,7 @@ class SettingsBarState extends State<SettingsBar>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = GlassBarConstants.getTextColor(context);
-    
+
     return Consumer2<ThemeService, SettingsViewModel>(
       builder: (context, themeService, settingsVm, child) {
         // Drawer modunda dinamik boyut
@@ -1456,35 +1629,40 @@ class SettingsBarState extends State<SettingsBar>
                     ),
                   ),
                   const SizedBox(height: 8),
-              // Scroll edilebilir içerik
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildColorModeCylinderSelector(textColor, isDark, theme, themeService),
-                        const SizedBox(height: 10),
-                        _buildColorModeContent(themeService, textColor, isDark, theme),
-                      ],
+                  // Scroll edilebilir içerik
+                  Flexible(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Padding(
+                        padding:
+                            const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 5),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildColorModeCylinderSelector(
+                                textColor, isDark, theme, themeService),
+                            const SizedBox(height: 10),
+                            _buildColorModeContent(
+                                themeService, textColor, isDark, theme),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              // Oto karartma switch - scroll dışı, en altta
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 20),
-                child: _buildAutoDarkModeSwitch(textColor, isDark, theme, settingsVm),
+                  // Oto karartma switch - scroll dışı, en altta
+                  Padding(
+                    padding:
+                        const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 20),
+                    child: _buildAutoDarkModeSwitch(
+                        textColor, isDark, theme, settingsVm),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
-      );
-    }
-        
+          );
+        }
+
         // Normal bar modu
         return Container(
           padding: const EdgeInsets.all(20),
@@ -1500,11 +1678,13 @@ class SettingsBarState extends State<SettingsBar>
                 },
               ),
               const SizedBox(height: 8),
-              _buildColorModeCylinderSelector(textColor, isDark, theme, themeService),
+              _buildColorModeCylinderSelector(
+                  textColor, isDark, theme, themeService),
               const SizedBox(height: 0),
-              
+
               Expanded(
-                child: _buildColorModeContent(themeService, textColor, isDark, theme),
+                child: _buildColorModeContent(
+                    themeService, textColor, isDark, theme),
               ),
               // Oto karartma switch - scroll dışı, en altta
               _buildAutoDarkModeSwitch(textColor, isDark, theme, settingsVm),
@@ -1532,7 +1712,6 @@ class SettingsBarState extends State<SettingsBar>
 
   // kaldırıldı: _modeByIndex kullanılmıyor
 
-
   Widget _buildColorModeCylinderSelector(
     Color textColor,
     bool isDark,
@@ -1541,12 +1720,25 @@ class SettingsBarState extends State<SettingsBar>
   ) {
     final localizations = AppLocalizations.of(context)!;
     final List<_ColorModeItem> items = [
-      _ColorModeItem(icon: Symbols.palette_rounded, label: localizations.custom, mode: ThemeColorMode.static),
-      _ColorModeItem(icon: Symbols.schedule_rounded, label: localizations.dynamicMode, mode: ThemeColorMode.dynamic),
-      _ColorModeItem(icon: Symbols.routine_rounded, label: localizations.system, mode: ThemeColorMode.system),
-      _ColorModeItem(icon: Symbols.dark_mode_rounded, label: localizations.dark, mode: ThemeColorMode.black),
+      _ColorModeItem(
+          icon: Symbols.palette_rounded,
+          label: localizations.custom,
+          mode: ThemeColorMode.static),
+      _ColorModeItem(
+          icon: Symbols.schedule_rounded,
+          label: localizations.dynamicMode,
+          mode: ThemeColorMode.dynamic),
+      _ColorModeItem(
+          icon: Symbols.routine_rounded,
+          label: localizations.system,
+          mode: ThemeColorMode.system),
+      _ColorModeItem(
+          icon: Symbols.dark_mode_rounded,
+          label: localizations.dark,
+          mode: ThemeColorMode.black),
     ];
-    final int selectedIndex = _modeIndexOf(themeService.themeColorMode).clamp(0, items.length - 1);
+    final int selectedIndex =
+        _modeIndexOf(themeService.themeColorMode).clamp(0, items.length - 1);
 
     return _ModeCylinderWidget(
       items: items,
@@ -1606,7 +1798,7 @@ class SettingsBarState extends State<SettingsBar>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = GlassBarConstants.getTextColor(context);
-    
+
     // Eğer liste boşsa ve service'te veri varsa, yüklemeyi dene
     if (_notificationSettings.isEmpty) {
       final svc = notifsvc.NotificationSettingsService();
@@ -1619,7 +1811,7 @@ class SettingsBarState extends State<SettingsBar>
         });
       }
     }
-    
+
     // Aynı vakte ait bildirimleri grupla (imsak, imsak_1, imsak_2 ... gibi)
     final Map<String, List<notifsvc.NotificationSetting>> grouped = {};
     for (final setting in _notificationSettings) {
@@ -1628,7 +1820,7 @@ class SettingsBarState extends State<SettingsBar>
     }
     final List<MapEntry<String, List<notifsvc.NotificationSetting>>> groups =
         grouped.entries.toList();
-    
+
     // Drawer modunda dinamik boyut
     if (widget.isDrawerMode) {
       return Column(
@@ -1667,9 +1859,10 @@ class SettingsBarState extends State<SettingsBar>
                   itemBuilder: (context, index) {
                     final group = groups[index];
                     final String baseId = group.key;
-                    final List<notifsvc.NotificationSetting> settings = group.value;
+                    final List<notifsvc.NotificationSetting> settings =
+                        group.value;
                     final bool isEnabled = settings.any((s) => s.enabled);
-                    
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildNotificationCard(
@@ -1689,7 +1882,7 @@ class SettingsBarState extends State<SettingsBar>
         ],
       );
     }
-    
+
     // Normal bar modu
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1718,7 +1911,7 @@ class SettingsBarState extends State<SettingsBar>
                 final String baseId = group.key;
                 final List<notifsvc.NotificationSetting> settings = group.value;
                 final bool isEnabled = settings.any((s) => s.enabled);
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _buildNotificationCard(
@@ -1743,6 +1936,8 @@ class SettingsBarState extends State<SettingsBar>
   // kaldırıldı: eski bar seçeneği render
 
   Widget _buildStaticColorList(ThemeService themeService) {
+    final localizations = AppLocalizations.of(context)!;
+
     return ListView.builder(
       key: const ValueKey('staticColors'),
       padding: EdgeInsets.zero,
@@ -1753,10 +1948,16 @@ class SettingsBarState extends State<SettingsBar>
         final colorData = SettingsConstants.themeColors[index];
         final Color color = colorData.color;
         final bool isSelected = color == themeService.selectedThemeColor;
-        
+
+        // Lokalizasyon anahtarı varsa kullan, yoksa eski name'i kullan
+        final String displayName = colorData.localizationKey != null
+            ? _getLocalizedThemeColorName(
+                localizations, colorData.localizationKey!)
+            : colorData.name;
+
         return _buildColorOption(
           color: color,
-          name: colorData.name,
+          name: displayName,
           isSelected: isSelected,
           onTap: () => themeService.setSelectedThemeColor(color),
         );
@@ -1764,7 +1965,35 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
-  Widget _buildDynamicColorInfo(Color textColor, bool isDark, ThemeData theme, ThemeService themeService) {
+  /// Lokalizasyon anahtarına göre tema rengi adını döndürür
+  String _getLocalizedThemeColorName(
+      AppLocalizations localizations, String key) {
+    switch (key) {
+      case 'themeColorRavza':
+        return localizations.themeColorRavza;
+      case 'themeColorHarem':
+        return localizations.themeColorHarem;
+      case 'themeColorAksa':
+        return localizations.themeColorAksa;
+      case 'themeColorImsak':
+        return localizations.themeColorImsak;
+      case 'themeColorGunes':
+        return localizations.themeColorGunes;
+      case 'themeColorOgle':
+        return localizations.themeColorOgle;
+      case 'themeColorIkindi':
+        return localizations.themeColorIkindi;
+      case 'themeColorAksam':
+        return localizations.themeColorAksam;
+      case 'themeColorYatsi':
+        return localizations.themeColorYatsi;
+      default:
+        return key;
+    }
+  }
+
+  Widget _buildDynamicColorInfo(Color textColor, bool isDark, ThemeData theme,
+      ThemeService themeService) {
     return Container(
       key: const ValueKey('dynamicInfo'),
       child: Container(
@@ -1782,7 +2011,7 @@ class SettingsBarState extends State<SettingsBar>
           children: [
             Icon(
               Symbols.palette,
-              color: textColor.withOpacity(0.8),
+              color: textColor.withValues(alpha: 0.8),
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -1795,7 +2024,7 @@ class SettingsBarState extends State<SettingsBar>
                     child: Text(
                       AppLocalizations.of(context)!.dynamicThemeDescription,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.8),
+                        color: textColor.withValues(alpha: 0.8),
                         fontSize: 14,
                         height: 1.4,
                       ),
@@ -1829,7 +2058,7 @@ class SettingsBarState extends State<SettingsBar>
           children: [
             Icon(
               Symbols.palette,
-              color: textColor.withOpacity(0.8),
+              color: textColor.withValues(alpha: 0.8),
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -1842,7 +2071,7 @@ class SettingsBarState extends State<SettingsBar>
                     child: Text(
                       AppLocalizations.of(context)!.blackThemeDescription,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.85),
+                        color: textColor.withValues(alpha: 0.85),
                         fontSize: 14,
                         height: 1.35,
                       ),
@@ -1876,7 +2105,7 @@ class SettingsBarState extends State<SettingsBar>
           children: [
             Icon(
               Symbols.palette,
-              color: textColor.withOpacity(0.8),
+              color: textColor.withValues(alpha: 0.8),
               size: 20,
             ),
             const SizedBox(width: 10),
@@ -1889,7 +2118,7 @@ class SettingsBarState extends State<SettingsBar>
                     child: Text(
                       AppLocalizations.of(context)!.systemThemeDescription,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.85),
+                        color: textColor.withValues(alpha: 0.85),
                         fontSize: 14,
                         height: 1.35,
                       ),
@@ -1924,9 +2153,11 @@ class SettingsBarState extends State<SettingsBar>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.1),
+            color: GlassBarConstants.getBackgroundColor(context)
+                .withValues(alpha: 0.1),
             border: Border.all(
-              color: GlassBarConstants.getBorderColor(context).withOpacity(0.3),
+              color: GlassBarConstants.getBorderColor(context)
+                  .withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -1934,7 +2165,7 @@ class SettingsBarState extends State<SettingsBar>
             children: [
               Icon(
                 Symbols.dark_mode,
-                color: textColor.withOpacity(0.8),
+                color: textColor.withValues(alpha: 0.8),
                 size: 20,
               ),
               const SizedBox(width: 10),
@@ -1954,7 +2185,7 @@ class SettingsBarState extends State<SettingsBar>
                     Text(
                       AppLocalizations.of(context)!.autoDarkModeDescription,
                       style: TextStyle(
-                        color: textColor.withOpacity(0.7),
+                        color: textColor.withValues(alpha: 0.7),
                         fontSize: 12,
                         height: 1.3,
                       ),
@@ -1983,9 +2214,8 @@ class SettingsBarState extends State<SettingsBar>
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-
     final textColor = GlassBarConstants.getTextColor(context);
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
@@ -1996,9 +2226,11 @@ class SettingsBarState extends State<SettingsBar>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: GlassBarConstants.getBackgroundColor(context).withOpacity(isSelected ? 0.3 : 0.1),
+            color: GlassBarConstants.getBackgroundColor(context)
+                .withValues(alpha: isSelected ? 0.3 : 0.1),
             border: Border.all(
-              color: GlassBarConstants.getBorderColor(context).withOpacity(isSelected ? 0.6 : 0.3),
+              color: GlassBarConstants.getBorderColor(context)
+                  .withValues(alpha: isSelected ? 0.6 : 0.3),
               width: isSelected ? 1.5 : 1,
             ),
           ),
@@ -2013,7 +2245,7 @@ class SettingsBarState extends State<SettingsBar>
                   border: Border.all(color: textColor),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color: color.withValues(alpha: 0.3),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),
@@ -2078,7 +2310,8 @@ class SettingsBarState extends State<SettingsBar>
     }
 
     final String newId = _generateNewNotificationId(baseId);
-    final notifsvc.NotificationSetting newSetting = notifsvc.NotificationSetting(
+    final notifsvc.NotificationSetting newSetting =
+        notifsvc.NotificationSetting(
       id: newId,
       title: setting.title,
       enabled: true,
@@ -2121,15 +2354,14 @@ class SettingsBarState extends State<SettingsBar>
       await prefs.remove('${base}sound');
       await prefs.reload();
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
 
     try {
-      await NotificationSchedulerService.instance.rescheduleTodayNotifications();
+      await NotificationSchedulerService.instance
+          .rescheduleTodayNotifications();
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 
@@ -2169,7 +2401,8 @@ class SettingsBarState extends State<SettingsBar>
   }
 
   void _updateNotificationMinutes(String id, int minutes) {
-    final index = _notificationSettings.indexWhere((setting) => setting.id == id);
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
 
     setState(() {
@@ -2181,7 +2414,8 @@ class SettingsBarState extends State<SettingsBar>
   }
 
   void _togglePickerVisibility(String id) {
-    final index = _notificationSettings.indexWhere((setting) => setting.id == id);
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
 
     setState(() {
@@ -2202,16 +2436,19 @@ class SettingsBarState extends State<SettingsBar>
       _notificationSettings[i] = _notificationSettings[i].copyWith(
         pickerVisible: false,
         soundPickerVisible: false,
+        silentModePickerVisible: false,
       );
     }
   }
 
   void _toggleSoundPickerVisibility(String id) {
-    final index = _notificationSettings.indexWhere((setting) => setting.id == id);
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
 
     setState(() {
-      final bool currentVisibility = _notificationSettings[index].soundPickerVisible;
+      final bool currentVisibility =
+          _notificationSettings[index].soundPickerVisible;
       // Kapatılıyorsa önizlemeyi durdur
       if (currentVisibility) {
         NotificationSoundService.stopPreview();
@@ -2226,7 +2463,8 @@ class SettingsBarState extends State<SettingsBar>
   }
 
   void _updateNotificationSound(String id, String soundId) {
-    final index = _notificationSettings.indexWhere((setting) => setting.id == id);
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
     if (index == -1) return;
 
     setState(() {
@@ -2235,6 +2473,153 @@ class SettingsBarState extends State<SettingsBar>
       );
     });
     _persistAndReschedule(_notificationSettings[index]);
+  }
+
+  void _toggleSilentModePickerVisibility(String id) {
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
+    if (index == -1) return;
+
+    setState(() {
+      final bool currentVisibility =
+          _notificationSettings[index].silentModePickerVisible;
+      // Önce tüm picker'ları kapat
+      _closeAllPickers();
+      // Eğer zaten açıksa kapat, kapalıysa aç
+      _notificationSettings[index] = _notificationSettings[index].copyWith(
+        silentModePickerVisible: !currentVisibility,
+      );
+    });
+  }
+
+  Future<void> _updateNotificationSilentMode(String id, bool enabled) async {
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
+    if (index == -1) return;
+
+    // Android'de sessiz mod için izin kontrolü
+    if (enabled && Platform.isAndroid) {
+      final hasPermission =
+          await WidgetBridgeService.isNotificationPolicyAccessGranted();
+      if (!hasPermission) {
+        // İzin yoksa kullanıcıyı ayar sayfasına yönlendir
+        if (mounted) {
+          final shouldRequest = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(AppLocalizations.of(context)!.silentModeAfterPrayer),
+              content: const Text(
+                'Sessiz mod özelliğini kullanmak için "Bildirim Erişimi" izni gereklidir. Ayarlar sayfasına yönlendirileceksiniz.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('İptal'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Ayarlara Git'),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldRequest == true) {
+            await WidgetBridgeService.requestNotificationPolicyAccess();
+            // Kullanıcıya bilgi ver - izin verildikten sonra tekrar denemesi gerektiğini söyle
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Lütfen ayarlardan izin verin, ardından sessiz modu tekrar açın.'),
+                  duration: Duration(seconds: 4),
+                ),
+              );
+            }
+            // İzin verildikten sonra hemen kontrol etmek yerine, kullanıcının tekrar denemesini bekle
+            // Çünkü Android izin değişikliğini hemen yansıtmayabilir
+            return;
+          } else {
+            // Kullanıcı iptal etti, sessiz modu açma
+            return;
+          }
+        }
+      }
+    }
+
+    setState(() {
+      _notificationSettings[index] = _notificationSettings[index].copyWith(
+        silentModeEnabled: enabled,
+      );
+    });
+    _persistAndReschedule(_notificationSettings[index]);
+  }
+
+  void _updateNotificationSilentModeDuration(String id, int duration) {
+    final index =
+        _notificationSettings.indexWhere((setting) => setting.id == id);
+    if (index == -1) return;
+
+    setState(() {
+      _notificationSettings[index] = _notificationSettings[index].copyWith(
+        silentModeDuration: duration,
+      );
+    });
+    _persistAndReschedule(_notificationSettings[index]);
+  }
+
+  /// Ses ID'sine göre lokalize edilmiş ses adını döndürür
+  String _getLocalizedSoundName(String soundId) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (soundId) {
+      case 'default':
+        return localizations.soundDefault;
+      case 'adhanarabic':
+        return localizations.soundAdhan7;
+      case 'adhan':
+        return localizations.soundAdhan;
+      case 'sela':
+        return localizations.soundSela;
+      case 'hard':
+        return localizations.soundHard;
+      case 'soft':
+        return localizations.soundSoft;
+      case 'bird':
+        return localizations.soundBird;
+      case 'alarm':
+        return localizations.soundAlarm;
+      case 'silent':
+        return localizations.soundSilent;
+      default:
+        return SettingsConstants.soundOptions
+            .firstWhere(
+              (sound) => sound.id == soundId,
+              orElse: () => SettingsConstants.soundOptions.first,
+            )
+            .name;
+    }
+  }
+
+  /// Dakika değerini lokalize edilmiş metin olarak döndürür (rakamlar dahil)
+  String _getLocalizedMinutesBefore(int minutes) {
+    final localizations = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final isArabic = locale.languageCode == 'ar';
+    final bool isAfter = minutes < 0;
+    final int absMinutes = minutes.abs();
+
+    // Rakamları lokalize et
+    final minutesStr = absMinutes.toString();
+    final localizedMinutes =
+        isArabic ? localizeNumerals(minutesStr, 'ar') : minutesStr;
+
+    // Lokalize edilmiş metni al ve rakamı değiştir
+    final baseText = isAfter
+        ? localizations.minutesAfterNotification(absMinutes)
+        : localizations.minutesBefore(absMinutes);
+
+    // Rakamı lokalize edilmiş rakamla değiştir
+    return baseText.replaceAll(minutesStr, localizedMinutes);
   }
 
   // --- Persist ve yeniden planlama ---
@@ -2248,30 +2633,52 @@ class SettingsBarState extends State<SettingsBar>
     });
   }
 
-  Future<void> _persistAndReschedule(notifsvc.NotificationSetting setting) async {
+  Future<void> _persistAndReschedule(
+      notifsvc.NotificationSetting setting) async {
     try {
-      await notifsvc.NotificationSettingsService().updateSetting(setting.id, setting);
+      await notifsvc.NotificationSettingsService()
+          .updateSetting(setting.id, setting);
       // SharedPreferences commit işleminin tamamlanması için kısa bir gecikme
       await Future.delayed(const Duration(milliseconds: 100));
-      await NotificationSchedulerService.instance.rescheduleTodayNotifications();
+      await NotificationSchedulerService.instance
+          .rescheduleTodayNotifications();
     } catch (e) {
-      if (kDebugMode) {
-      }
+      if (kDebugMode) {}
     }
   }
 
   // Helper methods for notifications
   double _calculateControlsHeight(notifsvc.NotificationSetting setting) {
-    double baseHeight = 97.0;
-    
+    final bool isBaseNotification =
+        setting.id == _baseNotificationId(setting.id);
+
+    // Base yükseklik: Time picker button (36) + SizedBox (8) + Sound selector button (36) = 80
+    // Padding top (12) ekleniyor
+    // Ek bildirimler için 90, base notification'lar için daha fazla alan
+    double baseHeight = isBaseNotification ? 165.0 : 100.0;
+
+    // Time picker açık: picker container (48) + padding (4) = 52
     if (setting.pickerVisible) {
-      baseHeight += 57.0;
+      baseHeight += 52.0;
     }
-    
+
+    // Sound picker açık: picker container (168) + padding (4) = 172
     if (setting.soundPickerVisible) {
-      baseHeight += 177.0;
+      baseHeight += 172.0;
     }
-    
+
+    // Sessiz mod kontrolleri (sadece base notification'larda ve sessiz mod açıldığında)
+    if (isBaseNotification && setting.silentModeEnabled) {
+      baseHeight += 44.0; // Toggle switch container (36) + SizedBox (8)
+      if (setting.silentModePickerVisible) {
+        baseHeight += 52.0; // Picker container (48) + padding (4)
+      }
+      // DND izni uyarısı (Android'de izin yoksa)
+      if (Platform.isAndroid && !_hasDndPermission) {
+        baseHeight += 48.0; // Warning container (40) + SizedBox (8)
+      }
+    }
+
     return baseHeight;
   }
 
@@ -2284,7 +2691,7 @@ class SettingsBarState extends State<SettingsBar>
     required ThemeData theme,
   }) {
     final bool isDua = baseId == 'dua';
-    
+
     // Grupları sırala: önce ana kayıt (imsak), sonra ekler (imsak_1, imsak_2 ...)
     final List<notifsvc.NotificationSetting> ordered = List.of(settings);
     ordered.sort((a, b) {
@@ -2301,9 +2708,11 @@ class SettingsBarState extends State<SettingsBar>
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: GlassBarConstants.getBackgroundColor(context).withOpacity(isEnabled ? 0.15 : 0.05),
+        color: GlassBarConstants.getBackgroundColor(context)
+            .withValues(alpha: isEnabled ? 0.15 : 0.05),
         border: Border.all(
-          color: GlassBarConstants.getBorderColor(context).withOpacity(isEnabled ? 0.6 : 0.3),
+          color: GlassBarConstants.getBorderColor(context)
+              .withValues(alpha: isEnabled ? 0.6 : 0.3),
           width: isEnabled ? 1.5 : 1,
         ),
       ),
@@ -2318,7 +2727,7 @@ class SettingsBarState extends State<SettingsBar>
                   height: 1,
                   width: double.infinity,
                   color: GlassBarConstants.getBorderColor(context)
-                      .withOpacity(0.25),
+                      .withValues(alpha: 0.25),
                 ),
               ),
             _buildNotificationRow(
@@ -2397,18 +2806,18 @@ class SettingsBarState extends State<SettingsBar>
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: GlassBarConstants.getBackgroundColor(context)
-                          .withOpacity(0.25),
+                          .withValues(alpha: 0.25),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: GlassBarConstants.getBorderColor(context)
-                            .withOpacity(0.7),
+                            .withValues(alpha: 0.7),
                         width: 1,
                       ),
                     ),
                     child: Icon(
                       isBase ? Symbols.add : Symbols.delete,
                       size: 16,
-                      color: textColor.withOpacity(0.95),
+                      color: textColor.withValues(alpha: 0.95),
                     ),
                   ),
                 ),
@@ -2447,19 +2856,32 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
-  Widget _buildNotificationControls(notifsvc.NotificationSetting setting, Color textColor, bool isDark, ThemeData theme) {
+  Widget _buildNotificationControls(notifsvc.NotificationSetting setting,
+      Color textColor, bool isDark, ThemeData theme) {
+    // Sadece base notification'larda (imsak, ogle, vb.) sessiz mod seçeneği göster
+    final bool isBaseNotification =
+        setting.id == _baseNotificationId(setting.id);
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Dakika seçimi butonu ve çekmecesi
         _buildTimePicker(setting, textColor, isDark, theme),
         const SizedBox(height: 8),
         // Ses seçimi butonu ve çekmecesi
         _buildSoundSelector(setting, textColor, isDark, theme),
+        // Sessiz mod kontrolleri (sadece base notification'larda)
+        if (isBaseNotification) ...[
+          const SizedBox(height: 8),
+          _buildSilentModeControls(setting, textColor, isDark, theme),
+        ],
       ],
     );
   }
 
-  Widget _buildTimePicker(notifsvc.NotificationSetting setting, Color textColor, bool isDark, ThemeData theme) {
+  Widget _buildTimePicker(notifsvc.NotificationSetting setting, Color textColor,
+      bool isDark, ThemeData theme) {
     return Column(
       children: [
         GestureDetector(
@@ -2469,26 +2891,28 @@ class SettingsBarState extends State<SettingsBar>
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.15),
+              color: GlassBarConstants.getBackgroundColor(context)
+                  .withValues(alpha: 0.15),
               border: Border.all(
-                color: GlassBarConstants.getBorderColor(context).withOpacity(0.6),
+                color: GlassBarConstants.getBorderColor(context)
+                    .withValues(alpha: 0.6),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Symbols.schedule,
-                  color: textColor.withOpacity(0.95),
+                  color: textColor.withValues(alpha: 0.95),
                   size: 16,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    setting.minutes == 0 
+                    setting.minutes == 0
                         ? AppLocalizations.of(context)!.onTime
-                        : AppLocalizations.of(context)!.minutesBefore(setting.minutes),
+                        : _getLocalizedMinutesBefore(setting.minutes),
                     style: TextStyle(
-                      color: textColor.withOpacity(0.95),
+                      color: textColor.withValues(alpha: 0.95),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2497,9 +2921,9 @@ class SettingsBarState extends State<SettingsBar>
                 AnimatedRotation(
                   duration: const Duration(milliseconds: 200),
                   turns: setting.pickerVisible ? 0.5 : 0.0,
-                        child: Icon(
+                  child: Icon(
                     Symbols.keyboard_arrow_down,
-                    color: textColor.withOpacity(0.95),
+                    color: textColor.withValues(alpha: 0.95),
                     size: 14,
                   ),
                 ),
@@ -2528,7 +2952,8 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
-  Widget _buildSoundSelector(notifsvc.NotificationSetting setting, Color textColor, bool isDark, ThemeData theme) {
+  Widget _buildSoundSelector(notifsvc.NotificationSetting setting,
+      Color textColor, bool isDark, ThemeData theme) {
     return Column(
       children: [
         GestureDetector(
@@ -2538,24 +2963,28 @@ class SettingsBarState extends State<SettingsBar>
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.15),
+              color: GlassBarConstants.getBackgroundColor(context)
+                  .withValues(alpha: 0.15),
               border: Border.all(
-                color: GlassBarConstants.getBorderColor(context).withOpacity(0.6),
+                color: GlassBarConstants.getBorderColor(context)
+                    .withValues(alpha: 0.6),
               ),
             ),
             child: Row(
               children: [
                 Icon(
-                  SettingsConstants.soundOptions.firstWhere((sound) => sound.id == setting.sound).icon,
-                  color: textColor.withOpacity(0.95),
+                  SettingsConstants.soundOptions
+                      .firstWhere((sound) => sound.id == setting.sound)
+                      .icon,
+                  color: textColor.withValues(alpha: 0.95),
                   size: 16,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    SettingsConstants.soundOptions.firstWhere((sound) => sound.id == setting.sound).name,
+                    _getLocalizedSoundName(setting.sound),
                     style: TextStyle(
-                      color: textColor.withOpacity(0.95),
+                      color: textColor.withValues(alpha: 0.95),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2566,7 +2995,7 @@ class SettingsBarState extends State<SettingsBar>
                   turns: setting.soundPickerVisible ? 0.5 : 0.0,
                   child: Icon(
                     Symbols.keyboard_arrow_down,
-                    color: textColor.withOpacity(0.95),
+                    color: textColor.withValues(alpha: 0.95),
                     size: 14,
                   ),
                 ),
@@ -2592,6 +3021,210 @@ class SettingsBarState extends State<SettingsBar>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSilentModeControls(notifsvc.NotificationSetting setting,
+      Color textColor, bool isDark, ThemeData theme) {
+    // iOS'ta sessiz mod (DND kontrolü) desteklenmediği için bu UI'ı gizle
+    if (Platform.isIOS) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Sessiz mod toggle switch
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: GlassBarConstants.getBackgroundColor(context)
+                .withValues(alpha: 0.15),
+            border: Border.all(
+              color: GlassBarConstants.getBorderColor(context)
+                  .withValues(alpha: 0.6),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Symbols.volume_off,
+                color: textColor.withValues(alpha: 0.95),
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.silentModeAfterPrayer,
+                  style: TextStyle(
+                    color: textColor.withValues(alpha: 0.95),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              _buildCustomSwitch(
+                isEnabled: setting.silentModeEnabled,
+                onToggle: () async => await _updateNotificationSilentMode(
+                    setting.id, !setting.silentModeEnabled),
+              ),
+            ],
+          ),
+        ),
+        // Sessiz mod süresi seçici (sadece aktifse göster)
+        if (setting.silentModeEnabled) ...[
+          const SizedBox(height: 8),
+          _buildSilentModeDurationPicker(setting, textColor, isDark, theme),
+          // DND izni yoksa uyarı göster, varsa test butonu göster
+          if (Platform.isAndroid) ...[
+            const SizedBox(height: 8),
+            if (!_hasDndPermission)
+              GestureDetector(
+                onTap: () async {
+                  await WidgetBridgeService.requestNotificationPolicyAccess();
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.orange.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Symbols.warning,
+                        color: Colors.orange,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)!
+                              .silentModePermissionRequired,
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Symbols.open_in_new,
+                        color: Colors.orange,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSilentModeDurationPicker(notifsvc.NotificationSetting setting,
+      Color textColor, bool isDark, ThemeData theme) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          onTap: () => _toggleSilentModePickerVisibility(setting.id),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: GlassBarConstants.getBackgroundColor(context)
+                  .withValues(alpha: 0.15),
+              border: Border.all(
+                color: GlassBarConstants.getBorderColor(context)
+                    .withValues(alpha: 0.6),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Symbols.schedule,
+                  color: textColor.withValues(alpha: 0.95),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context)!
+                        .minutesAfter(setting.silentModeDuration),
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.95),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                AnimatedRotation(
+                  duration: const Duration(milliseconds: 200),
+                  turns: setting.silentModePickerVisible ? 0.5 : 0.0,
+                  child: Icon(
+                    Symbols.keyboard_arrow_down,
+                    color: textColor.withValues(alpha: 0.95),
+                    size: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutQuart,
+          height: setting.silentModePickerVisible ? 48.0 : 0.0,
+          child: ClipRect(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _buildSilentModeDurationMinutePicker(
+                id: setting.id,
+                currentMinutes: setting.silentModeDuration,
+                textColor: textColor,
+                isDark: isDark,
+                theme: theme,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSilentModeDurationMinutePicker({
+    required String id,
+    required int currentMinutes,
+    required Color textColor,
+    required bool isDark,
+    required ThemeData theme,
+  }) {
+    return RepaintBoundary(
+      child: Container(
+        height: 40,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.transparent,
+        ),
+        child: _MinutePickerWidget(
+          id: id,
+          currentMinutes: currentMinutes,
+          textColor: textColor,
+          onMinuteChanged: _updateNotificationSilentModeDuration,
+          minMinutes: 5,
+        ),
+      ),
     );
   }
 
@@ -2630,15 +3263,17 @@ class SettingsBarState extends State<SettingsBar>
     const double itemHeight = 36.0;
     const double padding = 16.0;
     const double maxHeight = 160.0;
-    final double calculatedHeight = (SettingsConstants.soundOptions.length * itemHeight) + padding;
+    final double calculatedHeight =
+        (SettingsConstants.soundOptions.length * itemHeight) + padding;
     final double optimalHeight = calculatedHeight.clamp(100.0, maxHeight);
-    
+
     return Container(
       height: optimalHeight,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: GlassBarConstants.getBackgroundColor(context).withOpacity(0.15),
+        color: GlassBarConstants.getBackgroundColor(context)
+            .withValues(alpha: 0.15),
       ),
       child: ScrollConfiguration(
         behavior: const _GentleOverscrollBehavior(),
@@ -2656,7 +3291,8 @@ class SettingsBarState extends State<SettingsBar>
               textColor: textColor,
               theme: theme,
               onTap: () {
-                _updateNotificationSound(id, SettingsConstants.soundOptions[index].id);
+                _updateNotificationSound(
+                    id, SettingsConstants.soundOptions[index].id);
               },
             ),
           ),
@@ -2673,7 +3309,7 @@ class SettingsBarState extends State<SettingsBar>
     required VoidCallback onTap,
   }) {
     final bool isSelected = sound.id == currentSoundId;
-    
+
     return GestureDetector(
       onTap: () {
         // Seçilen sesi önizle ve ayarı güncelle
@@ -2688,27 +3324,27 @@ class SettingsBarState extends State<SettingsBar>
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
-          color: isSelected 
-              ? theme.colorScheme.primary.withOpacity(0.15)
+          color: isSelected
+              ? theme.colorScheme.primary.withValues(alpha: 0.15)
               : const Color.fromARGB(129, 0, 0, 0),
         ),
         child: Row(
           children: [
             Icon(
               sound.icon,
-              color: isSelected 
+              color: isSelected
                   ? theme.colorScheme.primary
-                  : textColor.withOpacity(0.7),
+                  : textColor.withValues(alpha: 0.7),
               size: 16,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                sound.name,
+                _getLocalizedSoundName(sound.id),
                 style: TextStyle(
-                  color: isSelected 
+                  color: isSelected
                       ? theme.colorScheme.primary
-                      : textColor.withOpacity(0.8),
+                      : textColor.withValues(alpha: 0.8),
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                 ),
@@ -2730,12 +3366,13 @@ class SettingsBarState extends State<SettingsBar>
 
   // not used currently
 
-  Widget _buildCustomSwitch({required bool isEnabled, required VoidCallback onToggle}) {
+  Widget _buildCustomSwitch(
+      {required bool isEnabled, required VoidCallback onToggle}) {
     final theme = Theme.of(context);
-    final textColor = theme.brightness == Brightness.dark 
-        ? theme.colorScheme.primary 
+    final textColor = theme.brightness == Brightness.dark
+        ? theme.colorScheme.primary
         : theme.colorScheme.onPrimary;
-    
+
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
@@ -2745,9 +3382,9 @@ class SettingsBarState extends State<SettingsBar>
         height: 22,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(11),
-          color: isEnabled 
+          color: isEnabled
               ? theme.colorScheme.primary
-              : textColor.withOpacity(0.3),
+              : textColor.withValues(alpha: 0.3),
         ),
         child: AnimatedAlign(
           duration: const Duration(milliseconds: 200),
@@ -2774,9 +3411,10 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
-  Widget _buildPageHeader({required String title, required VoidCallback onBack}) {
+  Widget _buildPageHeader(
+      {required String title, required VoidCallback onBack}) {
     final textColor = GlassBarConstants.getTextColor(context);
-    
+
     return AnimatedSwitcher(
       duration: AnimationConstants.smoothTransition.duration,
       switchInCurve: AnimationConstants.smoothTransition.curve,
@@ -2805,7 +3443,7 @@ class SettingsBarState extends State<SettingsBar>
               width: 35,
               height: 35,
               child: Icon(
-                Symbols.arrow_back_ios_rounded ,
+                Symbols.arrow_back_ios_rounded,
                 color: textColor,
                 size: 20,
               ),
@@ -2832,7 +3470,7 @@ class SettingsBarState extends State<SettingsBar>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = GlassBarConstants.getBackgroundColor(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -2844,9 +3482,9 @@ class SettingsBarState extends State<SettingsBar>
           AnimatedBuilder(
             animation: _toggleSlideAnimation,
             builder: (context, child) {
-              final indicatorColor = isDark 
-                  ? theme.colorScheme.primary.withOpacity(0.4)
-                  : Colors.white.withOpacity(0.25);
+              final indicatorColor = isDark
+                  ? theme.colorScheme.primary.withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.25);
               return Positioned(
                 // Toggle pozisyonu (animation non-null olmalı çünkü initState içinde başlatılıyor)
                 left: _toggleSlideAnimation.value * 61,
@@ -2863,7 +3501,8 @@ class SettingsBarState extends State<SettingsBar>
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
-            textDirection: TextDirection.ltr, // Toggle pozisyonu LTR için hesaplandığından her zaman LTR kullan
+            textDirection: TextDirection
+                .ltr, // Toggle pozisyonu LTR için hesaplandığından her zaman LTR kullan
             children: [
               _buildThemeOption(
                 icon: Symbols.light_mode_rounded,
@@ -2905,8 +3544,84 @@ class SettingsBarState extends State<SettingsBar>
         ),
         child: Icon(
           icon,
-          color: GlassBarConstants.getTextColor(context).withOpacity(isSelected ? 1.0 : 0.7),
+          color: GlassBarConstants.getTextColor(context)
+              .withValues(alpha: isSelected ? 1.0 : 0.7),
           size: 16,
+        ),
+      ),
+    );
+  }
+}
+
+/// Dil listesi item widget'ı - rebuild'den izole
+class _LanguageListItem extends StatelessWidget {
+  final Locale? locale; // null = otomatik
+  final String languageName;
+  final bool isSelected;
+  final Color surfaceColor;
+  final Color borderColor;
+  final VoidCallback onTap;
+
+  const _LanguageListItem({
+    required super.key,
+    this.locale, // Otomatik için null olabilir
+    required this.languageName,
+    required this.isSelected,
+    required this.surfaceColor,
+    required this.borderColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: surfaceColor.withValues(alpha: isSelected ? 0.15 : 0.05),
+          border: Border.all(
+            color: borderColor.withValues(alpha: isSelected ? 0.6 : 0.3),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: surfaceColor.withValues(alpha: 0.1),
+              ),
+              child: Icon(
+                Symbols.language_rounded,
+                color: GlassBarConstants.getTextColor(context)
+                    .withValues(alpha: 0.8),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                languageName,
+                style: TextStyle(
+                  color: GlassBarConstants.getTextColor(context),
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+                textDirection: TextDirection.ltr, // Dil adı her zaman LTR
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Symbols.check_rounded,
+                color: GlassBarConstants.getTextColor(context),
+                size: 24,
+              ),
+          ],
         ),
       ),
     );

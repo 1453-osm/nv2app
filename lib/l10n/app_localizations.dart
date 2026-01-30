@@ -388,6 +388,12 @@ abstract class AppLocalizations {
   /// **'Dil'**
   String get language;
 
+  /// Otomatik dil seçimi
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomatik'**
+  String get automatic;
+
   /// Tema rengi menü başlığı
   ///
   /// In tr, this message translates to:
@@ -655,7 +661,7 @@ abstract class AppLocalizations {
   /// Otomatik karartma açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'00:00 ile güneş vakti arasında otomatik olarak karanlık moda geçer'**
+  /// **'00:00 ile güneş vakti arasında otomatik olarak karanlık temaya geçer'**
   String get autoDarkModeDescription;
 
   /// Kapat butonu metni
@@ -861,6 +867,402 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kaydedilen konum temizlenirken hata oluştu: {error}'**
   String savedLocationClearError(String error);
+
+  /// Test bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'🔔 Test Bildirimi'**
+  String get notificationTestTitle;
+
+  /// Test bildirimi gövdesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim sistemi çalışıyor.'**
+  String get notificationTestBody;
+
+  /// Test dua bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'🤲 Test - Günün Duası'**
+  String get notificationTestDuaTitle;
+
+  /// İmsak bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak Vakti'**
+  String get notificationImsakTitle;
+
+  /// Güneş doğuşu bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Güneş Doğuşu'**
+  String get notificationSunriseTitle;
+
+  /// Öğle namazı bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğle Namazı'**
+  String get notificationZuhrTitle;
+
+  /// İkindi namazı bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'İkindi Namazı'**
+  String get notificationAsrTitle;
+
+  /// Akşam namazı bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam Namazı'**
+  String get notificationMaghribTitle;
+
+  /// Yatsı namazı bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatsı Namazı'**
+  String get notificationIshaTitle;
+
+  /// Genel namaz vakti bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Namaz Vakti'**
+  String get notificationPrayerTimeTitle;
+
+  /// Ramazan'da imsak vakti anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak vakti girdi! Sahur bitmiştir, oruç başladı.'**
+  String get notificationImsakImmediateRamadan;
+
+  /// İmsak vakti anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak vakti girdi. Sabah namazı vakti başladı.'**
+  String get notificationImsakImmediate;
+
+  /// Güneş doğuşu anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Güneş doğdu! İmsak vakti sona erdi.'**
+  String get notificationSunriseImmediate;
+
+  /// Cuma günü öğle namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma namazı vakti girdi! Allah kabul etsin.'**
+  String get notificationZuhrImmediateFriday;
+
+  /// Öğle namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğle namazı vakti girdi. Allah kabul etsin.'**
+  String get notificationZuhrImmediate;
+
+  /// İkindi namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İkindi namazı vakti girdi. Allah kabul etsin.'**
+  String get notificationAsrImmediate;
+
+  /// Ramazan'da akşam namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam namazı vakti girdi! İftar zamanı geldi. 🌙'**
+  String get notificationMaghribImmediateRamadan;
+
+  /// Akşam namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam namazı vakti girdi. Allah kabul etsin.'**
+  String get notificationMaghribImmediate;
+
+  /// Yatsı namazı anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatsı namazı vakti girdi. Allah kabul etsin.'**
+  String get notificationIshaImmediate;
+
+  /// Genel namaz vakti anlık mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Namaz vakti girdi. Allah kabul etsin.'**
+  String get notificationPrayerTimeImmediate;
+
+  /// İmsak vakti önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak vaktine {timeText} kaldı'**
+  String notificationImsakAdvance(String timeText);
+
+  /// İmsak vakti sonrası mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak vaktinden {timeText} sonra'**
+  String notificationImsakAfter(String timeText);
+
+  /// Güneş doğuşu önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Güneş doğuşuna {timeText} kaldı'**
+  String notificationSunriseAdvance(String timeText);
+
+  /// Güneş doğuşu sonrası mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Güneş doğduktan {timeText} sonra'**
+  String notificationSunriseAfter(String timeText);
+
+  /// Cuma namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma namazına {timeText} kaldı'**
+  String notificationZuhrAdvanceFriday(String timeText);
+
+  /// Öğle namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğle namazına {timeText} kaldı'**
+  String notificationZuhrAdvance(String timeText);
+
+  /// İkindi namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İkindi namazına {timeText} kaldı'**
+  String notificationAsrAdvance(String timeText);
+
+  /// Ramazan'da akşam namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'İftar vaktine {timeText} kaldı !'**
+  String notificationMaghribAdvanceRamadan(String timeText);
+
+  /// Akşam namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam namazına {timeText} kaldı'**
+  String notificationMaghribAdvance(String timeText);
+
+  /// Yatsı namazı önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatsı namazına {timeText} kaldı'**
+  String notificationIshaAdvance(String timeText);
+
+  /// Genel namaz vakti önceden mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Namaz vaktine {timeText} kaldı.'**
+  String notificationPrayerTimeAdvance(String timeText);
+
+  /// Cuma namazı bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma Namazı'**
+  String get notificationFridayTitle;
+
+  /// Cuma namazı 15 dakika öncesi mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma namazına {timeText} kaldı. Camiye hareket etme zamanı!'**
+  String notificationFridayMessage15(String timeText);
+
+  /// Cuma namazı 30 dakika öncesi mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma namazına {timeText} kaldı. Hazırlıklara başlayın.'**
+  String notificationFridayMessage30(String timeText);
+
+  /// Cuma namazı 30 dakikadan fazla öncesi mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma namazına {timeText} kaldı. Abdest alıp hazırlanmayı unutmayın.'**
+  String notificationFridayMessageMore(String timeText);
+
+  /// Dua bildirimi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'🤲 Günün Duası'**
+  String get notificationDuaTitle;
+
+  /// Dakika metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dakika'**
+  String timeMinutes(int minutes);
+
+  /// Saat metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{hours} saat'**
+  String timeHours(int hours);
+
+  /// Saat ve dakika metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{hours} saat {minutes} dakika'**
+  String timeHoursMinutes(int hours, int minutes);
+
+  /// Ravza tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ravza'**
+  String get themeColorRavza;
+
+  /// Harem tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Harem'**
+  String get themeColorHarem;
+
+  /// Aksa tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Aksa'**
+  String get themeColorAksa;
+
+  /// İmsak tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İmsak'**
+  String get themeColorImsak;
+
+  /// Güneş tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Güneş'**
+  String get themeColorGunes;
+
+  /// Öğle tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğle'**
+  String get themeColorOgle;
+
+  /// İkindi tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İkindi'**
+  String get themeColorIkindi;
+
+  /// Akşam tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam'**
+  String get themeColorAksam;
+
+  /// Yatsı tema rengi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatsı'**
+  String get themeColorYatsi;
+
+  /// Varsayılan ses seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan'**
+  String get soundDefault;
+
+  /// Arap ezan sesi seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Arap Ezan'**
+  String get soundAdhan7;
+
+  /// Ezan sesi seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Ezan'**
+  String get soundAdhan;
+
+  /// Sela sesi seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Sela'**
+  String get soundSela;
+
+  /// Sert ton ses seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Sert Ton'**
+  String get soundHard;
+
+  /// Yumuşak ton ses seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Yumuşak Ton'**
+  String get soundSoft;
+
+  /// Kuşlar sesi seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuşlar'**
+  String get soundBird;
+
+  /// Alarm sesi seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Alarm'**
+  String get soundAlarm;
+
+  /// Sessiz ses seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Sessiz'**
+  String get soundSilent;
+
+  /// Namazdan sonra sessiz moda alma seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Namazdan sonra sessiz mod'**
+  String get silentModeAfterPrayer;
+
+  /// Sessiz mod süresi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sessiz mod süresi'**
+  String get silentModeDuration;
+
+  /// Kaç dakika metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dakika'**
+  String minutesAfter(int minutes);
+
+  /// Dakika sonra metni (bildirimler için)
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dakika sonra'**
+  String minutesAfterNotification(int minutes);
+
+  /// No description provided for @silentModePermissionRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sessiz mod izni gerekli. Ayarları açmak için dokunun.'**
+  String get silentModePermissionRequired;
+
+  /// No description provided for @religiousDayDaysUntil.
+  ///
+  /// In tr, this message translates to:
+  /// **'{days} gün sonra {name}'**
+  String religiousDayDaysUntil(int days, String name);
+
+  /// No description provided for @religiousDayTomorrow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yarın {name}'**
+  String religiousDayTomorrow(String name);
+
+  /// No description provided for @religiousDayToday.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} mübarek olsun'**
+  String religiousDayToday(String name);
+
+  /// No description provided for @religiousDayTodayEid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayırlı Bayramlar'**
+  String get religiousDayTodayEid;
 }
 
 class _AppLocalizationsDelegate

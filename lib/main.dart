@@ -10,7 +10,6 @@ import 'l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'viewmodels/onboarding_viewmodel.dart';
@@ -32,7 +31,7 @@ Future<void> main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await _ensureDateFormattingInitialized();
-    
+
     // dotenv yükleme - web için opsiyonel
     try {
       await dotenv.load(fileName: "assets/env");
@@ -53,7 +52,8 @@ Future<void> main() async {
 
     // Global hata yakalama
     FlutterError.onError = (FlutterErrorDetails details) {
-      Zone.current.handleUncaughtError(details.exception, details.stack ?? StackTrace.current);
+      Zone.current.handleUncaughtError(
+          details.exception, details.stack ?? StackTrace.current);
     };
     ui.PlatformDispatcher.instance.onError = (error, stack) {
       return true;
@@ -62,7 +62,8 @@ Future<void> main() async {
     // Firebase initialization - web için opsiyonel
     if (!kIsWeb) {
       try {
-        await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+        await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform);
       } catch (e) {
         // Mobil platformlarda Firebase zorunlu
         if (kDebugMode) {
@@ -158,7 +159,7 @@ class _MyAppState extends State<MyApp> {
     // Web'de bildirim servisleri desteklenmiyor
     if (!kIsWeb) {
       await _notificationSchedulerService.initialize();
-    // Uygulama açıldığında (reboot sonrası dahil) bugünün bildirimlerini yeniden planla
+      // Uygulama açıldığında (reboot sonrası dahil) bugünün bildirimlerini yeniden planla
       await _notificationSchedulerService.rescheduleTodayNotifications();
     }
   }
@@ -171,7 +172,7 @@ class _MyAppState extends State<MyApp> {
     // Timer'ı sadece gerektiğinde başlat
     _dynamicColorTimer?.cancel();
     _dynamicColorTimer = Timer.periodic(
-      AnimationConstants.themeUpdateInterval, 
+      AnimationConstants.themeUpdateInterval,
       (timer) {
         // Sadece widget mounted ise güncelle
         if (mounted) {
@@ -205,6 +206,7 @@ class _MyAppState extends State<MyApp> {
             final vm = SettingsViewModel();
             vm.startListeningToThemeService();
             vm.loadThemeMode(); // Tema modunu yükle
+            vm.loadAutoDarkMode(); // Otomatik karanlık modu yükle
             return vm;
           },
         ),
@@ -237,14 +239,16 @@ class _MyAppState extends State<MyApp> {
             final localeService = context.read<LocaleService>();
             final vm = DailyContentViewModel();
             vm.attachLocaleService(localeService);
-            vm.initialize(preferredLang: localeService.currentLocale.languageCode);
+            vm.initialize(
+                preferredLang: localeService.currentLocale.languageCode);
             return vm;
           },
           update: (context, localeService, vm) {
             if (vm == null) {
               final newVm = DailyContentViewModel();
               newVm.attachLocaleService(localeService);
-              newVm.initialize(preferredLang: localeService.currentLocale.languageCode);
+              newVm.initialize(
+                  preferredLang: localeService.currentLocale.languageCode);
               return newVm;
             }
             vm.attachLocaleService(localeService);
@@ -286,27 +290,29 @@ class _MyAppState extends State<MyApp> {
                   return Directionality(
                     textDirection: textDirection,
                     child: MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: const TextScaler.linear(1.0),
-                    ),
-                    child: AnnotatedRegion<SystemUiOverlayStyle>(
-                      value: SystemUiOverlayStyle(
-                        statusBarColor: Colors.transparent,
-                        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark 
-                            ? Brightness.light 
-                            : Brightness.dark,
-                        systemNavigationBarColor: Colors.transparent,
-                        systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark 
-                            ? Brightness.light 
-                            : Brightness.dark,
-                        systemNavigationBarDividerColor: Colors.transparent,
-                        systemStatusBarContrastEnforced: false,
-                        systemNavigationBarContrastEnforced: false,
+                      data: MediaQuery.of(context).copyWith(
+                        textScaler: const TextScaler.linear(1.0),
                       ),
-                      child: child!,
+                      child: AnnotatedRegion<SystemUiOverlayStyle>(
+                        value: SystemUiOverlayStyle(
+                          statusBarColor: Colors.transparent,
+                          statusBarIconBrightness:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Brightness.light
+                                  : Brightness.dark,
+                          systemNavigationBarColor: Colors.transparent,
+                          systemNavigationBarIconBrightness:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Brightness.light
+                                  : Brightness.dark,
+                          systemNavigationBarDividerColor: Colors.transparent,
+                          systemStatusBarContrastEnforced: false,
+                          systemNavigationBarContrastEnforced: false,
+                        ),
+                        child: child!,
+                      ),
                     ),
-                  ),
-                 );
+                  );
                 },
                 home: const AppInitializer(),
                 routes: {
@@ -358,7 +364,9 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
-  
+  bool _forceShowHome = false; // Timeout sonrası zorla ana ekranı göster
+  bool? _cachedIsFirstLaunch; // Timeout durumunda cache'lenen değer
+
   @override
   void initState() {
     super.initState();
@@ -368,21 +376,55 @@ class _AppInitializerState extends State<AppInitializer> {
   Future<void> _initializeApp() async {
     final onboardingVm = context.read<OnboardingViewModel>();
     final locationVm = context.read<LocationViewModel>();
+
+    // Timeout süresi: 8 saniye (SharedPreferences yavaş olabilir)
+    const timeoutDuration = Duration(seconds: 8);
+
     try {
-      // Paralel olarak core servisleri initialize et
-      await Future.wait([
-        onboardingVm.initialize(),
-        locationVm.initialize(),
+      // Her iki ViewModel'i paralel olarak başlat
+      // Timeout ile sarmalayarak sonsuz beklemeyi önle
+      final results = await Future.wait<bool>([
+        _initializeWithTimeout(
+          () => onboardingVm.initialize(),
+          'OnboardingViewModel',
+          timeoutDuration,
+        ),
+        _initializeWithTimeout(
+          () => locationVm.initialize(),
+          'LocationViewModel',
+          timeoutDuration,
+        ),
       ]);
-      
-      // Prayer times'ı sadece location varsa ve async olarak yükle
+
+      // Herhangi bir timeout olduysa, zorla devam et
+      final hadTimeout = results.any((success) => !success);
+
+      if (hadTimeout) {
+        if (kDebugMode) {
+          debugPrint('Initialization had timeout(s) - forcing home screen');
+        }
+        _forceShowHome = true;
+        // Timeout durumunda mevcut değerleri cache'le
+        _cachedIsFirstLaunch = onboardingVm.isFirstLaunch;
+      }
+
+      // Prayer times ve LocationBar history'yi sadece location varsa ve async olarak yükle
       if (mounted) {
         final savedLocation = locationVm.selectedLocation;
         if (savedLocation != null) {
           // Prayer times'ı background'da yükle, UI'yi bloke etme
-          unawaited(
-            context.read<PrayerTimesViewModel>().loadPrayerTimes(savedLocation.city.id)
-          );
+          // ignore: unawaited_futures
+          unawaited(context
+              .read<PrayerTimesViewModel>()
+              .loadPrayerTimes(savedLocation.city.id));
+        }
+
+        // LocationBar history'yi arka planda preload et (drawer açılış performansı için)
+        try {
+          final locationBarVm = context.read<LocationBarViewModel>();
+          locationBarVm.preloadHistory();
+        } catch (_) {
+          // Provider henüz oluşturulmamışsa sessizce devam et
         }
       }
     } catch (e, s) {
@@ -391,6 +433,9 @@ class _AppInitializerState extends State<AppInitializer> {
         debugPrint('Initialization error: $e');
         debugPrint('$s');
       }
+      // Hata olsa bile ana ekranı göster
+      _forceShowHome = true;
+      _cachedIsFirstLaunch = true; // Güvenli varsayılan: onboarding göster
     } finally {
       if (mounted) {
         setState(() {
@@ -400,8 +445,32 @@ class _AppInitializerState extends State<AppInitializer> {
     }
   }
 
+  /// Verilen initialize fonksiyonunu timeout ile çalıştırır.
+  /// Başarılı olursa true, timeout/hata olursa false döner.
+  Future<bool> _initializeWithTimeout(
+    Future<void> Function() initFn,
+    String name,
+    Duration timeout,
+  ) async {
+    try {
+      await initFn().timeout(timeout);
+      return true;
+    } on TimeoutException {
+      if (kDebugMode) {
+        debugPrint('$name initialize timeout');
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('$name initialize error: $e');
+      }
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Ana yükleme tamamlanmadıysa, loading göster
     if (!_isInitialized) {
       return Scaffold(
         body: Center(
@@ -414,11 +483,19 @@ class _AppInitializerState extends State<AppInitializer> {
       );
     }
 
-    // OnboardingViewModel'den veri oku ve başlatılmış mı kontrol et
+    // Timeout/hata durumunda ViewModel kontrollerini bypass et
+    if (_forceShowHome) {
+      // Cache'lenen veya varsayılan değeri kullan
+      final shouldShowOnboarding = _cachedIsFirstLaunch ?? true;
+      return shouldShowOnboarding ? const OnboardingView() : const HomeView();
+    }
+
+    // Normal akış: ViewModel'leri dinle
     return Consumer2<OnboardingViewModel, LocationViewModel>(
       builder: (context, onboardingVm, locationVm, child) {
-        // Eğer hala başlatılmadıysa, yükleme göster
-        if (!onboardingVm.isInitialized) {
+        // Eğer ViewModel'ler hala başlatılmadıysa, yükleme göster
+        // NOT: Bu durum artık nadiren olması gerekir çünkü timeout mekanizması var
+        if (!onboardingVm.isInitialized || !locationVm.isInitialized) {
           return Scaffold(
             body: Center(
               child: CircularProgressIndicator(
@@ -429,23 +506,20 @@ class _AppInitializerState extends State<AppInitializer> {
             ),
           );
         }
-        
-        // Başlatıldıysa, doğru view'ı göster
-        final shouldShowOnboarding = onboardingVm.isFirstLaunch || locationVm.selectedLocation == null;
-        
-        return shouldShowOnboarding 
-            ? const OnboardingView() 
-            : const HomeView();
+
+        // Her iki ViewModel de başlatıldıysa, doğru view'ı göster
+        final shouldShowOnboarding = onboardingVm.isFirstLaunch;
+        return shouldShowOnboarding ? const OnboardingView() : const HomeView();
       },
     );
   }
 }
 
 Future<void> _ensureDateFormattingInitialized() async {
-  final localeCodes = LocaleService.supportedLocales
-      .map(_localeCodeForIntl)
-      .toSet();
-  await Future.wait(localeCodes.map((code) => intl.initializeDateFormatting(code)));
+  final localeCodes =
+      LocaleService.supportedLocales.map(_localeCodeForIntl).toSet();
+  await Future.wait(
+      localeCodes.map((code) => intl.initializeDateFormatting(code)));
 }
 
 String _localeCodeForIntl(Locale locale) {

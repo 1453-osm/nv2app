@@ -125,6 +125,10 @@
   "save": "Save",
   "cancel": "Cancel",
   "language": "Language",
+  "automatic": "Automatic",
+  "@automatic": {
+    "description": "Automatic language selection"
+  },
   "themeColor": "Theme Color",
   "notifications": "Notifications",
   "continueButton": "Continue",
@@ -346,5 +350,257 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notificationTestTitle": "🔔 Test Notification",
+  "notificationTestBody": "Notification system is working.",
+  "notificationTestDuaTitle": "🤲 Test - Prayer of the Day",
+  "notificationImsakTitle": "Imsak Time",
+  "notificationSunriseTitle": "Sunrise",
+  "notificationZuhrTitle": "Zuhr Prayer",
+  "notificationAsrTitle": "Asr Prayer",
+  "notificationMaghribTitle": "Maghrib Prayer",
+  "notificationIshaTitle": "Isha Prayer",
+  "notificationPrayerTimeTitle": "Prayer Time",
+  "notificationImsakImmediateRamadan": "Imsak time has arrived! Suhur has ended, fasting has begun.",
+  "notificationImsakImmediate": "Imsak time has arrived. Fajr prayer time has begun.",
+  "notificationSunriseImmediate": "Sun has risen! Imsak time has ended.",
+  "notificationZuhrImmediateFriday": "Friday prayer time has arrived! May Allah accept.",
+  "notificationZuhrImmediate": "Zuhr prayer time has arrived. May Allah accept.",
+  "notificationAsrImmediate": "Asr prayer time has arrived. May Allah accept.",
+  "notificationMaghribImmediateRamadan": "Maghrib prayer time has arrived! Iftar time has come. 🌙",
+  "notificationMaghribImmediate": "Maghrib prayer time has arrived. May Allah accept.",
+  "notificationIshaImmediate": "Isha prayer time has arrived. May Allah accept.",
+  "notificationPrayerTimeImmediate": "Prayer time has arrived. May Allah accept.",
+  "notificationImsakAdvance": "{timeText} until Imsak time",
+  "@notificationImsakAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAdvance": "{timeText} until sunrise",
+  "@notificationSunriseAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvanceFriday": "{timeText} until Friday prayer",
+  "@notificationZuhrAdvanceFriday": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationZuhrAdvance": "{timeText} until Zuhr prayer",
+  "@notificationZuhrAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationImsakAfter": "{timeText} after Imsak",
+  "@notificationImsakAfter": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationSunriseAfter": "{timeText} after Sunrise",
+  "@notificationSunriseAfter": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationAsrAdvance": "{timeText} until Asr prayer",
+  "@notificationAsrAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvanceRamadan": "{timeText} until Iftar time!",
+  "@notificationMaghribAdvanceRamadan": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationMaghribAdvance": "{timeText} until Maghrib prayer",
+  "@notificationMaghribAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationIshaAdvance": "{timeText} until Isha prayer",
+  "@notificationIshaAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationPrayerTimeAdvance": "{timeText} until prayer time.",
+  "@notificationPrayerTimeAdvance": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayTitle": "Friday Prayer",
+  "notificationFridayMessage15": "{timeText} until Friday prayer. Time to head to the mosque!",
+  "@notificationFridayMessage15": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessage30": "{timeText} until Friday prayer. Start preparing.",
+  "@notificationFridayMessage30": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFridayMessageMore": "{timeText} until Friday prayer. Don't forget to perform ablution and prepare.",
+  "@notificationFridayMessageMore": {
+    "placeholders": {
+      "timeText": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationDuaTitle": "🤲 Prayer of the Day",
+  "timeMinutes": "{minutes} minutes",
+  "@timeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{hours} hours",
+  "@timeHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursMinutes": "{hours} hours {minutes} minutes",
+  "@timeHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "themeColorRavza": "Ravza",
+  "themeColorHarem": "Harem",
+  "themeColorAksa": "Al-Aqsa",
+  "themeColorImsak": "Imsak",
+  "themeColorGunes": "Sunrise",
+  "themeColorOgle": "Zuhr",
+  "themeColorIkindi": "Asr",
+  "themeColorAksam": "Maghrib",
+  "themeColorYatsi": "Isha",
+  "soundDefault": "Default",
+  "@soundDefault": {
+    "description": "Default sound option"
+  },
+  "soundAdhan7": "Arabic Adhan",
+  "@soundAdhan7": {
+    "description": "Arabic adhan sound option"
+  },
+  "soundAdhan": "Adhan",
+  "@soundAdhan": {
+    "description": "Adhan sound option"
+  },
+  "soundSela": "Sela",
+  "@soundSela": {
+    "description": "Sela sound option"
+  },
+  "soundHard": "Hard Tone",
+  "@soundHard": {
+    "description": "Hard tone sound option"
+  },
+  "soundSoft": "Soft Tone",
+  "@soundSoft": {
+    "description": "Soft tone sound option"
+  },
+  "soundBird": "Birds",
+  "@soundBird": {
+    "description": "Birds sound option"
+  },
+  "soundAlarm": "Alarm",
+  "@soundAlarm": {
+    "description": "Alarm sound option"
+  },
+  "soundSilent": "Silent",
+  "@soundSilent": {
+    "description": "Silent sound option"
+  },
+  "silentModeAfterPrayer": "Silent mode after prayer",
+  "@silentModeAfterPrayer": {
+    "description": "Option to enable silent mode after prayer"
+  },
+  "silentModeDuration": "Silent mode duration",
+  "@silentModeDuration": {
+    "description": "Silent mode duration title"
+  },
+  "minutesAfter": "{minutes} minutes after",
+  "@minutesAfter": {
+    "description": "How many minutes after text",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "silentModePermissionRequired": "Silent mode permission required. Tap to open settings.",
+  "minutesAfterNotification": "{minutes} minutes after",
+  "@minutesAfterNotification": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "religiousDayDaysUntil": "{days} days until {name}",
+  "@religiousDayDaysUntil": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTomorrow": "Tomorrow is {name}",
+  "@religiousDayTomorrow": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayToday": "Blessed {name}",
+  "@religiousDayToday": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "religiousDayTodayEid": "Happy Eid"
 }

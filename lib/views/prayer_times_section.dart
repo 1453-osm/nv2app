@@ -10,10 +10,12 @@ import '../models/prayer_times_model.dart';
 import '../utils/constants.dart';
 import '../utils/prayer_name_helper.dart';
 import '../utils/arabic_numbers_helper.dart';
+import '../utils/error_messages.dart';
 import 'dart:ui';
 import 'daily_content_bar.dart';
 import '../utils/responsive.dart';
 import '../models/religious_day.dart';
+import '../services/prayer_times_service.dart';
 
 // Ay kısaltmaları - context gerektirir
 String _getMonthAbbreviation(BuildContext context, int month) {
@@ -53,11 +55,11 @@ DateTime? _parsePrayerDate(PrayerTime prayer) {
   return null;
 }
 
-Widget _buildVerticalDivider(Color baseColor) {
+Widget _buildVerticalDivider(BuildContext context, Color baseColor) {
   return Container(
     width: 1,
-    height: 20,
-    margin: const EdgeInsets.symmetric(horizontal: 3),
+    height: context.space(SpaceSize.lg),
+    margin: EdgeInsets.symmetric(horizontal: context.space(SpaceSize.xxs)),
     decoration: BoxDecoration(
       color: baseColor.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(0.5),
@@ -65,7 +67,7 @@ Widget _buildVerticalDivider(Color baseColor) {
   );
 }
 
-// Responsive değerleri hesaplayan yardımcı sınıf
+// Responsive değerleri hesaplayan yardımcı sınıf - Token bazlı
 class _ResponsiveValues {
   final double titleFontSize;
   final double numberFontSize;
@@ -83,18 +85,32 @@ class _ResponsiveValues {
     required this.spacingHeight,
   });
 
-  factory _ResponsiveValues.fromScreenSize(Size screenSize) {
-    final width = screenSize.width;
-    final height = screenSize.height;
-    final isLandscape = width > height;
+  /// Token bazlı factory - breakpoint'e göre sabit değerler
+  factory _ResponsiveValues.fromContext(BuildContext context) {
+    final isLandscape = context.isLandscape;
+    final isPhone = context.isPhone;
+    final screenHeight = context.screenHeight;
+
+    // Yatay modda (özellikle telefonlarda) alan aşırı kısıtlıdır (genelde 320-400px arası)
+    final bool isCompact = isLandscape && isPhone;
+
+    // Katsayılar (Landscape phone için küçültme ama okunaklılık korunsun)
+    final double fontFactor = isCompact ? 0.65 : 1.0;
+    final double spacingFactor = isCompact ? 0.5 : 1.0;
 
     return _ResponsiveValues(
-      titleFontSize: (width * 0.045).clamp(16.0, isLandscape ? 20.0 : 22.0),
-      numberFontSize: (width * 0.16).clamp(30.0, isLandscape ? 60.0 : 70.0),
-      unitFontSize: (width * 0.09).clamp(30.0, isLandscape ? 38.0 : 44.0),
-      horizontalPadding: (width * 0.06).clamp(20.0, 32.0),
-      verticalPadding: (height * 0.001).clamp(2.0, 8.0),
-      spacingHeight: (height * 0.01).clamp(8.0, 16.0),
+      titleFontSize: (context.font(FontSize.lg) * fontFactor).clamp(10.0, 18.0),
+      numberFontSize: isCompact
+          ? (screenHeight * 0.26)
+              .clamp(35.0, 75.0) // %24 -> %26 ve clamp sınırları artırıldı
+          : context.font(FontSize.countdownNumber),
+      unitFontSize: isCompact
+          ? (screenHeight * 0.17)
+              .clamp(18.0, 32.0) // %15 -> %17 ve clamp sınırları artırıldı
+          : context.font(FontSize.countdownUnit),
+      horizontalPadding: context.space(SpaceSize.lg),
+      verticalPadding: context.space(SpaceSize.xxs) * spacingFactor,
+      spacingHeight: context.space(SpaceSize.sm) * spacingFactor,
     );
   }
 }
@@ -265,12 +281,15 @@ class _AnimatedBlurModalState extends State<_AnimatedBlurModal>
     super.dispose();
   }
 
-  Future<bool> _onWillPop() async {
-    if (_isClosing) return false;
+  void _handleBackPress() {
+    if (_isClosing) return;
     _isClosing = true;
     // Kapanış için daha hızlı ve keskin animasyon
-    await _controller.reverse();
-    return true;
+    _controller.reverse().then((_) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    });
   }
 
   void _closeModal() {
@@ -290,8 +309,12 @@ class _AnimatedBlurModalState extends State<_AnimatedBlurModal>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
       child: AnimatedBuilder(
         animation: Listenable.merge([
           _controller,
@@ -315,17 +338,13 @@ class _AnimatedBlurModalState extends State<_AnimatedBlurModal>
                   onTap: _closeModal,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(
-                      sigmaX: 3.0 * blurMultiplier,
-                      sigmaY: 3.0 * blurMultiplier,
+                      sigmaX: ModalConstants.blurSigma * blurMultiplier,
+                      sigmaY: ModalConstants.blurSigma * blurMultiplier,
                     ),
                     child: Opacity(
                       opacity: _opacityAnimation.value * extent.clamp(0.0, 1.0),
                       child: Container(
-                        color: Colors.black.withValues(
-                          alpha: Theme.of(context).brightness == Brightness.dark
-                              ? 0.08
-                              : 0.10,
-                        ),
+                        color: ModalConstants.getOverlayColor(context),
                       ),
                     ),
                   ),
@@ -583,6 +602,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                             return [
                                               if (index > 0)
                                                 _buildVerticalDivider(
+                                                    context,
                                                     GlassBarConstants
                                                         .getTextColor(context)),
                                               Expanded(
@@ -716,6 +736,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                               ),
                                             ),
                                             _buildVerticalDivider(
+                                                context,
                                                 GlassBarConstants.getTextColor(
                                                     context)),
                                             Expanded(
@@ -737,6 +758,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                               ),
                                             ),
                                             _buildVerticalDivider(
+                                                context,
                                                 GlassBarConstants.getTextColor(
                                                     context)),
                                             Expanded(
@@ -758,6 +780,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                               ),
                                             ),
                                             _buildVerticalDivider(
+                                                context,
                                                 GlassBarConstants.getTextColor(
                                                     context)),
                                             Expanded(
@@ -779,6 +802,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                               ),
                                             ),
                                             _buildVerticalDivider(
+                                                context,
                                                 GlassBarConstants.getTextColor(
                                                     context)),
                                             Expanded(
@@ -800,6 +824,7 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
                                               ),
                                             ),
                                             _buildVerticalDivider(
+                                                context,
                                                 GlassBarConstants.getTextColor(
                                                     context)),
                                             Expanded(
@@ -877,6 +902,16 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
     _pageController = PageController(initialPage: _currentPage);
     _scrollControllers = List.generate(3, (_) => ScrollController());
     _prepareItems();
+
+    // Modal açılınca tüm yıllar için veri yükle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final currentYear = widget.today.year;
+        final vm = context.read<PrayerTimesViewModel>();
+        final years = [currentYear - 1, currentYear, currentYear + 1];
+        vm.loadReligiousDaysForYears(years);
+      }
+    });
   }
 
   @override
@@ -928,10 +963,12 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
             ),
             child: Column(
               children: [
+                // Sabit Başlık Alanı - Sayfa geçişlerinden etkilenmez
                 Padding(
                   padding: const EdgeInsets.only(top: 12, bottom: 8),
                   child: Column(
                     children: [
+                      // Handle
                       Container(
                         width: 40,
                         height: 4,
@@ -941,6 +978,7 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
+                      // Başlık
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Text(
@@ -955,6 +993,7 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // Yıl Seçiciler
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(years.length, (i) {
@@ -986,12 +1025,21 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                   ),
                 ),
                 const SizedBox(height: 6),
+                // Kaydırılabilir İçerik (PageView + Slivers)
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: 3,
                     onPageChanged: (index) {
                       setState(() => _currentPage = index);
+                      // Sayfa değiştiğinde ilgili yılın verilerini yükle
+                      final year = baseYear + (index - 1);
+                      final vm = context.read<PrayerTimesViewModel>();
+                      // Eğer bu yılın verisi yoksa yükle
+                      final yearItems = _yearItems[year] ?? [];
+                      if (yearItems.isEmpty) {
+                        vm.loadReligiousDaysForYears([year]);
+                      }
                     },
                     itemBuilder: (context, index) {
                       final year = baseYear + (index - 1);
@@ -1047,6 +1095,8 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                                         _preferredLocaleTag(context);
                                     final localizedTitle =
                                         item.getLocalizedName(localeTag);
+                                    final localizedHijriDate =
+                                        item.getLocalizedHijriDate(localeTag);
                                     return Column(
                                       children: [
                                         Container(
@@ -1086,32 +1136,41 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                                                   children: [
                                                     Builder(
                                                       builder: (context) {
-                                                        final locale = Localizations.localeOf(context);
-                                                        final isArabic = locale.languageCode == 'ar';
-                                                        final rawDayStr = item.gregorianDateShort
+                                                        final locale =
+                                                            Localizations
+                                                                .localeOf(
+                                                                    context);
+                                                        final isArabic = locale
+                                                                .languageCode ==
+                                                            'ar';
+                                                        final rawDayStr = item
+                                                            .gregorianDateShort
                                                             .split('.')
                                                             .first;
-                                                        final dayStr = isArabic 
-                                                            ? localizeNumerals(rawDayStr, 'ar') 
+                                                        final dayStr = isArabic
+                                                            ? localizeNumerals(
+                                                                rawDayStr, 'ar')
                                                             : rawDayStr;
                                                         return Text(
                                                           dayStr,
                                                           textAlign:
                                                               TextAlign.center,
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .bodyMedium
-                                                              ?.copyWith(
-                                                                color: GlassBarConstants
-                                                                    .getTextColor(
-                                                                        context),
-                                                                fontWeight: isToday
-                                                                    ? FontWeight
-                                                                        .w600
-                                                                    : FontWeight
-                                                                        .w500,
-                                                                fontSize: 13,
-                                                              ),
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.copyWith(
+                                                                    color: GlassBarConstants
+                                                                        .getTextColor(
+                                                                            context),
+                                                                    fontWeight: isToday
+                                                                        ? FontWeight
+                                                                            .w600
+                                                                        : FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        13,
+                                                                  ),
                                                         );
                                                       },
                                                     ),
@@ -1159,7 +1218,7 @@ class _ReligiousDaysContentState extends State<_ReligiousDaysContent> {
                                                     ),
                                                     const SizedBox(height: 2),
                                                     Text(
-                                                      item.hijriDateLong,
+                                                      localizedHijriDate,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodySmall
@@ -1247,21 +1306,43 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PrayerTimesViewModel>(
-      builder: (context, vm, child) {
-        if (vm.showSkeleton || (vm.isLoading && vm.todayPrayerTimes == null)) {
+    return Selector<PrayerTimesViewModel,
+        (bool, bool, PrayerTime?, ErrorCode?, String?, bool, bool)>(
+      selector: (context, vm) => (
+        vm.showSkeleton,
+        vm.isLoading,
+        vm.todayPrayerTimes,
+        vm.errorCode,
+        vm.errorMessage,
+        vm.isKerahatTime(),
+        vm.getReligiousDayAlert(context) != null,
+      ),
+      builder: (context, data, _) {
+        final (
+          showSkeleton,
+          isLoading,
+          prayerTimesData,
+          errorCode,
+          errorMessage,
+          isKerahatNow,
+          hasReligiousAlertNow
+        ) = data;
+        final vm = context.read<PrayerTimesViewModel>();
+
+        if (showSkeleton || (isLoading && prayerTimesData == null)) {
           return _buildSkeletonLoading(context);
         }
-        if (vm.errorCode != null || vm.errorMessage != null) {
+        if (errorCode != null || errorMessage != null) {
           return _buildErrorInStack(context, vm, widget.location);
         }
 
         final rawPrayerTimes = vm.getFormattedTodayPrayerTimes();
         // Namaz vakitleri isimlerini çevir (key'i sakla çünkü ikonlar için gerekli)
-        final todayPrayerTimes = rawPrayerTimes.map((key, value) => MapEntry(
-              PrayerNameHelper.getLocalizedPrayerName(context, key),
-              value,
-            ));
+        final localizedPrayerTimes =
+            rawPrayerTimes.map((key, value) => MapEntry(
+                  PrayerNameHelper.getLocalizedPrayerName(context, key),
+                  value,
+                ));
         // Orijinal key'leri sakla (ikonlar için)
         final prayerKeyMap = <String, String>{};
         rawPrayerTimes.forEach((key, value) {
@@ -1285,122 +1366,259 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
               ),
             ),
             Positioned(
-              top: screenHeight * 0.10,
+              top: isLandscape ? screenHeight * 0.01 : screenHeight * 0.08,
               left: 0,
               right: 0,
               bottom: 0,
-              child: Padding(
-                // Navigation bar için alt boşluk bırak
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).padding.bottom),
-                child: isLandscape
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Sol sütun: kaydırılabilir içerik (geri sayım, tarih, vakitler)
-                          Expanded(
-                            flex: 7,
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const SizedBox(height: 0),
-                                  _buildCountdownCard(context, vm),
-                                  SizedBox(
-                                      height: Responsive.value<double>(context,
-                                          xs: 8,
-                                          sm: 12,
-                                          md: 16,
-                                          lg: 20,
-                                          xl: 24)),
-                                  _buildDateCard(context, todayDate, hijriDate,
-                                      widget.location),
-                                  SizedBox(
-                                      height: Responsive.value<double>(context,
-                                          xs: 2, sm: 4, md: 6, lg: 8, xl: 10)),
-                                  _buildTodayPrayerTimesCard(
-                                      context,
-                                      todayPrayerTimes,
-                                      _expandAnimationNotifier,
-                                      prayerKeyMap),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Sağ sütun: günlük içerik, tüm yükseklikte
-                          Expanded(
-                            flex: 5,
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: Responsive.value<double>(context,
-                                      xs: 380,
-                                      sm: 440,
-                                      md: 520,
-                                      lg: 580,
-                                      xl: 640),
+              child: Builder(
+                builder: (context) {
+                  final safePadding = MediaQuery.of(context).padding;
+                  // Yatay modda simetrik padding için sol ve sağın maksimumunu al
+                  final horizontalSafePadding = isLandscape && context.isPhone
+                      ? (safePadding.left > safePadding.right
+                              ? safePadding.left
+                              : safePadding.right) +
+                          8.0
+                      : 0.0;
+
+                  return Padding(
+                    // Ekran genelindeki safe area ve buton boşluklarını yönet
+                    padding: EdgeInsets.only(
+                      top: isLandscape
+                          ? (context.isPhone
+                              ? context.space(SpaceSize.xxl) * 1.3
+                              : context.space(SpaceSize.xxl) * 1.5)
+                          : 4.0, // Dikey modda Positioned.top zaten pay bırakıyor
+                      bottom: safePadding.bottom,
+                      left: horizontalSafePadding,
+                      right: horizontalSafePadding,
+                    ),
+                    child: isLandscape
+                    ? (context.isPhone
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Sol Sütun: Geri Sayım, Tarih ve Vakitler
+                              Expanded(
+                                flex: 6,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    // Üst: Geri Sayım ve uyarılar
+                                    Flexible(
+                                      flex: 6,
+                                      child: ClipRect(
+                                        child: _buildCountdownCard(context),
+                                      ),
+                                    ),
+
+                                    // Orta: Tarih (sabit, esnemez)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2.0),
+                                      child: _buildDateCard(context, todayDate,
+                                          hijriDate, widget.location),
+                                    ),
+
+                                    // Alt: Vakitler (Yatay ikonlu düzen)
+                                    Flexible(
+                                      flex: 4,
+                                      child: ClipRect(
+                                        child: _buildTodayPrayerTimesCard(
+                                            context,
+                                            localizedPrayerTimes,
+                                            _expandAnimationNotifier,
+                                            prayerKeyMap),
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                              ),
+                              // Orta Boşluk
+                              SizedBox(width: context.space(SpaceSize.sm)),
+                              // Sağ Sütun: Günlük İçerik Barı
+                              Expanded(
+                                flex: 4,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: context.space(SpaceSize.xs)),
                                   child: DailyContentBar(
                                       expandAnimationNotifier:
                                           _expandAnimationNotifier),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 3),
-                          _buildCountdownCard(context, vm),
-                          SizedBox(
-                              height: Responsive.value<double>(context,
-                                  xs: 16, sm: 24, md: 35, lg: 40, xl: 44)),
-                          _buildDateCard(
-                              context, todayDate, hijriDate, widget.location),
-                          SizedBox(
-                              height: Responsive.value<double>(context,
-                                  xs: 4, sm: 6, md: 7, lg: 8, xl: 10)),
-                          _buildTodayPrayerTimesCard(context, todayPrayerTimes,
-                              _expandAnimationNotifier, prayerKeyMap),
-                          ValueListenableBuilder<double>(
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              // Sol Sütun: Countdown, Tarih ve İçerik Barı
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Geri sayım ve uyarılar
+                                    _buildCountdownCard(context),
+                                    // Tarih
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0),
+                                      child: _buildDateCard(context, todayDate,
+                                          hijriDate, widget.location),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // İçerik barı arta kalan alanı kullansın
+                                    Expanded(
+                                      child: DailyContentBar(
+                                          expandAnimationNotifier:
+                                              _expandAnimationNotifier),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: context.space(SpaceSize.md)),
+                              // Sağ Sütun: Vakit Kartları (Dikey Liste)
+                              Expanded(
+                                flex: 1,
+                                child: Center(
+                                  child: _buildTodayPrayerTimesCard(
+                                      context,
+                                      localizedPrayerTimes,
+                                      _expandAnimationNotifier,
+                                      prayerKeyMap),
+                                ),
+                              ),
+                            ],
+                          ))
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          return ValueListenableBuilder<double>(
                             valueListenable: _expandAnimationNotifier,
                             builder: (context, expandValue, child) {
-                              // İçerik barı açıkken (expandValue >= 0.5) daha fazla padding
-                              // Dikey düzende daha fazla boşluk bırak
-                              final basePadding = 0;
-                              final expandedPadding = Responsive.value<double>(
-                                  context,
-                                  xs: 8,
-                                  sm: 10,
-                                  md: 12,
-                                  lg: 14,
-                                  xl: 16);
-                              final padding =
-                                  (0.0 - expandValue) * basePadding +
-                                      expandValue * expandedPadding;
-                              return SizedBox(height: padding);
+                              final double t = expandValue.clamp(0.0, 1.0);
+
+                              // 1. Bar Kapalı Yüksekliği
+                              final double collapsedBarHeight =
+                                  Responsive.value<double>(context,
+                                      xs: 55.0,
+                                      sm: 59.0,
+                                      md: 62.0,
+                                      lg: 68.0,
+                                      xl: 75.0);
+
+                              // 2. Vakit Kartlarının Yatay Moddaki Yüksekliği
+                              final double horizontalPrayerHeight =
+                                  Responsive.value<double>(context,
+                                      xs: 81.0,
+                                      sm: 86.0,
+                                      md: 90.0,
+                                      lg: 100.0,
+                                      xl: 110.0);
+
+                              // 3. Üst Bölüm Rezerve Alanı (Geri sayım + Uyarılar + Tarih)
+                              final double baseTopReserved =
+                                  Responsive.value<double>(context,
+                                      xs: 180.0,
+                                      sm: 210.0,
+                                      md: 240.0,
+                                      lg: 270.0,
+                                      xl: 300.0);
+
+                              // Uyarıların (Kerahat/Dini Gün) varlığını Selector verilerinden al
+                              final bool hasAnyAlert =
+                                  isKerahatNow || hasReligiousAlertNow;
+
+                              // Uyarılar varken rezerve edilen alanı dinamik olarak artır
+                              final double alertSpace = hasAnyAlert
+                                  ? Responsive.value<double>(context,
+                                      xs: 35, sm: 40, md: 45, lg: 50, xl: 55)
+                                  : 0.0;
+
+                              final double totalTopReserved =
+                                  baseTopReserved + alertSpace;
+
+                              // 4. Vakit Kartları İçin Gereken Minimum Alan
+                              // Kullanıcının tercih ettiği şekilde sadece horizontalPrayerHeight
+                              final double minPrayerArea =
+                                  horizontalPrayerHeight;
+
+                              // Bar'ın hedef expand yüksekliği: Toplam - Üst - Vakitler
+                              final double maxBarHeight =
+                                  (constraints.maxHeight -
+                                          totalTopReserved -
+                                          minPrayerArea)
+                                      .clamp(collapsedBarHeight + 100.0,
+                                          constraints.maxHeight * 0.80);
+
+                              final double currentBarHeight = lerpDouble(
+                                  collapsedBarHeight, maxBarHeight, t)!;
+
+                              // Simetrik boşluk değerleri
+                              final double sectionSpacing =
+                                  context.space(SpaceSize.sm);
+                              final double horizontalPadding =
+                                  context.space(SpaceSize.lg);
+
+                              return Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Üst Bölüm: Stabil Geri Sayım ve Tarih
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(height: sectionSpacing * 0.3),
+                                      _buildCountdownCard(context),
+                                      // Uyarı badge'leri varken boşluğu artır
+                                      SizedBox(
+                                          height: hasAnyAlert
+                                              ? sectionSpacing * 0.8
+                                              : sectionSpacing * 1.4),
+                                      _buildDateCard(context, todayDate,
+                                          hijriDate, widget.location),
+                                    ],
+                                  ),
+
+                                  // Orta Bölüm: Arta Kalan Tüm Alanı Kullanan Vakit Kartları
+                                  // Bar genişledikçe bu alan otomatik olarak daralacak.
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                          top: sectionSpacing * 0.8),
+                                      child: _buildTodayPrayerTimesCard(
+                                          context,
+                                          localizedPrayerTimes,
+                                          _expandAnimationNotifier,
+                                          prayerKeyMap),
+                                    ),
+                                  ),
+
+                                  // Alt Bölüm: Günlük İçerik Barı
+                                  // SizedBox kullanarak Expanded alanı üzerinden tam kontrol sağlıyoruz.
+                                  SizedBox(
+                                    height: currentBarHeight,
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: horizontalPadding),
+                                      child: Align(
+                                        alignment: Alignment.bottomCenter,
+                                        child: DailyContentBar(
+                                            expandAnimationNotifier:
+                                                _expandAnimationNotifier),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
                             },
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: DailyContentBar(
-                                  expandAnimationNotifier:
-                                      _expandAnimationNotifier),
-                            ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
+                  );
+                },
               ),
             ),
           ],
@@ -1409,132 +1627,212 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
     );
   }
 
-  Widget _buildCountdownCard(BuildContext context, PrayerTimesViewModel vm) {
-    final localizations = AppLocalizations.of(context)!;
-    final countdown = vm.getFormattedCountdown(
-      hourText: localizations.hour,
-      minuteText: localizations.minute,
-      minuteShortText: localizations.minuteShort,
-      secondText: localizations.second,
-    );
-    final nextPrayerName = vm.nextPrayerName;
-    final isHms = vm.isHmsFormat;
-    final isKerahat = vm.isKerahatTime();
+  Widget _buildCountdownCard(BuildContext context) {
+    return Selector<PrayerTimesViewModel,
+        (CountdownFormat, Duration?, String?)>(
+      selector: (_, vm) => (
+        vm.countdownFormat,
+        vm.timeUntilNextPrayer,
+        vm.nextPrayerName,
+      ),
+      builder: (context, data, _) {
+        final (countdownFormat, timeUntilNextPrayer, nextPrayerName) = data;
+        final vm = context.read<PrayerTimesViewModel>();
+        final localizations = AppLocalizations.of(context)!;
 
-    if (countdown.isEmpty || nextPrayerName == null) {
-      return const SizedBox.shrink();
-    }
+        final countdown = vm.getFormattedCountdown(
+          hourText: localizations.hour,
+          minuteText: localizations.minute,
+          minuteShortText: localizations.minuteShort,
+          secondText: localizations.second,
+        );
+        final isHms = vm.isHmsFormat;
+        final isKerahat = vm.isKerahatTime();
+        final religiousAlert = vm.getReligiousDayAlert(context);
 
-    final size = MediaQuery.sizeOf(context);
-    final responsiveValues = _ResponsiveValues.fromScreenSize(size);
+        if (countdown.isEmpty || nextPrayerName == null) {
+          return const SizedBox.shrink();
+        }
 
-    return Transform.translate(
-      offset: isKerahat ? const Offset(0, -5) : Offset.zero,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: responsiveValues.horizontalPadding,
-          vertical: responsiveValues.verticalPadding,
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Column(
-              children: [
-                Text(
-                  nextPrayerName.isNotEmpty
-                      ? AppLocalizations.of(context)!.nextPrayerTime(
-                          PrayerNameHelper.getLocalizedPrayerName(
-                              context, nextPrayerName))
-                      : AppLocalizations.of(context)!.calculatingTime,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: GlassBarConstants.getTextColor(context)
-                            .withValues(alpha: 0.9),
-                        fontWeight: FontWeight.w500,
-                        fontSize: responsiveValues.titleFontSize,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: responsiveValues.spacingHeight),
-                // Geri sayım için sayı kalın, metin ince font ağırlığı (tıklanabilir)
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () async {
-                    await vm.toggleCountdownFormat();
-                  },
-                  child: isHms
-                      ? Text(
-                          countdown,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                color: GlassBarConstants.getTextColor(context),
-                                fontWeight: FontWeight.w800,
-                                fontSize: responsiveValues.numberFontSize,
-                                letterSpacing: 1.0,
+        final responsiveValues = _ResponsiveValues.fromContext(context);
+        final bool hasAnyAlert = isKerahat || religiousAlert != null;
+
+        final isLandscapePhone = context.isLandscape && context.isPhone;
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: isLandscapePhone
+                ? responsiveValues.horizontalPadding * 0.5
+                : responsiveValues.horizontalPadding,
+            vertical: isLandscapePhone
+                ? 0.0
+                : (context.isLandscape
+                    ? responsiveValues.verticalPadding * 0.4
+                    : responsiveValues.verticalPadding),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Üst Metin: "Sıradaki Vakit: İmsak"
+              Text(
+                nextPrayerName.isNotEmpty
+                    ? AppLocalizations.of(context)!.nextPrayerTime(
+                        PrayerNameHelper.getLocalizedPrayerName(
+                            context, nextPrayerName))
+                    : AppLocalizations.of(context)!.calculatingTime,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: GlassBarConstants.getTextColor(context)
+                          .withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w500,
+                      fontSize: responsiveValues.titleFontSize,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: responsiveValues.spacingHeight),
+              // Geri sayım (tıklanabilir)
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () async {
+                  await vm.toggleCountdownFormat();
+                },
+                child: isHms
+                    ? Text(
+                        countdown,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              color: GlassBarConstants.getTextColor(context),
+                              fontWeight: FontWeight.w800,
+                              fontSize: responsiveValues.numberFontSize,
+                              letterSpacing: 1.0,
+                            ),
+                        textAlign: TextAlign.center,
+                      )
+                    : Text.rich(
+                        TextSpan(
+                          children:
+                              countdown.split(' ').expand<InlineSpan>((part) {
+                            final locale = Localizations.localeOf(context);
+                            final isArabic = locale.languageCode == 'ar';
+                            final numberPattern = isArabic
+                                ? RegExp(r'[0-9٠-٩]+')
+                                : RegExp(r'\d+');
+                            final nonNumberPattern = isArabic
+                                ? RegExp(r'[^0-9٠-٩]+')
+                                : RegExp(r'\D+');
+
+                            final number =
+                                part.replaceAll(nonNumberPattern, '');
+                            final unit =
+                                part.replaceAll(numberPattern, '') + ' ';
+                            return [
+                              TextSpan(
+                                text: number,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: GlassBarConstants.getTextColor(
+                                          context),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: responsiveValues.numberFontSize,
+                                      letterSpacing: 0.5,
+                                    ),
                               ),
-                          textAlign: TextAlign.center,
-                        )
-                      : Text.rich(
-                          TextSpan(
-                            children:
-                                countdown.split(' ').expand<InlineSpan>((part) {
-                              // Arapça rakamları da içeren regex: 0-9 ve ٠-٩
-                              final locale = Localizations.localeOf(context);
-                              final isArabic = locale.languageCode == 'ar';
-                              final numberPattern = isArabic 
-                                  ? RegExp(r'[0-9٠-٩]+')
-                                  : RegExp(r'\d+');
-                              final nonNumberPattern = isArabic
-                                  ? RegExp(r'[^0-9٠-٩]+')
-                                  : RegExp(r'\D+');
-                              
-                              final number = part.replaceAll(nonNumberPattern, '');
-                              final unit = part.replaceAll(numberPattern, '') + ' ';
-                              return [
-                                TextSpan(
-                                  text: number,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium
-                                      ?.copyWith(
-                                        color: GlassBarConstants.getTextColor(
-                                            context),
-                                        fontWeight: FontWeight.w800,
-                                        fontSize:
-                                            responsiveValues.numberFontSize,
-                                        letterSpacing: 0.5,
-                                      ),
-                                ),
-                                TextSpan(
-                                  text: unit,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium
-                                      ?.copyWith(
-                                        color: GlassBarConstants.getTextColor(
-                                            context),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: responsiveValues.unitFontSize,
-                                        letterSpacing: 0,
-                                      ),
-                                ),
-                              ];
-                            }).toList(),
-                          ),
-                          textAlign: TextAlign.center,
+                              TextSpan(
+                                text: unit,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: GlassBarConstants.getTextColor(
+                                          context),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: responsiveValues.unitFontSize,
+                                      letterSpacing: 0,
+                                    ),
+                              ),
+                            ];
+                          }).toList(),
                         ),
+                        textAlign: TextAlign.center,
+                      ),
+              ),
+
+              // Uyarılar - Alt bölümde doğal akışta yer alır
+              if (hasAnyAlert) ...[
+                SizedBox(
+                    height: isLandscapePhone
+                        ? 2.0
+                        : responsiveValues.spacingHeight),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (religiousAlert != null)
+                        _buildReligiousDayWarning(
+                            context, religiousAlert, responsiveValues),
+                      if (religiousAlert != null && isKerahat)
+                        const SizedBox(width: 4),
+                      if (isKerahat)
+                        _buildKerahatWarning(context, responsiveValues),
+                    ],
+                  ),
                 ),
               ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Dini gün uyarı widget'ı
+  Widget _buildReligiousDayWarning(BuildContext context, String message,
+      _ResponsiveValues responsiveValues) {
+    final isLandscapePhone = context.isLandscape && context.isPhone;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(isLandscapePhone ? 8 : 12),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: isLandscapePhone ? 6 : 10,
+          vertical: isLandscapePhone ? 2 : 4,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.amber.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(isLandscapePhone ? 8 : 12),
+          border: Border.all(
+            color: Colors.amber.withValues(alpha: 0.4),
+            width: isLandscapePhone ? 1.0 : 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Altın sarısı uyarı noktası (animasyonlu)
+            const _ReligiousDayDot(),
+            SizedBox(width: isLandscapePhone ? 4 : 6),
+            // Uyarı metni
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: GlassBarConstants.getTextColor(context)
+                        .withValues(alpha: 0.95),
+                    fontWeight: FontWeight.w600,
+                    fontSize: isLandscapePhone
+                        ? 9.0
+                        : (responsiveValues.titleFontSize * 0.72)
+                            .clamp(11.0, 15.0),
+                    letterSpacing: 0.2,
+                  ),
+              textAlign: TextAlign.center,
             ),
-            // Kerahat vakti uyarısı (geri sayımın altında, overlap)
-            if (isKerahat)
-              Positioned(
-                bottom: -(responsiveValues.spacingHeight * 2.5),
-                child: _buildKerahatWarning(context, responsiveValues),
-              ),
           ],
         ),
       ),
@@ -1544,16 +1842,20 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
   /// Kerahat vakti uyarı widget'ı
   Widget _buildKerahatWarning(
       BuildContext context, _ResponsiveValues responsiveValues) {
+    final isLandscapePhone = context.isLandscape && context.isPhone;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(isLandscapePhone ? 8 : 12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        padding: EdgeInsets.symmetric(
+          horizontal: isLandscapePhone ? 6 : 10,
+          vertical: isLandscapePhone ? 2 : 4,
+        ),
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(isLandscapePhone ? 8 : 12),
           border: Border.all(
             color: Colors.red.withValues(alpha: 0.3),
-            width: 1.5,
+            width: isLandscapePhone ? 1.0 : 1.5,
           ),
         ),
         child: Row(
@@ -1562,7 +1864,7 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
           children: [
             // Kırmızı uyarı noktası (animasyonlu)
             _KerahatDot(),
-            const SizedBox(width: 10),
+            SizedBox(width: isLandscapePhone ? 4 : 6),
             // Uyarı metni
             Text(
               AppLocalizations.of(context)!.kerahatTime,
@@ -1570,15 +1872,74 @@ class _PrayerTimesSectionState extends State<PrayerTimesSection> {
                     color: GlassBarConstants.getTextColor(context)
                         .withValues(alpha: 0.95),
                     fontWeight: FontWeight.w600,
-                    fontSize: (responsiveValues.titleFontSize * 0.75)
-                        .clamp(12.0, 16.0),
-                    letterSpacing: 0.3,
+                    fontSize: isLandscapePhone
+                        ? 9.0
+                        : (responsiveValues.titleFontSize * 0.72)
+                            .clamp(11.0, 15.0),
+                    letterSpacing: 0.2,
                   ),
               textAlign: TextAlign.center,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dini gün altın nokta animasyonu
+class _ReligiousDayDot extends StatefulWidget {
+  const _ReligiousDayDot();
+
+  @override
+  State<_ReligiousDayDot> createState() => _ReligiousDayDotState();
+}
+
+class _ReligiousDayDotState extends State<_ReligiousDayDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.9),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.amber.withValues(alpha: 0.6 * _animation.value),
+                blurRadius: 10 * _animation.value,
+                spreadRadius: 3 * _animation.value,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1721,14 +2082,21 @@ Widget _buildTodayPrayerTimesCard(
   return ValueListenableBuilder<double>(
     valueListenable: expandAnimationNotifier,
     builder: (context, expandValue, child) {
-      // Sabit referans değerler - ölçeklendirme ile korunur
-      const double baseVerticalPadding = 8.0;
-      const double baseHorizontalPadding = 18.0;
-      final scale = Responsive.scale(context);
+      // Yatay modda (landscape) tablet ve telefonlar için farklı strateji:
+      // Tablet: Vakitler sağda dikey liste kalsın (effectiveExpandValue = 0.0)
+      // Telefon: Alan çok dar olduğu için vakitler altta yatay (icons) kalsın (effectiveExpandValue = 1.0)
+      final bool isLandscapePhone = context.isLandscape && context.isPhone;
+      final double effectiveExpandValue =
+          isLandscapePhone ? 1.0 : (context.isLandscape ? 0.0 : expandValue);
 
-      final double verticalPadding =
-          expandValue < 0.5 ? 0 : baseVerticalPadding * scale;
-      final double horizontalPadding = baseHorizontalPadding * scale;
+      // Token bazlı değerler - bar kapalıyken minimal, açıkken daha fazla padding
+      // Smooth geçiş için interpolation kullan
+      final double minVerticalPadding = Responsive.value<double>(context,
+          xs: 4.0, sm: 6.0, md: 8.0, lg: 10.0, xl: 12.0);
+      final double maxVerticalPadding = context.space(SpaceSize.sm);
+      final double verticalPadding = minVerticalPadding +
+          (maxVerticalPadding - minVerticalPadding) * effectiveExpandValue;
+      final double horizontalPadding = context.space(SpaceSize.lg);
 
       return GestureDetector(
         behavior: HitTestBehavior.translucent,
@@ -1743,7 +2111,7 @@ Widget _buildTodayPrayerTimesCard(
             prayerTimes,
             currentPrayer,
             nextPrayer,
-            expandValue,
+            effectiveExpandValue,
             prayerKeyMap: prayerKeyMap,
           ),
         ),
@@ -1763,7 +2131,6 @@ Widget _buildUnifiedPrayerTimesLayout(
   final entries = prayerTimes.entries.toList(growable: false);
   final itemCount = entries.length;
   final screenSize = MediaQuery.sizeOf(context);
-  final scale = Responsive.scale(context);
   final double animationValue = expandValue.clamp(0.0, 1.0);
 
   return LayoutBuilder(
@@ -1777,14 +2144,20 @@ Widget _buildUnifiedPrayerTimesLayout(
           GlassBarConstants.getBackgroundColor(context);
       final Color activeBorderColor = GlassBarConstants.getBorderColor(context);
 
-      // Sabit referans değerler - ölçeklendirme ile korunur
-      const double baseVerticalItemHeight = 60.0;
-      const double baseVerticalGap = 10.0; // üst ve alt sabit, aralar dinamik
-      const double baseHorizontalItemHeight = 95.0;
+      // Breakpoint bazlı değerler (dikey yerleşim)
+      final bool isLandscapePhone = context.isLandscape && context.isPhone;
+      final double compactFactor = isLandscapePhone ? 0.82 : 1.0;
 
-      // Ölçeklendirilmiş değerler (dikey yerleşim)
-      final double verticalItemHeight = baseVerticalItemHeight * scale;
-      final double verticalGap = baseVerticalGap * scale;
+      final double verticalItemHeight = Responsive.value<double>(
+            context,
+            xs: 51.0,
+            sm: 54.0,
+            md: 57.0,
+            lg: 63.0,
+            xl: 69.0,
+          ) *
+          compactFactor;
+      final double verticalGap = context.space(SpaceSize.sm) * compactFactor;
 
       // Tercih edilen dikey yükseklik: ekranın bir bölümü + içerik minimumu
       final double preferredCollapsedHeight = screenSize.height *
@@ -1821,36 +2194,64 @@ Widget _buildUnifiedPrayerTimesLayout(
           (itemCount - 1) * adjustedGap +
           adjustedGap /* alt */;
 
-      // Artan boşluk: yalnızca öğeler arası boşluklara paylaştır (üst/alt sabit)
+      // Artan boşluk: Öğeler ve boşluklar arasında dengeli paylaştır
       final double extraSpace = (collapseHeightBudget - compressedBaseHeight)
           .clamp(0, double.infinity);
+
+      // Boşluğun bir kısmını (%40) öğe yüksekliğine ekle (maksimum %20 büyüme sınırı ile)
+      final double itemHeightBoost =
+          (extraSpace * 0.4 / itemCount).clamp(0.0, verticalItemHeight * 0.2);
+      final double finalItemHeight = adjustedItemHeight + itemHeightBoost;
+
+      // Kalan boşluğu gap'lere yay
+      final double remainingExtraSpace =
+          extraSpace - (itemHeightBoost * itemCount);
       final int innerGapCount = itemCount > 1 ? itemCount - 1 : 0;
       final double innerGapBoost =
-          innerGapCount > 0 ? extraSpace / innerGapCount : 0.0;
+          innerGapCount > 0 ? remainingExtraSpace / innerGapCount : 0.0;
 
       final double collapsedTopOffset = adjustedGap; // üst boşluk sabit
       final double collapsedItemSpacing =
           adjustedGap + innerGapBoost; // aralar dinamik
       final double collapsedContainerHeight = adjustedGap /* üst */
           +
-          itemCount * adjustedItemHeight +
+          itemCount * finalItemHeight +
           innerGapCount * collapsedItemSpacing +
           adjustedGap; /* alt */
 
       // Yatay düzen parametreleri
       final double horizontalItemWidth = availableWidth / itemCount;
-      final double horizontalItemHeight = baseHorizontalItemHeight * scale;
+      final double horizontalItemHeight = Responsive.value<double>(
+        context,
+        xs: 81.0,
+        sm: 86.0,
+        md: 90.0,
+        lg: 100.0,
+        xl: 110.0,
+      );
 
-      // Container yüksekliği: dikey (eşit dağılım) <-> yatay arasında interpolasyon
-      final double containerHeight = lerpDouble(
+      // Expanded içinde kullanıldığında (hasBoundedHeight && constraints.maxHeight.isFinite)
+      // constraint'lerin maxHeight'ını kullanarak responsive dinamik boyutlandırma yap
+      final bool isInExpanded =
+          hasBoundedHeight && constraints.maxHeight.isFinite;
+
+      // Container yüksekliği: Expanded içindeyse dinamik yükseklik, değilse hesaplanan yükseklik
+      // Dikey (eşit dağılım) <-> yatay arasında interpolasyon
+      final double baseContainerHeight = lerpDouble(
         collapsedContainerHeight,
         horizontalItemHeight,
         animationValue,
       )!;
 
+      // Expanded içinde kullanıldığında dinamik yükseklik, değilse hesaplanan yükseklik
+      final double containerHeight =
+          isInExpanded ? collapseHeightBudget : baseContainerHeight;
+
+      final double finalHeight = containerHeight;
+
       return RepaintBoundary(
         child: SizedBox(
-          height: containerHeight,
+          height: finalHeight,
           child: Stack(
             clipBehavior: Clip.none,
             children: List.generate(itemCount, (index) {
@@ -1866,7 +2267,7 @@ Widget _buildUnifiedPrayerTimesLayout(
                 itemCount: itemCount,
                 availableWidth: availableWidth,
                 horizontalItemWidth: horizontalItemWidth,
-                verticalItemHeight: adjustedItemHeight,
+                verticalItemHeight: finalItemHeight,
                 verticalTopOffset: collapsedTopOffset,
                 verticalItemSpacing: collapsedItemSpacing,
                 horizontalItemHeight: horizontalItemHeight,
@@ -1907,25 +2308,25 @@ Widget _buildAnimatedPrayerTimeItem(
   required Color activeBackgroundColor,
   required Color activeBorderColor,
 }) {
-  final scale = Responsive.scale(context);
   final double t = animationValue.clamp(0.0, 1.0);
-  final double inverseT = 1.0 - t;
-  final isVertical = inverseT > 0.5;
+  // inverseT kaldırıldı, lerpDouble kullanılacak
+  // isVertical kontrolü kaldırıldı - tek bir yapı kullanılacak
 
-  // Sabit referans değerler - ölçeklendirme ile korunur
-  const double baseVerticalHorizontalPadding = 20.0;
-  const double baseVerticalVerticalPadding = 14.0;
-  const double baseVerticalIconSize = 24.0;
-  const double baseHorizontalIconSize = 20.0;
-  const double baseVerticalNameFontSize = 15.5;
-  const double baseHorizontalNameFontSize = 11.0;
-  const double baseVerticalTimeFontSize = 18.0;
-  const double baseHorizontalTimeFontSize = 13.0;
-  const double baseVerticalBorderRadius = 20.0;
-  const double baseHorizontalBorderRadius = 14.0;
-  const double baseVerticalSpacing = 12.0; // İkon ve isim arası
+  // Breakpoint bazlı değerler - dikey layout
+  final double verticalHorizontalPadding = context.space(SpaceSize.lg);
+  final double verticalVerticalPadding = context.space(SpaceSize.md);
+  final double verticalIconSize = context.icon(IconSizeLevel.md);
+  final double verticalNameFontSize = context.font(FontSize.md);
+  final double verticalTimeFontSize = context.font(FontSize.lg);
+  final double verticalBorderRadius = context.space(SpaceSize.lg);
 
-  // Dikey yerleşim: eşit aralıklar + ölçeklendirme
+  // Breakpoint bazlı değerler - yatay layout
+  final double horizontalIconSize = context.icon(IconSizeLevel.sm);
+  final double horizontalNameFontSize = context.font(FontSize.xs);
+  final double horizontalTimeFontSize = context.font(FontSize.sm);
+  final double horizontalBorderRadius = context.space(SpaceSize.md);
+
+  // Dikey yerleşim: eşit aralıklar
   final verticalTop =
       verticalTopOffset + index * (verticalItemHeight + verticalItemSpacing);
   final verticalLeft = 0.0;
@@ -1935,54 +2336,48 @@ Widget _buildAnimatedPrayerTimeItem(
   final horizontalLeft = index * horizontalItemWidth;
 
   // Pozisyon interpolasyonu: expandValue 0.0 = dikey, 1.0 = yatay
-  final top = inverseT * verticalTop + t * horizontalTop;
-  final left = inverseT * verticalLeft + t * horizontalLeft;
+  final top = lerpDouble(verticalTop, horizontalTop, t)!;
+  final left = lerpDouble(verticalLeft, horizontalLeft, t)!;
 
   // Genişlik ve yükseklik interpolasyonu
-  final width = inverseT * availableWidth + t * horizontalItemWidth;
-  final height = inverseT * verticalItemHeight + t * horizontalItemHeight;
+  final width = lerpDouble(availableWidth, horizontalItemWidth, t)!;
+  final height = lerpDouble(verticalItemHeight, horizontalItemHeight, t)!;
 
-  // Padding interpolasyonu - ölçeklendirilmiş
-  final double verticalHorizontalPadding =
-      baseVerticalHorizontalPadding * scale;
-  final double verticalVerticalPadding = baseVerticalVerticalPadding * scale;
-  final double verticalSpacing = baseVerticalSpacing * scale;
-  final horizontalPadding = inverseT * verticalHorizontalPadding;
-  final verticalPadding = inverseT * verticalVerticalPadding;
-
-  // Font boyutları ve stil interpolasyonu - ölçeklendirilmiş
-  final double verticalIconSize = baseVerticalIconSize * scale;
-  final double horizontalIconSize = baseHorizontalIconSize * scale;
-  final double verticalNameFontSize = baseVerticalNameFontSize * scale;
-  final double horizontalNameFontSize = baseHorizontalNameFontSize * scale;
-  final double verticalTimeFontSize = baseVerticalTimeFontSize * scale;
-  final double horizontalTimeFontSize = baseHorizontalTimeFontSize * scale;
-
-  final iconSize = inverseT * verticalIconSize + t * horizontalIconSize;
-  final nameFontSize =
-      inverseT * verticalNameFontSize + t * horizontalNameFontSize;
-  final timeFontSize =
-      inverseT * verticalTimeFontSize + t * horizontalTimeFontSize;
-  final nameFontWeight = t < 0.5 ? FontWeight.w600 : FontWeight.w500;
-  final timeFontWeight = t < 0.5 ? FontWeight.w700 : FontWeight.w600;
-
-  // Border radius interpolasyonu - ölçeklendirilmiş
-  final double verticalBorderRadius = baseVerticalBorderRadius * scale;
-  final double horizontalBorderRadius = baseHorizontalBorderRadius * scale;
+  // Padding ve Radius interpolasyonu
+  final horizontalPadding = lerpDouble(verticalHorizontalPadding, 0.0, t)!;
+  final verticalPadding = lerpDouble(verticalVerticalPadding, 0.0, t)!;
   final borderRadius =
-      inverseT * verticalBorderRadius + t * horizontalBorderRadius;
+      lerpDouble(verticalBorderRadius, horizontalBorderRadius, t)!;
+
+  // Font ve icon boyutu interpolasyonu
+  final iconSize = lerpDouble(verticalIconSize, horizontalIconSize, t)!;
+  final nameFontSize =
+      lerpDouble(verticalNameFontSize, horizontalNameFontSize, t)!;
+  final timeFontSize =
+      lerpDouble(verticalTimeFontSize, horizontalTimeFontSize, t)!;
   final bool shimmerEnabled = isNext && !isActive;
   final iconData = _getPrayerIcon(originalPrayerKey);
 
-  // Futuristik glassmorphism için renkler
-  final bgColor = (!isVertical && !isActive)
-      ? Colors.transparent
-      : isActive
-          ? activeBackgroundColor.withValues(alpha: 0.15)
-          : textColor.withValues(alpha: 0.03);
-  final borderColor = isActive
-      ? activeBorderColor.withValues(alpha: 0.5)
-      : textColor.withValues(alpha: isVertical ? 0.1 : 0.0);
+  // Futuristik glassmorphism için renkler - animasyonlu interpolasyon (optimize edildi)
+  // Kapalı durum (t=0): dikey stil renkleri
+  // Açık durum (t=1): yatay stil renkleri
+  final Color bgColor;
+  final Color borderColor;
+  final double borderWidth;
+
+  if (isActive) {
+    // Aktif öğe için sabit renkler (hesaplama yok)
+    bgColor = activeBackgroundColor.withValues(alpha: 0.15);
+    borderColor = activeBorderColor.withValues(alpha: 0.5);
+    borderWidth = 1.5;
+  } else {
+    // Pasif öğe için animasyonlu renkler
+    final double bgAlpha = 0.03 - (0.03 * t); // 0.03 -> 0.0
+    final double borderAlpha = 0.1 - (0.1 * t); // 0.1 -> 0.0
+    bgColor = textColor.withValues(alpha: bgAlpha);
+    borderColor = textColor.withValues(alpha: borderAlpha);
+    borderWidth = 0.8 - (0.8 * t); // 0.8 -> 0.0
+  }
 
   return Positioned(
     top: top,
@@ -2000,113 +2395,79 @@ Widget _buildAnimatedPrayerTimeItem(
           borderRadius: BorderRadius.circular(borderRadius),
           border: Border.all(
             color: borderColor,
-            width: isVertical ? (isActive ? 1.5 : 0.8) : (isActive ? 1.5 : 0.0),
+            width: borderWidth,
           ),
         ),
-        child: isVertical
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Sol taraf: İkon + İsim yan yana
-                  Expanded(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _ShimmerEffect(
-                          isActive: shimmerEnabled,
-                          child: Icon(
-                            iconData,
-                            color: textColor.withValues(
-                                alpha: isActive ? 1.0 : 0.85),
-                            size: iconSize,
-                          ),
-                        ),
-                        SizedBox(width: verticalSpacing),
-                        Flexible(
-                          child: _ShimmerEffect(
-                            isActive: shimmerEnabled,
-                            child: Text(
-                              PrayerNameHelper.getLocalizedPrayerName(
-                                  context, prayerName),
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: textColor.withValues(
-                                    alpha: isActive ? 1.0 : 0.9),
-                                fontWeight: nameFontWeight,
-                                fontSize: nameFontSize,
-                                height: 1.2,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Sağ taraf: Saat
-                  _ShimmerEffect(
-                    isActive: shimmerEnabled,
-                    child: Text(
-                      prayerTime,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color:
-                            textColor.withValues(alpha: isActive ? 1.0 : 0.95),
-                        fontWeight: timeFontWeight,
-                        fontSize: timeFontSize,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            : Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Align(
-                    alignment: const Alignment(0.0, -0.78),
-                    child: _ShimmerEffect(
-                      isActive: shimmerEnabled,
-                      child: Icon(
-                        iconData,
-                        color: textColor.withValues(alpha: 0.9),
-                        size: iconSize,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: const Alignment(0.0, 0.18),
-                    child: _ShimmerEffect(
-                      isActive: shimmerEnabled,
-                      child: Text(
-                        PrayerNameHelper.getLocalizedPrayerName(
-                            context, prayerName),
-                        textAlign: TextAlign.center,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: textColor.withValues(alpha: 0.95),
-                          fontWeight: nameFontWeight,
-                          fontSize: nameFontSize,
-                          height: 1.05,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: const Alignment(0.0, 0.78),
-                    child: _ShimmerEffect(
-                      isActive: shimmerEnabled,
-                      child: Text(
-                        prayerTime,
-                        textAlign: TextAlign.center,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: textColor,
-                          fontWeight: timeFontWeight,
-                          fontSize: timeFontSize,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+        // Tek bir Stack yapısı - içindeki öğeler animasyonlu pozisyon değiştiriyor
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // İkon - animasyonlu pozisyon
+            Align(
+              alignment: Alignment(
+                lerpDouble(-1.0, 0.0, t)!, // X: sol -> orta
+                lerpDouble(-0.5, -0.78, t)!, // Y: üst -> daha üst
               ),
+              child: _ShimmerEffect(
+                isActive: shimmerEnabled,
+                child: Icon(
+                  iconData,
+                  color: isActive
+                      ? textColor
+                      : textColor.withValues(alpha: lerpDouble(0.85, 0.9, t)!),
+                  size: iconSize,
+                ),
+              ),
+            ),
+            // İsim - animasyonlu pozisyon
+            Align(
+              alignment: Alignment(
+                lerpDouble(-0.7, 0.0, t)!, // X: ikon yanı -> orta
+                lerpDouble(0.0, 0.18, t)!, // Y: orta -> biraz alt
+              ),
+              child: _ShimmerEffect(
+                isActive: shimmerEnabled,
+                child: Text(
+                  PrayerNameHelper.getLocalizedPrayerName(context, prayerName),
+                  textAlign: t < 0.5 ? TextAlign.left : TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: isActive
+                        ? textColor
+                        : textColor.withValues(
+                            alpha: lerpDouble(0.9, 0.95, t)!),
+                    fontWeight: t < 0.5 ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: nameFontSize,
+                    height: lerpDouble(1.2, 1.05, t)!,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            // Saat - animasyonlu pozisyon
+            Align(
+              alignment: Alignment(
+                lerpDouble(1.0, 0.0, t)!, // X: sağ -> orta
+                lerpDouble(0.0, 0.78, t)!, // Y: orta -> alt
+              ),
+              child: _ShimmerEffect(
+                isActive: shimmerEnabled,
+                child: Text(
+                  prayerTime,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: isActive
+                        ? textColor
+                        : textColor.withValues(
+                            alpha: lerpDouble(0.95, 0.9, t)!),
+                    fontWeight: t < 0.5 ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: timeFontSize,
+                    letterSpacing: lerpDouble(0.5, 0.0, t)!,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -2204,81 +2565,150 @@ Widget _buildErrorInStack(
 }
 
 Widget _buildSkeletonLoading(BuildContext context) {
-  return Stack(
-    children: [
-      Positioned.fill(
-        child: Container(color: Colors.transparent),
-      ),
-      Positioned(
-        top: MediaQuery.of(context).size.height * 0.12,
-        left: 24,
-        right: 24,
-        child: _ShimmerEffect(
-          isActive: true,
-          child: Container(
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
+  final screenHeight = MediaQuery.of(context).size.height;
+  final isLandscape =
+      MediaQuery.of(context).orientation == Orientation.landscape;
+  // İçerik başlangıcını gerçek görünüme yakın hizala
+  final topPadding = isLandscape ? screenHeight * 0.02 : screenHeight * 0.12;
+
+  return Padding(
+    padding: EdgeInsets.only(
+      top: topPadding,
+      left: 24,
+      right: 24,
+      bottom: 24,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. Geri Sayım ve Tarih Alanı (Üst Kısım)
+        Center(
+          child: Column(
+            children: [
+              // Başlık
+              _ShimmerEffect(
+                isActive: true,
+                child: Container(
+                  width: 140,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Büyük Sayaç
+              _ShimmerEffect(
+                isActive: true,
+                child: Container(
+                  width: 200,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Tarih
+              _ShimmerEffect(
+                isActive: true,
+                child: Container(
+                  width: 120,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-      Positioned(
-        top: MediaQuery.of(context).size.height * 0.25,
-        left: 24,
-        right: 24,
-        child: _ShimmerEffect(
-          isActive: true,
-          child: Container(
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ),
-      Positioned(
-        top: MediaQuery.of(context).size.height * 0.35,
-        left: 18,
-        right: 18,
-        child: SizedBox(
-          height: 80,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-                6,
-                (index) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: _ShimmerEffect(
-                          isActive: true,
-                          child: Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(14),
+
+        const SizedBox(height: 32),
+
+        // 2. Namaz Vakitleri Kartları (Dikey Liste)
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Mevcut alana 6 tane sığdır
+              final totalHeight = constraints.maxHeight;
+              // Aradaki boşluklar (5 tane boşluk)
+              const gap = 12.0;
+              // Bir elemanın yüksekliği
+              final itemHeight =
+                  ((totalHeight - (5 * gap)) / 6).clamp(50.0, 70.0);
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start, // Üsten başla
+                children: List.generate(6, (index) {
+                  return Column(
+                    children: [
+                      _ShimmerEffect(
+                        isActive: true,
+                        child: Container(
+                          height: itemHeight,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              width: 1,
                             ),
                           ),
                         ),
                       ),
-                    )),
+                      if (index < 5) const SizedBox(height: gap),
+                    ],
+                  );
+                }),
+              );
+            },
           ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
 }
 
 // Modal pencere: 30 günlük namaz vakitlerini gösterir
-void _showMonthlyPrayerTimesModal(BuildContext context) {
+Future<void> _showMonthlyPrayerTimesModal(BuildContext context) async {
   final vm = context.read<PrayerTimesViewModel>();
   final allTimes = vm.prayerTimesResponse?.prayerTimes ?? [];
   final today = DateTime.now();
   final startDate = today.subtract(const Duration(days: 3));
   final endDate = today.add(const Duration(days: 26));
-  final monthlyTimes = allTimes
+
+  // Aralık ayında ve endDate gelecek yıla geçiyorsa, gelecek yılın verilerini de yükle
+  List<PrayerTime> combinedTimes = List.from(allTimes);
+  if (today.month == 12 && endDate.year > today.year) {
+    final nextYear = today.year + 1;
+    final cityId = vm.selectedCityId;
+    if (cityId != null) {
+      try {
+        final prayerTimesService = PrayerTimesService();
+        final nextYearResponse =
+            await prayerTimesService.getPrayerTimes(cityId, nextYear);
+        combinedTimes.addAll(nextYearResponse.prayerTimes);
+      } catch (e) {
+        // Gelecek yıl verisi yüklenemezse sessizce devam et
+      }
+    }
+  }
+
+  // Tarih sırasına göre sırala (iki farklı yıldan gelen veriler birleştirildiğinde önemli)
+  combinedTimes.sort((a, b) {
+    final dateA = _parsePrayerDate(a);
+    final dateB = _parsePrayerDate(b);
+    if (dateA == null && dateB == null) return 0;
+    if (dateA == null) return 1;
+    if (dateB == null) return -1;
+    return dateA.compareTo(dateB);
+  });
+
+  final monthlyTimes = combinedTimes
       .where((prayer) {
         final prayerDate = _parsePrayerDate(prayer);
         if (prayerDate == null) return false;

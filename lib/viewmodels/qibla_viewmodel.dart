@@ -35,9 +35,9 @@ class QiblaViewModel extends ChangeNotifier {
   Timer? _compassTimer;
   bool _isUsingGPS = false;
 
-  // Throttle için
+  // Throttle için - 50ms ile daha akıcı güncelleme
   DateTime _lastNotifyTime = DateTime.fromMillisecondsSinceEpoch(0);
-  static const Duration _notifyDebounce = Duration(milliseconds: 100);
+  static const Duration _notifyDebounce = Duration(milliseconds: 50);
 
   // Stabilite ve kalibrasyon takibi
   DateTime _lastValidHeadingAt = DateTime.fromMillisecondsSinceEpoch(0);
@@ -129,9 +129,9 @@ class QiblaViewModel extends ChangeNotifier {
       final bool hasHeading = event.heading != null;
       final bool isReliable = _isCompassEventReliable(event);
 
-      // Yumuşatma filtresi ile açı güncelle
+      // Yumuşatma filtresi ile açı güncelle (alpha: 0.25 = daha hızlı tepki)
       if (hasHeading) {
-        _currentDirection = _smoothAngleDegrees(_currentDirection, event.heading!, 0.15);
+        _currentDirection = _smoothAngleDegrees(_currentDirection, event.heading!, 0.25);
         if (_currentDirection < 0) _currentDirection += 360;
         if (_currentDirection >= 360) _currentDirection -= 360;
         _lastValidHeadingAt = now;
