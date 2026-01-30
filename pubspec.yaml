@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.1+2
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
   flutter: '>=3.24.0'
 
 # Dependencies specify other packages that your package needs in order to work.
@@ -33,17 +33,17 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: any
+  intl: ^0.20.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  shared_preferences: ^2.3.2
-  flutter_secure_storage: ^9.2.2 # Güvenli veri depolama için
+  shared_preferences: ^2.5.0
+  flutter_secure_storage: ^9.2.4 # Güvenli veri depolama için
   provider: ^6.1.2
   geolocator: ^13.0.1
   permission_handler: ^11.3.1
-  http: ^1.2.2
+  http: ^1.3.0
   path_provider: ^2.1.4
   material_symbols_icons: ^4.2815.1
   dynamic_color: ^1.6.9
@@ -55,6 +55,7 @@ dependencies:
   firebase_core: ^4.0.0
   cloud_firestore: ^6.0.0
   flutter_dotenv: ^6.0.0
+  flutter_tts: ^4.1.0
 
 dev_dependencies:
   flutter_test:
