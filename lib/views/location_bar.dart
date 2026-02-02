@@ -123,6 +123,7 @@ class LocationBarState extends State<LocationBar> {
         ),
         SizedBox(width: context.space(SpaceSize.sm)),
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: viewModel.isLoading
               ? null
               : () async {

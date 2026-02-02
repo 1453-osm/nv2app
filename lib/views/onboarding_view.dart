@@ -919,66 +919,61 @@ class _AutoLocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: _radius16,
-      child: BackdropFilter(
-        filter: _blurMedium,
-        child: Container(
-          decoration: BoxDecoration(
-            color: _OnboardingColors.white10,
-            borderRadius: _radius16,
-            border: Border.all(
-              color: _OnboardingColors.white20,
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: locationViewModel.isLoading
-                  ? null
-                  : () async {
-                      await locationViewModel.getCurrentLocationFromGPS();
-                      if (context.mounted) {
-                        await context
-                            .read<OnboardingViewModel>()
-                            .refreshPermissions();
-                      }
-                      if (context.mounted &&
-                          locationViewModel.isLocationSelected) {
-                        context.read<PrayerTimesViewModel>().loadPrayerTimes(
-                            locationViewModel.selectedCity!.id);
-                      }
-                    },
+    return GestureDetector(
+      onTap: locationViewModel.isLoading
+          ? null
+          : () async {
+              await locationViewModel.getCurrentLocationFromGPS();
+              if (context.mounted) {
+                await context
+                    .read<OnboardingViewModel>()
+                    .refreshPermissions();
+              }
+              if (context.mounted &&
+                  locationViewModel.isLocationSelected) {
+                context.read<PrayerTimesViewModel>().loadPrayerTimes(
+                    locationViewModel.selectedCity!.id);
+              }
+            },
+      behavior: HitTestBehavior.opaque,
+      child: ClipRRect(
+        borderRadius: _radius16,
+        child: BackdropFilter(
+          filter: _blurMedium,
+          child: Container(
+            decoration: BoxDecoration(
+              color: _OnboardingColors.white10,
               borderRadius: _radius16,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(
-                  children: [
-                    locationViewModel.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Icon(Icons.my_location_rounded,
-                            size: 20, color: _OnboardingColors.white80),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        locationViewModel.isLoading
-                            ? AppLocalizations.of(context)!.gettingLocation
-                            : AppLocalizations.of(context)!.automaticLocation,
-                        style: _OnboardingStyles.whiteText14,
-                      ),
-                    ),
-                  ],
-                ),
+              border: Border.all(
+                color: _OnboardingColors.white20,
               ),
+            ),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                locationViewModel.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Icon(Icons.my_location_rounded,
+                        size: 20, color: _OnboardingColors.white80),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    locationViewModel.isLoading
+                        ? AppLocalizations.of(context)!.gettingLocation
+                        : AppLocalizations.of(context)!.automaticLocation,
+                    style: _OnboardingStyles.whiteText14,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1332,50 +1327,49 @@ class _PermissionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: _radius16,
-        child: BackdropFilter(
-          filter: _blurMedium,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: _OnboardingColors.white10,
-              borderRadius: _radius16,
-              border: Border.all(color: _OnboardingColors.white20),
-            ),
-            child: Row(
-              textDirection: Directionality.of(context) == TextDirection.rtl
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        textDirection:
-                            Directionality.of(context) == TextDirection.rtl
-                                ? TextDirection.rtl
-                                : TextDirection.ltr,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: granted ? null : onTap,
+        child: ClipRRect(
+          borderRadius: _radius16,
+          child: BackdropFilter(
+            filter: _blurMedium,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: _OnboardingColors.white10,
+                borderRadius: _radius16,
+                border: Border.all(color: _OnboardingColors.white20),
+              ),
+              child: Row(
+                textDirection: Directionality.of(context) == TextDirection.rtl
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          textDirection:
+                              Directionality.of(context) == TextDirection.rtl
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white),
+                              ),
                             ),
-                          ),
-                          // GestureDetector ile sararak iOS'ta da tıklanabilir yapıyoruz
-                          GestureDetector(
-                            onTap: granted ? null : onTap,
-                            behavior: HitTestBehavior.opaque,
-                            child: Container(
+                            Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
@@ -1400,21 +1394,21 @@ class _PermissionTile extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _OnboardingColors.white85,
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _OnboardingColors.white85,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1437,43 +1431,38 @@ class _GlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: SizedBox(
-        width: double.infinity,
-        child: ClipRRect(
-          borderRadius: _radius24,
-          child: BackdropFilter(
-            filter: _blurStrong,
-            child: Container(
-              decoration: BoxDecoration(
-                color: enabled
-                    ? _OnboardingColors.white15
-                    : _OnboardingColors.white05,
-                borderRadius: _radius24,
-                border: Border.all(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: enabled ? onTap : null,
+        child: SizedBox(
+          width: double.infinity,
+          child: ClipRRect(
+            borderRadius: _radius24,
+            child: BackdropFilter(
+              filter: _blurStrong,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                decoration: BoxDecoration(
                   color: enabled
-                      ? _OnboardingColors.white30
-                      : _OnboardingColors.white10,
-                  width: 1.5,
-                ),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: enabled ? onTap : null,
+                      ? _OnboardingColors.white15
+                      : _OnboardingColors.white05,
                   borderRadius: _radius24,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    child: Center(
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: enabled
-                              ? Colors.white
-                              : _OnboardingColors.white50,
-                        ),
-                      ),
+                  border: Border.all(
+                    color: enabled
+                        ? _OnboardingColors.white30
+                        : _OnboardingColors.white10,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: enabled
+                          ? Colors.white
+                          : _OnboardingColors.white50,
                     ),
                   ),
                 ),
