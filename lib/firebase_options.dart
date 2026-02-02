@@ -4,16 +4,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Minimal Firebase options for this project.
 /// Generated manually from android/app/google-services.json
-/// Android only for now; other platforms will throw at runtime if used.
+/// Web support added for daily content (Firestore)
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError('DefaultFirebaseOptions have not been configured for Web.');
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
+        return ios;
       case TargetPlatform.macOS:
       case TargetPlatform.windows:
       case TargetPlatform.linux:
@@ -21,6 +22,16 @@ class DefaultFirebaseOptions {
         throw UnsupportedError('DefaultFirebaseOptions have not been configured for this platform.');
     }
   }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCL3QESV_CrDSiCExGWihJmVFj4X34TJpU',
+    appId: '1:977812493931:web:ba2356cae4202a58b5032e',
+    messagingSenderId: '977812493931',
+    projectId: 'namazvaktim-1453',
+    authDomain: 'namazvaktim-1453.firebaseapp.com',
+    storageBucket: 'namazvaktim-1453.firebasestorage.app',
+    measurementId: 'G-1M6PT2SB29',
+  );
 
   static FirebaseOptions get android {
     final apiKey = dotenv.env['FIREBASE_ANDROID_API_KEY'];
@@ -46,4 +57,12 @@ class DefaultFirebaseOptions {
     );
   }
 
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCvEx_TYC4AvBHqazZOHPH0VprNC4uxIME',
+    appId: '1:977812493931:ios:1b13d468cfe8f80fb5032e',
+    messagingSenderId: '977812493931',
+    projectId: 'namazvaktim-1453',
+    storageBucket: 'namazvaktim-1453.firebasestorage.app',
+    iosBundleId: 'com.osm.namazvaktim',
+  );
 }
