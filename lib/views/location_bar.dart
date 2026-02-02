@@ -9,6 +9,7 @@ import '../models/location_model.dart';
 import '../utils/constants.dart';
 import '../utils/rtl_helper.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Header ikonu widget'ı - rebuild'lerden izole
 class _HeaderIcon extends StatelessWidget {
@@ -126,28 +127,26 @@ class LocationBarState extends State<LocationBar> {
           behavior: HitTestBehavior.opaque,
           onTap: viewModel.isLoading
               ? null
-              : () async {
-                  bool serviceEnabled =
-                      await Geolocator.isLocationServiceEnabled();
-                  if (!serviceEnabled) {
-                    await Geolocator.openLocationSettings();
-                    return;
-                  }
-
-                  final sl = await viewModel.fetchCurrentLocation();
-                  if (sl != null && widget.onLocationSelected != null) {
-                    widget.onLocationSelected!(sl);
-                    await _refreshHistory(viewModel);
-                  }
-                },
+              : () => _handleCurrentLocationTap(context, viewModel),
           child: Container(
+            // iOS'ta minimum dokunma alanı 44x44 pt olmalı
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
             padding: EdgeInsets.all(context.space(SpaceSize.sm)),
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(context.space(SpaceSize.lg)),
             ),
-            child: Icon(Icons.my_location_rounded,
-                color: textColor.withValues(alpha: 0.6)),
+            child: viewModel.isLoading
+                ? SizedBox(
+                    width: context.icon(IconSizeLevel.md),
+                    height: context.icon(IconSizeLevel.md),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: textColor.withValues(alpha: 0.6),
+                    ),
+                  )
+                : Icon(Icons.my_location_rounded,
+                    color: textColor.withValues(alpha: 0.6)),
           ),
         ),
       ],
@@ -158,6 +157,80 @@ class LocationBarState extends State<LocationBar> {
     if (!mounted) return;
     await Future.delayed(const Duration(milliseconds: 500));
     await viewModel.refreshHistory();
+  }
+
+  /// Mevcut konum butonuna tıklandığında izin kontrolü ve konum alma işlemi
+  Future<void> _handleCurrentLocationTap(
+      BuildContext context, LocationBarViewModel viewModel) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 1. Konum servisinin açık olup olmadığını kontrol et
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!mounted) return;
+      _showLocationSnackBar(
+        context,
+        l10n.locationServiceDisabled,
+        action: SnackBarAction(
+          label: l10n.settings,
+          onPressed: () => Geolocator.openLocationSettings(),
+        ),
+      );
+      return;
+    }
+
+    // 2. Konum iznini kontrol et
+    PermissionStatus permission = await Permission.location.status;
+
+    // İzin henüz sorulmamışsa veya reddedilmişse (ama kalıcı değilse) iste
+    if (permission.isDenied) {
+      permission = await Permission.location.request();
+    }
+
+    // İzin kalıcı olarak reddedilmişse ayarlara yönlendir
+    if (permission.isPermanentlyDenied) {
+      if (!mounted) return;
+      _showLocationSnackBar(
+        context,
+        l10n.locationPermissionDenied,
+        action: SnackBarAction(
+          label: l10n.settings,
+          onPressed: () => openAppSettings(),
+        ),
+      );
+      return;
+    }
+
+    // İzin verilmediyse (reddedildi ama kalıcı değil)
+    if (!permission.isGranted && !permission.isLimited) {
+      if (!mounted) return;
+      _showLocationSnackBar(context, l10n.locationPermissionRequired);
+      return;
+    }
+
+    // 3. Konum al
+    final sl = await viewModel.fetchCurrentLocation();
+    if (!mounted) return;
+
+    if (sl != null && widget.onLocationSelected != null) {
+      widget.onLocationSelected!(sl);
+      await _refreshHistory(viewModel);
+    } else {
+      // Konum alınamadı
+      _showLocationSnackBar(context, l10n.locationNotFound);
+    }
+  }
+
+  void _showLocationSnackBar(BuildContext context, String message,
+      {SnackBarAction? action}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: action,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   /// Optimize edilmiş şehir listesi - Key ile
