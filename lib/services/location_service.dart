@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -167,34 +168,71 @@ class LocationService {
   /// GPS konum iznini kontrol eder
   Future<bool> checkLocationPermission() async {
     final permission = await Permission.location.status;
+
+    // iOS'ta "limited" (yaklaşık konum) de kabul edilir
+    if (permission.isGranted || permission.isLimited) {
+      return true;
+    }
+
+    // Kalıcı olarak reddedilmişse izin istenemez
+    if (permission.isPermanentlyDenied) {
+      return false;
+    }
+
+    // İzin henüz verilmemişse iste
     if (permission.isDenied) {
       final result = await Permission.location.request();
-      return result.isGranted;
+      return result.isGranted || result.isLimited;
     }
-    return permission.isGranted;
+
+    return false;
   }
 
   /// Mevcut GPS konumunu alır
   Future<Position?> getCurrentLocation() async {
     try {
-      // İzin kontrolü
-      bool hasPermission = await checkLocationPermission();
-      if (!hasPermission) {
-        throw Exception('Konum izni reddedildi');
-      }
-
       // Konum servisinin aktif olup olmadığını kontrol et
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Konum servisleri kapalı');
       }
 
+      // İzin kontrolü
+      bool hasPermission = await checkLocationPermission();
+      if (!hasPermission) {
+        // Kalıcı olarak reddedilmişse ayarlara yönlendir
+        final status = await Permission.location.status;
+        if (status.isPermanentlyDenied) {
+          await openAppSettings();
+        }
+        throw Exception('Konum izni reddedildi');
+      }
+
+      // Platform'a göre ayarları belirle
+      LocationSettings locationSettings;
+      if (Platform.isIOS) {
+        locationSettings = AppleSettings(
+          accuracy: LocationAccuracy.best,
+          activityType: ActivityType.other,
+          distanceFilter: 0,
+          pauseLocationUpdatesAutomatically: false,
+          showBackgroundLocationIndicator: false,
+        );
+      } else {
+        locationSettings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 0,
+          forceLocationManager: false,
+          intervalDuration: const Duration(seconds: 10),
+        );
+      }
+
       // Mevcut konumu al
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.bestForNavigation,
-          timeLimit: Duration(seconds: 30),
-        ),
+        locationSettings: locationSettings,
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw Exception('Konum alınırken zaman aşımı'),
       );
 
       return position;
