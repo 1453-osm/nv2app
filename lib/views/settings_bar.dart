@@ -47,6 +47,243 @@ class _ColorModeItem {
       {required this.icon, required this.label, required this.mode});
 }
 
+/// Özel renk seçici widget'ı (HSV tabanlı)
+class _CustomColorPickerWidget extends StatefulWidget {
+  final Color currentColor;
+  final ValueChanged<Color> onColorChanged;
+  final Color textColor;
+  final bool isDark;
+
+  const _CustomColorPickerWidget({
+    required this.currentColor,
+    required this.onColorChanged,
+    required this.textColor,
+    required this.isDark,
+  });
+
+  @override
+  State<_CustomColorPickerWidget> createState() => _CustomColorPickerWidgetState();
+}
+
+class _CustomColorPickerWidgetState extends State<_CustomColorPickerWidget> {
+  late double _hue;
+  late double _saturation;
+  late double _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _initFromColor(widget.currentColor);
+  }
+
+  @override
+  void didUpdateWidget(_CustomColorPickerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentColor != widget.currentColor) {
+      _initFromColor(widget.currentColor);
+    }
+  }
+
+  void _initFromColor(Color color) {
+    final hsv = HSVColor.fromColor(color);
+    _hue = hsv.hue;
+    _saturation = hsv.saturation;
+    _value = hsv.value;
+  }
+
+  Color get _currentColor =>
+      HSVColor.fromAHSV(1.0, _hue, _saturation, _value).toColor();
+
+  void _updateColor() {
+    widget.onColorChanged(_currentColor);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Renk önizleme
+        Container(
+          height: 48,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: _currentColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: widget.textColor.withValues(alpha: 0.2),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Hue slider (Renk tonu)
+        _buildSliderRow(
+          label: 'H',
+          value: _hue,
+          max: 360,
+          gradient: LinearGradient(
+            colors: List.generate(
+              7,
+              (i) => HSVColor.fromAHSV(1.0, i * 60.0, 1.0, 1.0).toColor(),
+            ),
+          ),
+          onChanged: (v) {
+            setState(() => _hue = v);
+            _updateColor();
+          },
+        ),
+        const SizedBox(height: 12),
+        // Saturation slider (Doygunluk)
+        _buildSliderRow(
+          label: 'S',
+          value: _saturation * 100,
+          max: 100,
+          gradient: LinearGradient(
+            colors: [
+              HSVColor.fromAHSV(1.0, _hue, 0.0, _value).toColor(),
+              HSVColor.fromAHSV(1.0, _hue, 1.0, _value).toColor(),
+            ],
+          ),
+          onChanged: (v) {
+            setState(() => _saturation = v / 100);
+            _updateColor();
+          },
+        ),
+        const SizedBox(height: 12),
+        // Value slider (Parlaklık)
+        _buildSliderRow(
+          label: 'V',
+          value: _value * 100,
+          max: 100,
+          gradient: LinearGradient(
+            colors: [
+              HSVColor.fromAHSV(1.0, _hue, _saturation, 0.0).toColor(),
+              HSVColor.fromAHSV(1.0, _hue, _saturation, 1.0).toColor(),
+            ],
+          ),
+          onChanged: (v) {
+            setState(() => _value = v / 100);
+            _updateColor();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSliderRow({
+    required String label,
+    required double value,
+    required double max,
+    required Gradient gradient,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 20,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: widget.textColor.withValues(alpha: 0.7),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 16,
+              thumbColor: Colors.white,
+              thumbShape: const RoundSliderThumbShape(
+                enabledThumbRadius: 10,
+                elevation: 2,
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              trackShape: _GradientTrackShape(gradient: gradient),
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+            ),
+            child: Slider(
+              value: value,
+              min: 0,
+              max: max,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 36,
+          child: Text(
+            value.round().toString(),
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: widget.textColor.withValues(alpha: 0.7),
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Gradient track shape for color picker sliders
+class _GradientTrackShape extends SliderTrackShape {
+  final Gradient gradient;
+
+  const _GradientTrackShape({required this.gradient});
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final trackHeight = sliderTheme.trackHeight ?? 4;
+    final trackLeft = offset.dx;
+    final trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final trackWidth = parentBox.size.width;
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+    required TextDirection textDirection,
+  }) {
+    final rect = getPreferredRect(
+      parentBox: parentBox,
+      offset: offset,
+      sliderTheme: sliderTheme,
+      isEnabled: isEnabled,
+      isDiscrete: isDiscrete,
+    );
+
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(8));
+    final paint = Paint()..shader = gradient.createShader(rect);
+
+    context.canvas.drawRRect(rrect, paint);
+
+    // Border
+    final borderPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    context.canvas.drawRRect(rrect, borderPaint);
+  }
+}
+
 class _ModeCylinderWidget extends StatefulWidget {
   final List<_ColorModeItem> items;
   final int selectedIndex;
@@ -1701,7 +1938,7 @@ class SettingsBarState extends State<SettingsBar>
         return 0;
       case ThemeColorMode.dynamic:
         return 1;
-      case ThemeColorMode.system:
+      case ThemeColorMode.custom:
         return 2;
       case ThemeColorMode.black:
         return 3;
@@ -1729,9 +1966,9 @@ class SettingsBarState extends State<SettingsBar>
           label: localizations.dynamicMode,
           mode: ThemeColorMode.dynamic),
       _ColorModeItem(
-          icon: Symbols.routine_rounded,
-          label: localizations.system,
-          mode: ThemeColorMode.system),
+          icon: Symbols.colorize_rounded,
+          label: localizations.customColor,
+          mode: ThemeColorMode.custom),
       _ColorModeItem(
           icon: Symbols.dark_mode_rounded,
           label: localizations.dark,
@@ -1760,8 +1997,8 @@ class SettingsBarState extends State<SettingsBar>
         ? _buildStaticColorList(themeService)
         : themeService.themeColorMode == ThemeColorMode.dynamic
             ? _buildDynamicColorInfo(textColor, isDark, theme, themeService)
-            : themeService.themeColorMode == ThemeColorMode.system
-                ? _buildSystemColorInfo(textColor, isDark, theme)
+            : themeService.themeColorMode == ThemeColorMode.custom
+                ? _buildCustomColorPicker(textColor, isDark, theme, themeService)
                 : _buildBlackColorInfo(textColor, isDark, theme);
 
     return AnimatedSize(
@@ -2087,9 +2324,14 @@ class SettingsBarState extends State<SettingsBar>
     );
   }
 
-  Widget _buildSystemColorInfo(Color textColor, bool isDark, ThemeData theme) {
+  Widget _buildCustomColorPicker(
+    Color textColor,
+    bool isDark,
+    ThemeData theme,
+    ThemeService themeService,
+  ) {
     return Container(
-      key: const ValueKey('systemInfo'),
+      key: const ValueKey('customColorPicker'),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -2100,33 +2342,39 @@ class SettingsBarState extends State<SettingsBar>
             color: GlassBarConstants.getBorderColor(context),
           ),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Symbols.palette,
-              color: textColor.withValues(alpha: 0.8),
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 96),
-                child: Scrollbar(
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Text(
-                      AppLocalizations.of(context)!.systemThemeDescription,
-                      style: TextStyle(
-                        color: textColor.withValues(alpha: 0.85),
-                        fontSize: 14,
-                        height: 1.35,
-                      ),
-                      softWrap: true,
+            // Açıklama
+            Row(
+              children: [
+                Icon(
+                  Symbols.colorize_rounded,
+                  color: textColor.withValues(alpha: 0.8),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context)!.customColorDescription,
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.85),
+                      fontSize: 14,
+                      height: 1.35,
                     ),
                   ),
                 ),
-              ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Renk seçici
+            _CustomColorPickerWidget(
+              currentColor: themeService.customThemeColor,
+              onColorChanged: (color) {
+                themeService.setCustomThemeColor(color);
+              },
+              textColor: textColor,
+              isDark: isDark,
             ),
           ],
         ),
@@ -2504,21 +2752,20 @@ class SettingsBarState extends State<SettingsBar>
       if (!hasPermission) {
         // İzin yoksa kullanıcıyı ayar sayfasına yönlendir
         if (mounted) {
+          final localizations = AppLocalizations.of(context)!;
           final shouldRequest = await showDialog<bool>(
             context: context,
-            builder: (context) => AlertDialog(
-              title: Text(AppLocalizations.of(context)!.silentModeAfterPrayer),
-              content: const Text(
-                'Sessiz mod özelliğini kullanmak için "Bildirim Erişimi" izni gereklidir. Ayarlar sayfasına yönlendirileceksiniz.',
-              ),
+            builder: (dialogContext) => AlertDialog(
+              title: Text(localizations.silentModeAfterPrayer),
+              content: Text(localizations.silentModePermissionDescription),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('İptal'),
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(localizations.cancel),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Ayarlara Git'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(localizations.goToSettings),
                 ),
               ],
             ),
@@ -2529,10 +2776,9 @@ class SettingsBarState extends State<SettingsBar>
             // Kullanıcıya bilgi ver - izin verildikten sonra tekrar denemesi gerektiğini söyle
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'Lütfen ayarlardan izin verin, ardından sessiz modu tekrar açın.'),
-                  duration: Duration(seconds: 4),
+                SnackBar(
+                  content: Text(localizations.silentModePermissionSnackbar),
+                  duration: const Duration(seconds: 4),
                 ),
               );
             }

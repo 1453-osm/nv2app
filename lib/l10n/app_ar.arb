@@ -155,11 +155,11 @@
   "customizableNotificationsSubtitle": "تكوين مرن مصمم خصيصاً لك",
   "custom": "مخصص",
   "dynamicMode": "ديناميكي",
-  "system": "النظام",
+  "customColor": "لون مخصص",
   "dark": "داكن",
   "dynamicThemeDescription": "سيتم تعيين لون المظهر ديناميكياً وفقاً لوقت الصلاة. يتم استخدام لون مختلف لكل وقت صلاة.",
   "blackThemeDescription": "يتم استخدام اللون الأسود النقي. يوفر توفير البطارية على شاشات OLED.",
-  "systemThemeDescription": "على الأجهزة المدعومة، يتم تعديل الألوان تلقائياً وفقاً لوحة ألوان النظام.",
+  "customColorDescription": "اختر اللون المطلوب باستخدام منتقي الألوان وطبقه على التطبيق.",
   "autoDarkMode": "الوضع الداكن التلقائي",
   "january": "يناير",
   "february": "فبراير",
@@ -578,6 +578,9 @@
   "@silentModePermissionRequired": {
     "description": "تحذير بأن إذن عدم الإزعاج مطلوب للوضع الصامت"
   },
+  "silentModePermissionDescription": "مطلوب إذن \"الوصول إلى الإشعارات\" لاستخدام الوضع الصامت. سيتم توجيهك إلى الإعدادات.",
+  "goToSettings": "الذهاب إلى الإعدادات",
+  "silentModePermissionSnackbar": "يرجى منح الإذن من الإعدادات، ثم تفعيل الوضع الصامت مرة أخرى.",
   "minutesAfterNotification": "بعد {minutes} دقيقة",
   "@minutesAfterNotification": {
     "placeholders": {

@@ -59,22 +59,17 @@ Future<void> main() async {
       return true;
     };
 
-    // Firebase initialization - web için opsiyonel
-    if (!kIsWeb) {
-      try {
-        await Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform);
-      } catch (e) {
-        // Mobil platformlarda Firebase zorunlu
-        if (kDebugMode) {
-          debugPrint('Firebase initialization failed: $e');
-        }
-        rethrow;
-      }
-    } else {
-      // Web'de Firebase yapılandırılmamışsa atla
+    // Firebase initialization - tüm platformlarda (web dahil)
+    try {
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
+    } catch (e) {
       if (kDebugMode) {
-        debugPrint('Firebase initialization skipped for web');
+        debugPrint('Firebase initialization failed: $e');
+      }
+      // Mobil platformlarda Firebase zorunlu, web'de opsiyonel
+      if (!kIsWeb) {
+        rethrow;
       }
     }
 

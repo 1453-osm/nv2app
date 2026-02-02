@@ -550,11 +550,11 @@ abstract class AppLocalizations {
   /// **'Dinamik'**
   String get dynamicMode;
 
-  /// Sistem tema modu
+  /// Özel renk tema modu
   ///
   /// In tr, this message translates to:
-  /// **'Sistem'**
-  String get system;
+  /// **'Özel Renk'**
+  String get customColor;
 
   /// Karanlık tema modu
   ///
@@ -574,11 +574,11 @@ abstract class AppLocalizations {
   /// **'Tam siyah renk kullanılır. Oled ekranlarda pil tasarrufu sağlar.'**
   String get blackThemeDescription;
 
-  /// Sistem teması açıklaması
+  /// Özel renk modu açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Desteklenen cihazlarda renkler sistem renk paletine göre otomatik olarak ayarlanır.'**
-  String get systemThemeDescription;
+  /// **'Renk seçici ile istediğiniz rengi seçin ve uygulamaya uygulayın.'**
+  String get customColorDescription;
 
   /// Otomatik karartma başlığı
   ///
@@ -1239,6 +1239,24 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Sessiz mod izni gerekli. Ayarları açmak için dokunun.'**
   String get silentModePermissionRequired;
+
+  /// Sessiz mod izin iletişim kutusu açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Sessiz mod özelliğini kullanmak için \"Bildirim Erişimi\" izni gereklidir. Ayarlar sayfasına yönlendirileceksiniz.'**
+  String get silentModePermissionDescription;
+
+  /// Ayarlara git butonu metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayarlara Git'**
+  String get goToSettings;
+
+  /// Sessiz mod izin sonrası snackbar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen ayarlardan izin verin, ardından sessiz modu tekrar açın.'**
+  String get silentModePermissionSnackbar;
 
   /// No description provided for @religiousDayDaysUntil.
   ///

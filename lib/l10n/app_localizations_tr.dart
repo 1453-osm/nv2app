@@ -265,7 +265,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dynamicMode => 'Dinamik';
 
   @override
-  String get system => 'Sistem';
+  String get customColor => 'Özel Renk';
 
   @override
   String get dark => 'Karanlık';
@@ -279,8 +279,8 @@ class AppLocalizationsTr extends AppLocalizations {
       'Tam siyah renk kullanılır. Oled ekranlarda pil tasarrufu sağlar.';
 
   @override
-  String get systemThemeDescription =>
-      'Desteklenen cihazlarda renkler sistem renk paletine göre otomatik olarak ayarlanır.';
+  String get customColorDescription =>
+      'Renk seçici ile istediğiniz rengi seçin ve uygulamaya uygulayın.';
 
   @override
   String get autoDarkMode => 'Oto Karartma';
@@ -701,6 +701,17 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get silentModePermissionRequired =>
       'Sessiz mod izni gerekli. Ayarları açmak için dokunun.';
+
+  @override
+  String get silentModePermissionDescription =>
+      'Sessiz mod özelliğini kullanmak için \"Bildirim Erişimi\" izni gereklidir. Ayarlar sayfasına yönlendirileceksiniz.';
+
+  @override
+  String get goToSettings => 'Ayarlara Git';
+
+  @override
+  String get silentModePermissionSnackbar =>
+      'Lütfen ayarlardan izin verin, ardından sessiz modu tekrar açın.';
 
   @override
   String religiousDayDaysUntil(int days, String name) {

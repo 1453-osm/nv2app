@@ -406,7 +406,8 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
   late Animation<Offset> _slideAnimation;
-  late List<_ParsedPrayerRow> _rows;
+  List<_ParsedPrayerRow> _rows = [];
+  bool _rowsNeedRebuild = true;
 
   @override
   void initState() {
@@ -444,9 +445,20 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Locale değiştiğinde rows'u yeniden oluştur
+    _rowsNeedRebuild = true;
+  }
+
+  @override
   void didUpdateWidget(covariant _AnimatedModalContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // _rows will be rebuilt in build method when context is available
+    // Widget parametreleri değiştiğinde rows'u yeniden oluştur
+    if (oldWidget.monthlyTimes != widget.monthlyTimes ||
+        oldWidget.today != widget.today) {
+      _rowsNeedRebuild = true;
+    }
   }
 
   List<_ParsedPrayerRow> _buildParsedRows(
@@ -480,8 +492,11 @@ class _AnimatedModalContentState extends State<_AnimatedModalContent>
 
   @override
   Widget build(BuildContext context) {
-    // Build rows when context is available
-    _rows = _buildParsedRows(widget.monthlyTimes, widget.today);
+    // Sadece gerektiğinde rows'u yeniden oluştur (performans optimizasyonu)
+    if (_rowsNeedRebuild) {
+      _rows = _buildParsedRows(widget.monthlyTimes, widget.today);
+      _rowsNeedRebuild = false;
+    }
 
     return AnimatedBuilder(
       animation: _controller,

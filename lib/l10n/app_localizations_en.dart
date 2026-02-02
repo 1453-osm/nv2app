@@ -267,7 +267,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dynamicMode => 'Dynamic';
 
   @override
-  String get system => 'System';
+  String get customColor => 'Custom Color';
 
   @override
   String get dark => 'Dark';
@@ -281,8 +281,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pure black color is used. Provides battery savings on OLED screens.';
 
   @override
-  String get systemThemeDescription =>
-      'On supported devices, colors are automatically adjusted according to the system color palette.';
+  String get customColorDescription =>
+      'Choose your desired color with the color picker and apply it to the app.';
 
   @override
   String get autoDarkMode => 'Auto Dark Mode';
@@ -703,6 +703,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get silentModePermissionRequired =>
       'Silent mode permission required. Tap to open settings.';
+
+  @override
+  String get silentModePermissionDescription =>
+      '\"Notification Access\" permission is required to use silent mode. You will be redirected to settings.';
+
+  @override
+  String get goToSettings => 'Go to Settings';
+
+  @override
+  String get silentModePermissionSnackbar =>
+      'Please grant permission in settings, then enable silent mode again.';
 
   @override
   String religiousDayDaysUntil(int days, String name) {

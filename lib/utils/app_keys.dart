@@ -11,6 +11,7 @@ class AppKeys {
   static const String themeColorMode = 'theme_color_mode';
   static const String selectedThemeColor = 'selected_theme_color';
   static const String currentThemeColor = 'current_theme_color';
+  static const String customThemeColor = 'custom_theme_color';
   static const String appThemeMode = 'app_theme_mode';
   static const String autoDarkMode = 'auto_dark_mode';
   static const String autoDarkModeOriginalThemeColorMode =

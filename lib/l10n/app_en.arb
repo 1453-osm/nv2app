@@ -155,11 +155,11 @@
   "customizableNotificationsSubtitle": "Flexible configuration tailored to you",
   "custom": "Custom",
   "dynamicMode": "Dynamic",
-  "system": "System",
+  "customColor": "Custom Color",
   "dark": "Dark",
   "dynamicThemeDescription": "Theme color will be set dynamically according to prayer time. A different color is used for each prayer time.",
   "blackThemeDescription": "Pure black color is used. Provides battery savings on OLED screens.",
-  "systemThemeDescription": "On supported devices, colors are automatically adjusted according to the system color palette.",
+  "customColorDescription": "Choose your desired color with the color picker and apply it to the app.",
   "autoDarkMode": "Auto Dark Mode",
   "january": "Jan",
   "february": "Feb",
@@ -575,6 +575,9 @@
     }
   },
   "silentModePermissionRequired": "Silent mode permission required. Tap to open settings.",
+  "silentModePermissionDescription": "\"Notification Access\" permission is required to use silent mode. You will be redirected to settings.",
+  "goToSettings": "Go to Settings",
+  "silentModePermissionSnackbar": "Please grant permission in settings, then enable silent mode again.",
   "minutesAfterNotification": "{minutes} minutes after",
   "@minutesAfterNotification": {
     "placeholders": {

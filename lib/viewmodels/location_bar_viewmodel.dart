@@ -300,12 +300,7 @@ class LocationBarViewModel extends ChangeNotifier {
 
   void _runSearch() {
     _filteredCities.clear();
-    if (_searchQuery.isEmpty) {
-      notifyListeners();
-      return;
-    }
-    // Şehirler yüklenmemişse arama yapma
-    if (_cities.isEmpty) {
+    if (_searchQuery.isEmpty || _cities.isEmpty) {
       notifyListeners();
       return;
     }

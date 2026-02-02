@@ -355,9 +355,9 @@
   "@dynamicMode": {
     "description": "Dinamik tema modu"
   },
-  "system": "Sistem",
-  "@system": {
-    "description": "Sistem tema modu"
+  "customColor": "Özel Renk",
+  "@customColor": {
+    "description": "Özel renk tema modu"
   },
   "dark": "Karanlık",
   "@dark": {
@@ -371,9 +371,9 @@
   "@blackThemeDescription": {
     "description": "Siyah tema açıklaması"
   },
-  "systemThemeDescription": "Desteklenen cihazlarda renkler sistem renk paletine göre otomatik olarak ayarlanır.",
-  "@systemThemeDescription": {
-    "description": "Sistem teması açıklaması"
+  "customColorDescription": "Renk seçici ile istediğiniz rengi seçin ve uygulamaya uygulayın.",
+  "@customColorDescription": {
+    "description": "Özel renk modu açıklaması"
   },
   "autoDarkMode": "Oto Karartma",
   "@autoDarkMode": {
@@ -1013,6 +1013,18 @@
     }
   },
   "silentModePermissionRequired": "Sessiz mod izni gerekli. Ayarları açmak için dokunun.",
+  "silentModePermissionDescription": "Sessiz mod özelliğini kullanmak için \"Bildirim Erişimi\" izni gereklidir. Ayarlar sayfasına yönlendirileceksiniz.",
+  "@silentModePermissionDescription": {
+    "description": "Sessiz mod izin iletişim kutusu açıklaması"
+  },
+  "goToSettings": "Ayarlara Git",
+  "@goToSettings": {
+    "description": "Ayarlara git butonu metni"
+  },
+  "silentModePermissionSnackbar": "Lütfen ayarlardan izin verin, ardından sessiz modu tekrar açın.",
+  "@silentModePermissionSnackbar": {
+    "description": "Sessiz mod izin sonrası snackbar mesajı"
+  },
   "religiousDayDaysUntil": "{days} gün sonra {name}",
   "@religiousDayDaysUntil": {
     "placeholders": {

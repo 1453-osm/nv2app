@@ -27,6 +27,7 @@ class _DailyContentBarState extends State<DailyContentBar>
   final bool _isForward = true;
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
+  VoidCallback? _animationListener;
 
   @override
   void initState() {
@@ -45,9 +46,10 @@ class _DailyContentBarState extends State<DailyContentBar>
     );
 
     // Animasyon değerini dışarı aktar
-    _expandAnimation.addListener(() {
+    _animationListener = () {
       widget.expandAnimationNotifier?.value = _expandAnimation.value;
-    });
+    };
+    _expandAnimation.addListener(_animationListener!);
 
     _loadSavedState();
   }
@@ -98,6 +100,10 @@ class _DailyContentBarState extends State<DailyContentBar>
 
   @override
   void dispose() {
+    // Listener'ı kaldır (memory leak önleme)
+    if (_animationListener != null) {
+      _expandAnimation.removeListener(_animationListener!);
+    }
     _expandController.dispose();
     super.dispose();
   }
@@ -207,56 +213,58 @@ class _DailyContentBarState extends State<DailyContentBar>
                 ? constraints.maxHeight
                 : mediaQuery.size.height * (isLandscape ? 0.6 : 0.4);
 
+            // Responsive değerleri bir kez hesapla (her animasyon frame'inde tekrar hesaplamamak için)
+            final bool isLandscapePhone =
+                context.isLandscape && context.isPhone;
+            final double screenHeight = mediaQuery.size.height;
+
+            final double collapsedWidthPx = Responsive.value<double>(
+              context,
+              xs: 128.0,
+              sm: 135.0,
+              md: 143.0,
+              lg: 158.0,
+              xl: 173.0,
+            );
+
+            final double collapsedHeightPx = isLandscapePhone
+                ? (screenHeight * 0.12).clamp(32.0, 42.0)
+                : Responsive.value<double>(
+                    context,
+                    xs: 55.0,
+                    sm: 59.0,
+                    md: 62.0,
+                    lg: 68.0,
+                    xl: 75.0,
+                  );
+
+            final double minCollapsedWidth = Responsive.value<double>(
+              context,
+              xs: 110.0,
+              sm: 120.0,
+              md: 130.0,
+              lg: 145.0,
+              xl: 160.0,
+            );
+
+            final double minCollapsedHeight = isLandscapePhone
+                ? (screenHeight * 0.11).clamp(30.0, 38.0)
+                : Responsive.value<double>(
+                    context,
+                    xs: 48.0,
+                    sm: 52.0,
+                    md: 55.0,
+                    lg: 60.0,
+                    xl: 65.0,
+                  );
+
+            final bool forceOpen = Responsive.isLandscape(context);
+
             return RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _expandAnimation,
                 builder: (context, child) {
-                  // KAPALI DURUM: Sabit boyutlar ve konum
-                  final double collapsedWidthPx = Responsive.value<double>(
-                    context,
-                    xs: 128.0,
-                    sm: 135.0,
-                    md: 143.0,
-                    lg: 158.0,
-                    xl: 173.0,
-                  );
-                  final bool isLandscapePhone =
-                      context.isLandscape && context.isPhone;
-                  final double screenHeight = mediaQuery.size.height;
-
-                  final double collapsedHeightPx = isLandscapePhone
-                      ? (screenHeight * 0.12).clamp(32.0, 42.0)
-                      : Responsive.value<double>(
-                          context,
-                          xs: 55.0,
-                          sm: 59.0,
-                          md: 62.0,
-                          lg: 68.0,
-                          xl: 75.0,
-                        );
-
-                  final double minCollapsedWidth = Responsive.value<double>(
-                    context,
-                    xs: 110.0,
-                    sm: 120.0,
-                    md: 130.0,
-                    lg: 145.0,
-                    xl: 160.0,
-                  );
-
-                  final double minCollapsedHeight = isLandscapePhone
-                      ? (screenHeight * 0.11).clamp(30.0, 38.0)
-                      : Responsive.value<double>(
-                          context,
-                          xs: 48.0,
-                          sm: 52.0,
-                          md: 55.0,
-                          lg: 60.0,
-                          xl: 65.0,
-                        );
-
                   // Yatay modda (landscape) olan cihazlarda hep açık kalsın
-                  final bool forceOpen = Responsive.isLandscape(context);
                   final double t =
                       forceOpen ? 1.0 : _expandAnimation.value.clamp(0.0, 1.0);
 

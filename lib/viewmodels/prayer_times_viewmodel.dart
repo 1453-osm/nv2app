@@ -14,6 +14,7 @@ import '../utils/constants.dart';
 import '../utils/arabic_numbers_helper.dart';
 import '../utils/error_messages.dart';
 import '../utils/app_keys.dart';
+import '../utils/app_logger.dart';
 import '../data/hijri_months.dart';
 import '../l10n/app_localizations.dart';
 import '../data/religious_days_mapping.dart';
@@ -80,24 +81,31 @@ class PrayerTimesViewModel extends ChangeNotifier {
       final fetchedDays =
           await _religiousDaysService.fetchReligiousDaysForYears(years);
 
-      // Yeni çekilen verileri cache'e kaydet
-      for (final year in years) {
-        final yearDays = fetchedDays.where((d) => d.year == year).toList();
-        if (yearDays.isNotEmpty) {
-          await _saveReligiousDaysToCache(year, yearDays);
+      // Tek geçişte yıllara göre grupla ve cache'e kaydet
+      final yearsSet = years.toSet();
+      final Map<int, List<DetectedReligiousDay>> groupedByYear = {};
+      for (final day in fetchedDays) {
+        (groupedByYear[day.year] ??= []).add(day);
+      }
+
+      // Grupları cache'e kaydet
+      for (final entry in groupedByYear.entries) {
+        if (entry.value.isNotEmpty) {
+          await _saveReligiousDaysToCache(entry.key, entry.value);
         }
       }
 
-      // Mevcut listedeki aynı yılların verilerini güncelle
-      final existingDays =
-          _detectedReligiousDays.where((d) => !years.contains(d.year)).toList();
-      existingDays.addAll(fetchedDays);
-      existingDays.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+      // Mevcut listedeki aynı yılların verilerini güncelle (tek geçiş)
+      final List<DetectedReligiousDay> mergedDays = [
+        ..._detectedReligiousDays.where((d) => !yearsSet.contains(d.year)),
+        ...fetchedDays,
+      ];
+      mergedDays.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
 
-      _detectedReligiousDays = existingDays;
+      _detectedReligiousDays = mergedDays;
       notifyListeners();
     } catch (e) {
-      // Hata durumunda sessizce devam et
+      AppLogger.warning('Dini günler yüklenemedi: $e', tag: 'PrayerTimesVM');
     }
   }
 
@@ -651,7 +659,9 @@ Kerahat durumu: ${isKerahatTime() ? "✅ EVET" : "❌ HAYIR"}
       await WidgetBridgeService.forceUpdateCalendarWidget();
       await NotificationSchedulerService.instance
           .rescheduleTodayNotifications();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Widget verisi kaydedilemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   Future<void> _syncWidget() async {
@@ -704,7 +714,9 @@ Kerahat durumu: ${isKerahatTime() ? "✅ EVET" : "❌ HAYIR"}
         gregorianDate: gregorianDate,
       );
       await WidgetBridgeService.forceUpdateCalendarWidget();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Takvim widget güncellenemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   String _localizeHijriDate(String raw, Locale locale) {
@@ -1095,7 +1107,9 @@ Kerahat durumu: ${isKerahatTime() ? "✅ EVET" : "❌ HAYIR"}
       final prefs = await SharedPreferences.getInstance();
       _lastCheckedYear =
           prefs.getInt(AppKeys.lastCheckedYear) ?? DateTime.now().year;
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Son kontrol yılı yüklenemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   /// Son kontrol edilen yılı kaydeder
@@ -1103,7 +1117,9 @@ Kerahat durumu: ${isKerahatTime() ? "✅ EVET" : "❌ HAYIR"}
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(AppKeys.lastCheckedYear, _lastCheckedYear);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Son kontrol yılı kaydedilemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   @override
@@ -1129,14 +1145,18 @@ Kerahat durumu: ${isKerahatTime() ? "✅ EVET" : "❌ HAYIR"}
         );
         notifyListeners();
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Geri sayım formatı yüklenemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   Future<void> _saveCountdownFormat() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppKeys.countdownFormat, _countdownFormat.name);
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Geri sayım formatı kaydedilemedi: $e', tag: 'PrayerTimesVM');
+    }
   }
 
   // ignore: unused_element_parameter - cityId gelecekte cache invalidation için kullanılabilir

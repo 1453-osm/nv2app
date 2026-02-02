@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_keys.dart';
+import '../utils/app_logger.dart';
 
 /// Android ana ekran küçük widget'ı ile köprü.
 /// MVVM: ViewModel'ler bu servis üzerinden değerleri kaydeder/günceller.
@@ -43,7 +44,9 @@ class WidgetBridgeService {
           'currentThemeColor': currentThemeColor,
           'locale': locale,
         });
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('iOS widget verisi kaydedilemedi: $e', tag: 'WidgetBridge');
+      }
     }
   }
 
@@ -119,7 +122,9 @@ class WidgetBridgeService {
   static Future<void> forceUpdateSmallWidget() async {
     try {
       await _channel.invokeMethod('updateSmallWidget');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Küçük widget güncellenemedi: $e', tag: 'WidgetBridge');
+    }
   }
 
   /// iOS için tüm widget'ları yeniden yükle (WidgetKit.reloadAllTimelines)
@@ -127,7 +132,9 @@ class WidgetBridgeService {
     if (!_isIOSPlatform) return;
     try {
       await _channel.invokeMethod('reloadAllWidgets');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('iOS widget\'ları yeniden yüklenemedi: $e', tag: 'WidgetBridge');
+    }
   }
 
   // --- Text-only widget pin/state ---
@@ -201,7 +208,9 @@ class WidgetBridgeService {
     if (_isIOSPlatform) return; // iOS'ta kesin alarm izni gerekmez
     try {
       await _channel.invokeMethod('requestExactAlarmPermission');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Kesin alarm izni istenemedi: $e', tag: 'WidgetBridge');
+    }
   }
 
   static Future<bool> isExactAlarmAllowed() async {
@@ -236,8 +245,8 @@ class WidgetBridgeService {
     if (_isIOSPlatform) return; // iOS'ta DND kontrolü Flutter'dan yapılamaz
     try {
       await _channel.invokeMethod('requestNotificationPolicyAccess');
-    } catch (_) {
-      // Hata durumunda sessizce geç
+    } catch (e) {
+      AppLogger.warning('Bildirim politikası erişimi istenemedi: $e', tag: 'WidgetBridge');
     }
   }
 
@@ -398,7 +407,9 @@ class WidgetBridgeService {
           'hijriDate': hijriDate,
           'gregorianDate': gregorianDate,
         });
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('iOS takvim verisi kaydedilemedi: $e', tag: 'WidgetBridge');
+      }
     }
   }
 
@@ -452,7 +463,9 @@ class WidgetBridgeService {
     if (_isIOSPlatform) return; // iOS'ta widget desteklenmez
     try {
       await _channel.invokeMethod('updateCalendarWidget');
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Takvim widget güncellenemedi: $e', tag: 'WidgetBridge');
+    }
   }
 
   /// Takvim widget pin durumu kontrolü (Android-only)

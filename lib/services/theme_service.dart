@@ -6,7 +6,7 @@ import '../utils/app_keys.dart';
 import '../utils/app_logger.dart';
 
 /// Tema rengi modu
-enum ThemeColorMode { static, dynamic, system, black, amoled }
+enum ThemeColorMode { static, dynamic, custom, black, amoled }
 
 /// Tema yönetimi servisi.
 ///
@@ -24,10 +24,7 @@ class ThemeService extends ChangeNotifier {
   ThemeColorMode _themeColorMode = ThemeColorMode.static;
   Color _selectedThemeColor = SettingsConstants.defaultThemeColor.color;
   Color _currentThemeColor = SettingsConstants.defaultThemeColor.color;
-
-  // Sistem (Material You) dinamik renk şemaları
-  ColorScheme? _systemLightScheme;
-  ColorScheme? _systemDarkScheme;
+  Color _customThemeColor = const Color(0xFF6750A4); // Varsayılan mor renk
 
   // Namaz vakti takibi
   String? _currentPrayerTime;
@@ -39,6 +36,7 @@ class ThemeService extends ChangeNotifier {
   ThemeColorMode get themeColorMode => _themeColorMode;
   Color get selectedThemeColor => _selectedThemeColor;
   Color get currentThemeColor => _currentThemeColor;
+  Color get customThemeColor => _customThemeColor;
 
   Color get currentSecondaryColor {
     if (_themeColorMode == ThemeColorMode.dynamic && _currentPrayerTime != null) {
@@ -88,9 +86,8 @@ class ThemeService extends ChangeNotifier {
       case ThemeColorMode.dynamic:
         await _updateDynamicThemeColor();
         break;
-      case ThemeColorMode.system:
-        final ColorScheme? anyScheme = _systemLightScheme ?? _systemDarkScheme;
-        _currentThemeColor = anyScheme?.primary ?? _selectedThemeColor;
+      case ThemeColorMode.custom:
+        _currentThemeColor = _customThemeColor;
         break;
       case ThemeColorMode.black:
       case ThemeColorMode.amoled:
@@ -120,6 +117,20 @@ class ThemeService extends ChangeNotifier {
     } else {
       // Diğer modlarda da seçilen rengi native taraf için kaydet
       await _syncWidgetThemeColors();
+    }
+  }
+
+  /// Özel tema rengini değiştirir (custom mod için RGB seçici).
+  Future<void> setCustomThemeColor(Color color) async {
+    if (_customThemeColor == color) return;
+
+    _customThemeColor = color;
+    await _saveCustomThemeColor(color);
+
+    if (_themeColorMode == ThemeColorMode.custom) {
+      _currentThemeColor = color;
+      await _syncWidgetThemeColors();
+      notifyListeners();
     }
   }
 
@@ -279,14 +290,19 @@ class ThemeService extends ChangeNotifier {
             : loaded;
       }
 
+      // Özel tema rengini yükle
+      final savedCustomColor = prefs.getInt(AppKeys.customThemeColor);
+      if (savedCustomColor != null) {
+        _customThemeColor = Color(savedCustomColor);
+      }
+
       // Mevcut rengi ayarla
       switch (_themeColorMode) {
         case ThemeColorMode.dynamic:
           await _updateDynamicThemeColor();
           break;
-        case ThemeColorMode.system:
-          final ColorScheme? anyScheme = _systemLightScheme ?? _systemDarkScheme;
-          _currentThemeColor = anyScheme?.primary ?? _selectedThemeColor;
+        case ThemeColorMode.custom:
+          _currentThemeColor = _customThemeColor;
           break;
         case ThemeColorMode.amoled:
         case ThemeColorMode.black:
@@ -343,12 +359,28 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
+  /// Özel tema rengini kaydeder (RGB seçici için).
+  Future<void> _saveCustomThemeColor(Color color) async {
+    try {
+      _prefsCache ??= await SharedPreferences.getInstance();
+      await _prefsCache!.setInt(AppKeys.customThemeColor, color.toARGB32());
+    } catch (e, stackTrace) {
+      AppLogger.error('Özel tema rengi kaydetme hatası', tag: 'ThemeService', error: e, stackTrace: stackTrace);
+    }
+  }
+
   // Özel tema renkleri
   static const Color _haremColor = Color(0xFF1E1D1C);
   static const Color _aksaColor = Color(0xFF7B8FA3);
 
   /// Harem ve Aksa için özel renk rollerini uygular.
+  /// Sadece static modda uygulanır, dinamik modda namaz vakti renkleri kullanılır.
   ColorScheme _applySpecialColorRoles(ColorScheme baseScheme, Brightness brightness) {
+    // Dinamik modda özel renk rolleri uygulanmamalı
+    if (_themeColorMode == ThemeColorMode.dynamic) {
+      return baseScheme;
+    }
+
     if (_selectedThemeColor == _haremColor) {
       return _applyHaremRoles(baseScheme, brightness);
     }
@@ -375,25 +407,77 @@ class ThemeService extends ChangeNotifier {
     );
   }
 
+  /// Nötr renkler (siyah, beyaz, gri) için özel ColorScheme oluşturur.
+  ColorScheme _buildNeutralColorScheme(Brightness brightness, Color neutralColor) {
+    final hsv = HSVColor.fromColor(neutralColor);
+    final isDark = brightness == Brightness.dark;
+
+    // Rengin parlaklık değerine göre kontrast renkler belirle
+    final isLightNeutral = hsv.value > 0.5;
+
+    if (isDark) {
+      // Karanlık tema için nötr renk şeması
+      return ColorScheme.dark(
+        primary: neutralColor,
+        onPrimary: isLightNeutral ? Colors.black : Colors.white,
+        secondary: neutralColor,
+        onSecondary: isLightNeutral ? Colors.black : Colors.white,
+        surface: const Color(0xFF121212),
+        onSurface: neutralColor.computeLuminance() < 0.5
+            ? const Color(0xFFE0E0E0)
+            : neutralColor,
+        surfaceContainerHighest: const Color(0xFF2D2D2D),
+        outline: neutralColor.withValues(alpha: 0.5),
+        outlineVariant: neutralColor.withValues(alpha: 0.3),
+      );
+    } else {
+      // Aydınlık tema için nötr renk şeması
+      return ColorScheme.light(
+        primary: neutralColor,
+        onPrimary: isLightNeutral ? Colors.black : Colors.white,
+        secondary: neutralColor,
+        onSecondary: isLightNeutral ? Colors.black : Colors.white,
+        surface: const Color(0xFFFFFBFE),
+        onSurface: neutralColor.computeLuminance() > 0.5
+            ? const Color(0xFF1C1B1F)
+            : neutralColor,
+        surfaceContainerHighest: const Color(0xFFE6E1E5),
+        outline: neutralColor.withValues(alpha: 0.5),
+        outlineVariant: neutralColor.withValues(alpha: 0.3),
+      );
+    }
+  }
+
   /// Tema verilerini oluşturur.
   ThemeData buildTheme({required Brightness brightness}) {
     // Temel renk şemasını üret
-    ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: _currentThemeColor,
-      brightness: brightness,
-    );
+    ColorScheme scheme;
 
-    // Özel roller uygula
-    scheme = _applySpecialColorRoles(scheme, brightness);
+    // Custom mod için düşük saturation kontrolü (gri, siyah, beyaz)
+    if (_themeColorMode == ThemeColorMode.custom) {
+      final hsv = HSVColor.fromColor(_currentThemeColor);
+      final isLowSaturation = hsv.saturation < 0.15;
+      final isVeryDark = hsv.value < 0.1;
+      final isVeryLight = hsv.value > 0.95 && hsv.saturation < 0.1;
 
-    // Sistem (Material You) modu
-    if (_themeColorMode == ThemeColorMode.system) {
-      final ColorScheme? systemScheme =
-          brightness == Brightness.dark ? _systemDarkScheme : _systemLightScheme;
-      if (systemScheme != null) {
-        scheme = systemScheme;
+      if (isLowSaturation || isVeryDark || isVeryLight) {
+        // Nötr renkler için özel ColorScheme oluştur
+        scheme = _buildNeutralColorScheme(brightness, _currentThemeColor);
+      } else {
+        scheme = ColorScheme.fromSeed(
+          seedColor: _currentThemeColor,
+          brightness: brightness,
+        );
       }
+    } else {
+      scheme = ColorScheme.fromSeed(
+        seedColor: _currentThemeColor,
+        brightness: brightness,
+      );
     }
+
+    // Özel roller uygula (sadece static modda)
+    scheme = _applySpecialColorRoles(scheme, brightness);
 
     // AMOLED + koyu mod
     if (_themeColorMode == ThemeColorMode.amoled && brightness == Brightness.dark) {
@@ -456,27 +540,9 @@ class ThemeService extends ChangeNotifier {
     return null;
   }
 
-  /// Sistem dinamik renk şemalarını günceller (Android 12+ Material You).
+  /// Sistem dinamik renk şemalarını günceller.
+  /// @deprecated Bu metod artık kullanılmıyor, custom mod RGB seçici kullanır.
   void updateSystemDynamicSchemes({ColorScheme? light, ColorScheme? dark}) {
-    bool changed = false;
-    if (_systemLightScheme != light) {
-      _systemLightScheme = light;
-      changed = true;
-    }
-    if (_systemDarkScheme != dark) {
-      _systemDarkScheme = dark;
-      changed = true;
-    }
-
-    if (!changed) return;
-
-    if (_themeColorMode == ThemeColorMode.system) {
-      final ColorScheme? anyScheme = _systemLightScheme ?? _systemDarkScheme;
-      if (anyScheme != null) {
-        _currentThemeColor = anyScheme.primary;
-        _syncWidgetThemeColors();
-      }
-      notifyListeners();
-    }
+    // Geriye uyumluluk için bırakıldı, artık işlev görmüyor
   }
 }

@@ -15,11 +15,7 @@ class DailyContentRepository {
 
   // Adlandırılmış Firestore veritabanı: 'daily'
   FirebaseFirestore get _db {
-    // Web platformunda instanceFor ile databaseId çalışmıyor, default instance kullan
-    if (kIsWeb) {
-      return FirebaseFirestore.instance;
-    }
-    // Mobil platformlarda named database kullan
+    // Tüm platformlarda (web dahil) named database kullan
     return FirebaseFirestore.instanceFor(
       app: Firebase.app(),
       databaseId: 'daily',

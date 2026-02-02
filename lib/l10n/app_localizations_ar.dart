@@ -265,7 +265,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dynamicMode => 'ديناميكي';
 
   @override
-  String get system => 'النظام';
+  String get customColor => 'لون مخصص';
 
   @override
   String get dark => 'داكن';
@@ -279,8 +279,8 @@ class AppLocalizationsAr extends AppLocalizations {
       'يتم استخدام اللون الأسود النقي. يوفر توفير البطارية على شاشات OLED.';
 
   @override
-  String get systemThemeDescription =>
-      'على الأجهزة المدعومة، يتم تعديل الألوان تلقائياً وفقاً لوحة ألوان النظام.';
+  String get customColorDescription =>
+      'اختر اللون المطلوب باستخدام منتقي الألوان وطبقه على التطبيق.';
 
   @override
   String get autoDarkMode => 'الوضع الداكن التلقائي';
@@ -695,6 +695,17 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get silentModePermissionRequired =>
       'مطلوب إذن الوضع الصامت. انقر لفتح الإعدادات.';
+
+  @override
+  String get silentModePermissionDescription =>
+      'مطلوب إذن \"الوصول إلى الإشعارات\" لاستخدام الوضع الصامت. سيتم توجيهك إلى الإعدادات.';
+
+  @override
+  String get goToSettings => 'الذهاب إلى الإعدادات';
+
+  @override
+  String get silentModePermissionSnackbar =>
+      'يرجى منح الإذن من الإعدادات، ثم تفعيل الوضع الصامت مرة أخرى.';
 
   @override
   String religiousDayDaysUntil(int days, String name) {

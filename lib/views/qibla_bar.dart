@@ -413,6 +413,7 @@ class QiblaBarState extends State<QiblaBar> {
         final bool isGpsError = status == QiblaStatus.error &&
             errorCode == ErrorCode.gpsLocationNotAvailable;
 
+        // Eski hesaplama - TEST
         final double angle = (!isGpsError && status == QiblaStatus.ready)
             ? (qiblaDir - currentDir) * (math.pi / 180)
             : 0;
