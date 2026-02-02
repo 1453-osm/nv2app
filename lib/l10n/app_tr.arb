@@ -1044,5 +1044,25 @@
       "name": { "type": "String" }
     }
   },
-  "religiousDayTodayEid": "Hayırlı Bayramlar"
+  "religiousDayTodayEid": "Hayırlı Bayramlar",
+  "locationServiceDisabled": "Konum servisleri kapalı. Lütfen ayarlardan açın.",
+  "@locationServiceDisabled": {
+    "description": "Konum servisleri kapalı uyarısı"
+  },
+  "settings": "Ayarlar",
+  "@settings": {
+    "description": "Ayarlar butonu metni"
+  },
+  "locationPermissionDenied": "Konum izni reddedildi. Ayarlardan izin verebilirsiniz.",
+  "@locationPermissionDenied": {
+    "description": "Konum izni reddedildi uyarısı"
+  },
+  "locationPermissionRequired": "Konum izni gerekli.",
+  "@locationPermissionRequired": {
+    "description": "Konum izni gerekli uyarısı"
+  },
+  "locationNotFound": "Konum alınamadı. Lütfen tekrar deneyin.",
+  "@locationNotFound": {
+    "description": "Konum bulunamadı uyarısı"
+  }
 }

@@ -608,5 +608,10 @@
       "name": { "type": "String" }
     }
   },
-  "religiousDayTodayEid": "عيد مبارك"
+  "religiousDayTodayEid": "عيد مبارك",
+  "locationServiceDisabled": "خدمات الموقع معطلة. يرجى تفعيلها من الإعدادات.",
+  "settings": "الإعدادات",
+  "locationPermissionDenied": "تم رفض إذن الموقع. يمكنك منحه من الإعدادات.",
+  "locationPermissionRequired": "إذن الموقع مطلوب.",
+  "locationNotFound": "تعذر الحصول على الموقع. يرجى المحاولة مرة أخرى."
 }

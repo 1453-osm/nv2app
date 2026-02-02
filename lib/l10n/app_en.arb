@@ -605,5 +605,10 @@
       "name": { "type": "String" }
     }
   },
-  "religiousDayTodayEid": "Happy Eid"
+  "religiousDayTodayEid": "Happy Eid",
+  "locationServiceDisabled": "Location services are disabled. Please enable in settings.",
+  "settings": "Settings",
+  "locationPermissionDenied": "Location permission denied. You can grant it in settings.",
+  "locationPermissionRequired": "Location permission required.",
+  "locationNotFound": "Could not get location. Please try again."
 }
