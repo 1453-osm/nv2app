@@ -122,18 +122,17 @@ flutter:
       fonts:
         - asset: assets/fonts/nestaliq.ttf
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/logo.png"
   adaptive_icon_background: "#588065"
   adaptive_icon_foreground: "assets/images/logo.png"
   adaptive_icon_monochrome: "assets/images/logo.png"
-  remove_alpha_ios: true
-  background_color_ios: "#588065"
   min_sdk_android: 21
-  image_path_ios: "assets/images/logo.png"
   android_mipmap_name: "ic_launcher"
+  # iOS ayarları - yeşil arka planlı logo kullan
+  image_path_ios: "assets/images/logo_ios.png"
   web:
     generate: false
   windows:
