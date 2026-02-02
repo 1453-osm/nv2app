@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:ui';
 import '../viewmodels/onboarding_viewmodel.dart';
 import '../viewmodels/location_viewmodel.dart';
@@ -1268,6 +1269,7 @@ class _PermissionsAndStartSection extends StatelessWidget {
       (vm) => vm.ignoringBatteryOptimizations,
     );
     final onboardingVm = context.read<OnboardingViewModel>();
+    final isAndroid = Platform.isAndroid;
 
     return Column(
       children: [
@@ -1291,17 +1293,20 @@ class _PermissionsAndStartSection extends StatelessWidget {
             await onboardingVm.requestLocationPermission();
           },
         ),
-        const SizedBox(height: 12),
-        _PermissionTile(
-          icon: Icons.battery_saver_rounded,
-          title: AppLocalizations.of(context)!.batteryOptimization,
-          description:
-              AppLocalizations.of(context)!.batteryOptimizationDescription,
-          granted: ignoringBatteryOptimizations,
-          onTap: () async {
-            await onboardingVm.requestIgnoreBatteryOptimizations();
-          },
-        ),
+        // Pil optimizasyonu sadece Android'de gösterilir
+        if (isAndroid) ...[
+          const SizedBox(height: 12),
+          _PermissionTile(
+            icon: Icons.battery_saver_rounded,
+            title: AppLocalizations.of(context)!.batteryOptimization,
+            description:
+                AppLocalizations.of(context)!.batteryOptimizationDescription,
+            granted: ignoringBatteryOptimizations,
+            onTap: () async {
+              await onboardingVm.requestIgnoreBatteryOptimizations();
+            },
+          ),
+        ],
         const SizedBox(height: 20),
         _StartButton(canStart: isLocationSelected),
       ],
@@ -1366,9 +1371,10 @@ class _PermissionTile extends StatelessWidget {
                                   color: Colors.white),
                             ),
                           ),
-                          InkWell(
+                          // GestureDetector ile sararak iOS'ta da tıklanabilir yapıyoruz
+                          GestureDetector(
                             onTap: granted ? null : onTap,
-                            borderRadius: BorderRadius.circular(20),
+                            behavior: HitTestBehavior.opaque,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 6),
